@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx ./ --max-warnings=0",
     "lint-staged": "lint-staged",
-		"prepare": "husky install",
-		"pre-commit": "lint-staged",
-		"create-hook": "husky add .husky/pre-commit \"npm lint-staged\""
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "create-hook": "husky add .husky/pre-commit \"npm lint-staged\""
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
@@ -25,6 +25,7 @@
     "@types/react-dom": "18.0.10",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
+    "clsx": "^1.2.1",
     "eslint": "8.32.0",
     "eslint-config-next": "13.1.4",
     "eslint-config-react-app": "^7.0.1",
