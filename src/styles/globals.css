@@ -2,22 +2,42 @@
 	html {
 		font-size: 16px !important;
 	}
-	.bg-primary {
-		@apply bg-amber;
+	h1,
+	h2,
+	h3,
+	h4 {
+		margin: 0 !important;
 	}
 }
 @tailwind base;
 @layer components {
 	.LayoutNavbar {
 		width: 300px;
+		min-width: 300px;
 	}
 	.LayoutNavbarSearch {
 		height: 36px;
 		padding: 0 12px;
 	}
+	.EventCard {
+		min-width: 440px;
+	}
 }
 @tailwind components;
 @layer utilities {
+	.text-10px {
+		font-size: 10px;
+	}
+	.text-12px {
+		font-size: 12px;
+	}
+	.text-14px {
+		font-size: 14px;
+	}
+	.text-18px {
+		font-size: 18px;
+	}
+
 	.bg-primary-1 {
 		@apply bg-amber-100;
 	}
