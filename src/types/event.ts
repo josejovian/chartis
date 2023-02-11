@@ -6,6 +6,7 @@ export interface EventType {
 	description: string;
 	authorId: string;
 	organizer?: string;
+	src?: string;
 	startDate: number;
 	endDate?: number;
 	tags: number[];

@@ -1,10 +1,14 @@
-import { EventCard } from "@/components";
-import { EVENT_DUMMY_1 } from "@/consts/event";
+import { useState } from "react";
+import { LayoutSidebar, LayoutCalendar } from "@/components";
 
 export default function Home() {
+	const stateFocusDate = useState(new Date());
+	const focusDate = stateFocusDate[0];
+
 	return (
-		<div className="flex flex-col items-center justify-center w-full gap-8">
-			<EventCard event={EVENT_DUMMY_1} />
+		<div className="flex flex-auto">
+			<LayoutCalendar stateFocusDate={stateFocusDate} />
+			<LayoutSidebar focusDate={focusDate} events={[]} />
 		</div>
 	);
 }

@@ -4,11 +4,8 @@ import clsx from "clsx";
 import { EventThumbnailDisplayType } from "@/types";
 
 export interface EventThumbnailProps {
-	alwaysVisible?: boolean;
 	className?: string;
-	height?: number;
 	src?: string;
-	width?: number;
 	type?: EventThumbnailDisplayType;
 }
 
@@ -20,8 +17,8 @@ export function EventThumbnail({
 	const [loaded, setLoaded] = useState(false);
 	const [error, setError] = useState(false);
 	const showImage = useMemo(
-		() => (error && type === "banner") || loaded,
-		[error, loaded, type]
+		() => (error && type === "banner") || (loaded && src),
+		[error, loaded, src, type]
 	);
 	const style = useMemo(() => {
 		switch (type) {
@@ -42,7 +39,7 @@ export function EventThumbnail({
 
 	const renderImage = useMemo(
 		() =>
-			!loaded ? (
+			!loaded || !src ? (
 				<Image
 					className="object-cover"
 					placeholder="empty"
@@ -54,7 +51,7 @@ export function EventThumbnail({
 				<Image
 					className="object-cover"
 					placeholder="empty"
-					src="/dummy.jpg"
+					src={src}
 					fill
 					alt="Event Title"
 					onError={() => {
@@ -62,7 +59,7 @@ export function EventThumbnail({
 					}}
 				/>
 			),
-		[loaded]
+		[loaded, src]
 	);
 
 	useEffect(() => {

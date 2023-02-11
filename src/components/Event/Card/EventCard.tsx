@@ -11,7 +11,7 @@ export interface EventCardProps {
 }
 
 export function EventCard({ event, type = "vertical" }: EventCardProps) {
-	const { id, authorId, description, name, organizer, tags } = event;
+	const { id, authorId, description, name, organizer, tags, src } = event;
 
 	const startDate = useMemo(() => new Date(event.startDate), [event]);
 	const endDate = useMemo(
@@ -94,7 +94,7 @@ export function EventCard({ event, type = "vertical" }: EventCardProps) {
 	);
 
 	const renderEventDescription = useMemo(
-		() => <p className="mt-2">{description}</p>,
+		() => <p className="m-0 mt-1 mb-2">{description}</p>,
 		[description]
 	);
 
@@ -122,7 +122,7 @@ export function EventCard({ event, type = "vertical" }: EventCardProps) {
 		() =>
 			type === "vertical" ? (
 				<Card fluid>
-					<EventThumbnail />
+					<EventThumbnail src={src} />
 					<div className="flex flex-col py-2 pb-3 px-10 w-full">
 						{renderEventCreators}
 						{renderEventTitle}
@@ -133,7 +133,7 @@ export function EventCard({ event, type = "vertical" }: EventCardProps) {
 				</Card>
 			) : (
 				<Card fluid className="flex !flex-row h-full">
-					<EventThumbnail type="thumbnail-fixed-height" />
+					<EventThumbnail src={src} type="thumbnail-fixed-height" />
 					<div className="flex flex-col py-2 pb-3 px-10 w-full h-full justify-between">
 						<div className="flex flex-col">
 							{renderEventCreators}
@@ -153,12 +153,13 @@ export function EventCard({ event, type = "vertical" }: EventCardProps) {
 			renderEventExtraDetails,
 			renderEventTitle,
 			type,
+			src,
 		]
 	);
 	return (
 		<div
 			style={{
-				width: type === "horizontal" ? "75%" : "440px",
+				width: type === "horizontal" ? "75%" : "100%",
 				height: type === "horizontal" ? "120px" : undefined,
 			}}
 		>
