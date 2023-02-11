@@ -68,7 +68,9 @@ export function LayoutCalendar({ stateFocusDate }: LayoutCalendarProps) {
 				<Button
 					onClick={handleChangeToToday}
 					disabled={
-						focusDate && today.getDate() === focusDate.getDate()
+						focusDate &&
+						today.getDate() === focusDate.getDate() &&
+						today.getMonth() === focusDate.getMonth()
 					}
 				>
 					Today
