@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { EventCard } from "@/components";
 import { EventType } from "@/types";
+import { strDate } from "@/utils";
 
 export interface LayoutSidebarProps {
 	focusDate: Date;
@@ -11,10 +12,10 @@ export function LayoutSidebar({ focusDate, events }: LayoutSidebarProps) {
 	const renderTitle = useMemo(
 		() => (
 			<span className="mb-8 text-16px text-secondary-6 italic">
-				Showing 8 events on {focusDate.getDate()}
+				Showing {events.length} events on {strDate(focusDate)}
 			</span>
 		),
-		[focusDate]
+		[events.length, focusDate]
 	);
 
 	const renderEvents = useMemo(

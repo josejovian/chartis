@@ -4,6 +4,7 @@ import { Button, Card, Icon, Label } from "semantic-ui-react";
 import { EventTag, EventCardDetail, EventThumbnail } from "@/components";
 import { EventCardDisplayType, EventExtraDetailType, EventType } from "@/types";
 import { EVENT_TAGS } from "@/consts/event";
+import { strDateTime } from "@/utils";
 
 export interface EventCardProps {
 	event: EventType;
@@ -24,7 +25,7 @@ export function EventCard({ event, type = "vertical" }: EventCardProps) {
 			{
 				icon: "calendar",
 				name: "Start Date",
-				value: startDate.toLocaleString(),
+				value: strDateTime(startDate),
 			},
 		];
 

@@ -25,7 +25,7 @@ export const EVENT_DUMMY_2: EventType = {
 export const EVENT_TAGS: EventTagType[] = [
 	{
 		name: "Seminar",
-		color: "orange",
+		color: "blue",
 	},
 	{
 		name: "Workshop",
