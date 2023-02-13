@@ -13,43 +13,41 @@ import { Lato } from "@next/font/google";
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
 export default function App({ Component, pageProps }: AppProps) {
-	const [screen, setScreen] = useState<ScreenSizeType>(
-		SCREEN_CONTEXT_DEFAULT
-	);
-	const initialize = useRef(false);
+  const [screen, setScreen] = useState<ScreenSizeType>(SCREEN_CONTEXT_DEFAULT);
+  const initialize = useRef(false);
 
-	const handleInitialize = useCallback(() => {
-		if (initialize.current) return;
+  const handleInitialize = useCallback(() => {
+    if (initialize.current) return;
 
-		window.addEventListener("resize", () => {
-			const width = window.innerWidth;
-			const type = width > MOBILE_SCREEN_THRESHOLD ? "desktop" : "mobile";
+    window.addEventListener("resize", () => {
+      const width = window.innerWidth;
+      const type = width > MOBILE_SCREEN_THRESHOLD ? "desktop" : "mobile";
 
-			setScreen({
-				width,
-				type,
-			});
-		});
-		initialize.current = true;
-	}, []);
+      setScreen({
+        width,
+        type,
+      });
+    });
+    initialize.current = true;
+  }, []);
 
-	useEffect(() => {
-		handleInitialize();
-	}, [handleInitialize]);
+  useEffect(() => {
+    handleInitialize();
+  }, [handleInitialize]);
 
-	return (
-		<>
-			<style jsx global>{`
-				html {
-					font-family: ${lato.style.fontFamily};
-				}
-			`}</style>
-			<ScreenContext.Provider value={screen}>
-				<div id="App" className="flex flex-row">
-					<LayoutNavbar />
-					<Component {...pageProps} />
-				</div>
-			</ScreenContext.Provider>
-		</>
-	);
+  return (
+    <>
+      <style jsx global>{`
+        html {
+          font-family: ${lato.style.fontFamily};
+        }
+      `}</style>
+      <ScreenContext.Provider value={screen}>
+        <div id="App" className="flex flex-row">
+          <LayoutNavbar />
+          <Component {...pageProps} />
+        </div>
+      </ScreenContext.Provider>
+    </>
+  );
 }
