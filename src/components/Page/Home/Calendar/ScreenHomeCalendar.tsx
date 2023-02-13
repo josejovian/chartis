@@ -154,7 +154,6 @@ export function LayoutCalendar({
 				>
 					Today
 				</Button>
-				<Button>Month</Button>
 				{renderFilterMenu}
 			</div>
 		);

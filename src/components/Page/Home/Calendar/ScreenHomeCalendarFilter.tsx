@@ -50,7 +50,14 @@ export function ScreenHomeCalendarFilter({
 	);
 
 	return (
-		<Dropdown text="Filter" floating icon button>
+		<Dropdown
+			text="Filter"
+			icon="filter"
+			className="icon"
+			labeled
+			floating
+			button
+		>
 			<Dropdown.Menu>
 				<Dropdown.Menu scrolling>
 					<Dropdown.Item

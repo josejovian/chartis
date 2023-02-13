@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LayoutSidebar, LayoutCalendar } from "@/components";
 import { EVENT_DUMMY_1, EVENT_TAGS } from "@/consts";
 import { EventType } from "@/types";
@@ -23,10 +23,15 @@ export default function Home() {
 		[atLeastOneFilter, events, filters]
 	);
 
+	const randomEventsId = useRef<Record<string, boolean>>({});
+
 	const handlePopulateRandomEvents = useCallback(() => {
 		let temp: EventType[] = [];
 		for (let i = 0; i < 50; i++) {
-			const seed = Math.floor(Math.random() * 100000 * i) % 5000;
+			let seed = Math.floor(Math.random() * 100000 * i) % 5000;
+			while (randomEventsId.current[seed]) {
+				seed = Math.floor(Math.random() * 100000 * i) % 5000;
+			}
 			const today = new Date();
 			today.setDate(seed % 27);
 			today.setHours(seed % 24);
@@ -43,7 +48,7 @@ export default function Home() {
 			newEvent.tags = [seed % 4];
 			temp = [...temp, newEvent];
 		}
-		console.log(temp);
+
 		temp = temp.sort((a, b) => a.startDate - b.startDate);
 		setEvents(temp);
 	}, []);
@@ -56,8 +61,6 @@ export default function Home() {
 			),
 		[events]
 	);
-
-	console.log(visibleFilters);
 
 	const renderCalendar = useMemo(
 		() => (

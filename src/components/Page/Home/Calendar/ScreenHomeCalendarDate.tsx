@@ -6,9 +6,9 @@ import { CalendarDateType } from "@/types";
 const CALENDAR_CELL_BASE_STYLE = clsx(
 	"px-3 py-3",
 	"border-2 border-white align-top",
-	"cursor-pointer transition-colors		"
+	"cursor-pointer transition-colors"
 );
-const CALENDAR_CELL_FOCUS = "bg-amber-400 rounded-full font-bold !text-black";
+const CALENDAR_CELL_FOCUS = "!bg-amber-400 rounded-full font-bold !text-black";
 
 const CALENDAR_CELL_CURRENT_MONTH_STYLE = "bg-gray-100 hover:bg-white";
 const CALENDAR_CELL_DIFFERENT_MONTH_STYLE = "bg-white hover:bg-gray-100";

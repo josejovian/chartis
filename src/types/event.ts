@@ -9,6 +9,8 @@ export interface EventType {
 	src?: string;
 	startDate: number;
 	endDate?: number;
+	followerIds?: string[];
+	guestFollowerCount?: number;
 	tags: number[];
 }
 
