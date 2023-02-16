@@ -1,8 +1,34 @@
-import clsx from "clsx";
 import { useMemo } from "react";
-import { LayoutNavbarItem, LayoutNavbarItemProps } from "./LayoutNavbarItem";
+import { Icon } from "semantic-ui-react";
+import clsx from "clsx";
+import { useScreen } from "@/hooks";
+import { ResponsiveInlineStyleType, StateObject } from "@/types";
+import { LayoutNavbarItem, LayoutNavbarItemProps } from "@/components";
 
-export function LayoutNavbar() {
+export interface LayoutNavbarProps {
+  stateNavBar: StateObject<boolean>;
+}
+
+const NAVBAR_WIDTH_MAX_INLINE_STYLE = {
+  width: "300px",
+  minWidth: "300px",
+};
+
+const NAVBAR_WIDTH_MIN_INLINE_STYLE = {
+  width: "64px",
+  minWidth: "64px",
+};
+
+const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
+  desktop_lg: NAVBAR_WIDTH_MAX_INLINE_STYLE,
+  desktop_sm: NAVBAR_WIDTH_MIN_INLINE_STYLE,
+  mobile: { display: "none" },
+};
+
+export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
+  const [navBar, setNavBar] = stateNavBar;
+  const type = useScreen().type;
+
   const links = useMemo<Record<string, LayoutNavbarItemProps[]>>(
     () => ({
       "": [
@@ -44,16 +70,49 @@ export function LayoutNavbar() {
     []
   );
 
-  const renderLogo = useMemo(
-    () => (
-      <div className="p-4 flex items-center font-bold">
-        <div className="w-8 h-8 rounded-md bg-amber-500" />
-        <div className="ml-4" style={{ fontSize: "16px" }}>
-          CHARTIS
+  const renderNavBarToggle = useMemo(
+    () =>
+      type !== "desktop_lg" && (
+        <div
+          className={clsx(
+            "!w-8 !h-8 flex justify-center !m-0",
+            "rounded-md bg-slate-700 hover:bg-slate-600"
+          )}
+          style={{
+            paddingTop: "0.35rem",
+            paddingLeft: "0.15rem",
+          }}
+          onClick={() => {
+            setNavBar((prev) => !prev);
+          }}
+        >
+          <Icon
+            className="!m-0"
+            name={`chevron ${navBar ? "left" : "right"}`}
+          />
         </div>
+      ),
+    [navBar, setNavBar, type]
+  );
+
+  const renderLogo = useMemo(
+    () => <div className="w-8 h-8 rounded-md bg-amber-500" />,
+    []
+  );
+
+  const renderHead = useMemo(
+    () => (
+      <div className="p-4 flex items-center justify-between font-bold">
+        <div className="flex items-center">
+          {renderLogo}
+          <div className="ml-4" style={{ fontSize: "16px" }}>
+            CHARTIS
+          </div>
+        </div>
+        {renderNavBarToggle}
       </div>
     ),
-    []
+    [renderLogo, renderNavBarToggle]
   );
 
   const renderSearch = useMemo(
@@ -99,13 +158,39 @@ export function LayoutNavbar() {
     [links]
   );
 
+  const renderNavBarContent = useMemo(
+    () =>
+      navBar ? (
+        <>
+          {renderHead}
+          {renderSearch}
+          {renderLinks}
+        </>
+      ) : (
+        <div className="p-4">{renderNavBarToggle}</div>
+      ),
+    [navBar, renderHead, renderSearch, renderLinks, renderNavBarToggle]
+  );
+
   return (
     <div
-      className={clsx("LayoutNavbar", "h-screen", "bg-slate-900 text-gray-50")}
+      className="z-30"
+      style={
+        type === "mobile" && navBar
+          ? {
+              width: 0,
+            }
+          : NAVBAR_WRAPPER_RESPONSIVE_STYLE[type]
+      }
     >
-      {renderLogo}
-      {renderSearch}
-      {renderLinks}
+      <div
+        className={clsx("h-screen", "bg-slate-900 text-gray-50")}
+        style={
+          navBar ? NAVBAR_WIDTH_MAX_INLINE_STYLE : NAVBAR_WIDTH_MIN_INLINE_STYLE
+        }
+      >
+        {renderNavBarContent}
+      </div>
     </div>
   );
 }

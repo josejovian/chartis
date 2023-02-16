@@ -1,14 +1,15 @@
 import { CSSProperties, useMemo } from "react";
 import clsx from "clsx";
 import { strMonth } from "@/utils";
-import { CalendarDateType } from "@/types";
+import { CalendarDateType, ScreenSizeCategoryType } from "@/types";
 
 const CALENDAR_CELL_BASE_STYLE = clsx(
   "px-3 py-3",
   "border-2 border-white align-top",
   "cursor-pointer transition-colors"
 );
-const CALENDAR_CELL_FOCUS = "!bg-amber-400 rounded-full font-bold !text-black";
+const CALENDAR_CELL_FOCUS_STYLE =
+  "!bg-amber-400 rounded-full font-bold !text-black";
 
 const CALENDAR_CELL_CURRENT_MONTH_STYLE = "bg-gray-100 hover:bg-white";
 const CALENDAR_CELL_DIFFERENT_MONTH_STYLE = "bg-white hover:bg-gray-100";
@@ -29,6 +30,7 @@ const CALENDAR_CELL_DATE_DIFFERENT_MONTH_STYLE = clsx(
   CALENDAR_CELL_DATE_STYLE,
   "text-secondary-4"
 );
+const CALENDAR_CELL_CAPTION_STYLE = "text-right italic";
 
 const CALENDAR_CELL_DENSITY_COLORS = [
   "bg-emerald-100 hover:bg-gray-50",
@@ -52,12 +54,14 @@ const CALENDAR_CELL_DATE_DENSITY_COLORS = [
 export interface ScreenHomeCalendarDateProps {
   calendarDate?: CalendarDateType;
   countData: number[];
+  type: ScreenSizeCategoryType;
   onClick: () => void;
 }
 
 export function ScreenHomeCalendarDate({
   calendarDate,
   countData,
+  type,
   onClick,
 }: ScreenHomeCalendarDateProps) {
   const month = calendarDate && calendarDate.date.getMonth();
@@ -91,14 +95,16 @@ export function ScreenHomeCalendarDate({
               {date}
             </span>
           </div>
-          <span
-            className={clsx(
-              CALENDAR_CELL_DATE_DIFFERENT_MONTH_STYLE,
-              date && date >= 10 && "ml-1"
-            )}
-          >
-            {month !== undefined && strMonth(month, 3)}
-          </span>
+          {type !== "mobile" && (
+            <span
+              className={clsx(
+                CALENDAR_CELL_DATE_DIFFERENT_MONTH_STYLE,
+                date && date >= 10 && "ml-1"
+              )}
+            >
+              {month !== undefined && strMonth(month, 3)}
+            </span>
+          )}
         </div>
       );
 
@@ -107,7 +113,7 @@ export function ScreenHomeCalendarDate({
         className={clsx(
           "flex justify-items-center",
           CALENDAR_CELL_DATE_CURRENT_MONTH_WRAPPER_STYLE,
-          focus && CALENDAR_CELL_FOCUS
+          focus && CALENDAR_CELL_FOCUS_STYLE
         )}
       >
         <span
@@ -121,33 +127,63 @@ export function ScreenHomeCalendarDate({
         </span>
       </div>
     );
-  }, [calendarDate, date, density, focus, month]);
+  }, [calendarDate, date, density, focus, month, type]);
 
-  return (
-    <td
-      className={clsx(
-        CALENDAR_CELL_BASE_STYLE,
-        count > 0
-          ? CALENDAR_CELL_DENSITY_COLORS[density]
-          : differentMonth
-          ? CALENDAR_CELL_DIFFERENT_MONTH_STYLE
-          : CALENDAR_CELL_CURRENT_MONTH_STYLE
-      )}
-      onClick={onClick}
-    >
-      <div className="flex flex-col justify-between h-full">
-        {renderDate}
-        <span
-          className={clsx(
-            CALENDAR_CELL_CAPTION_DENSITY_COLORS[density],
-            "text-right italic",
-            (events === undefined || count === 0) && "invisible"
-          )}
-        >
-          {count} event
-          {count > 1 && "s"}
-        </span>
-      </div>
-    </td>
+  const renderDesktopCell = useMemo(
+    () => (
+      <td
+        className={clsx(
+          CALENDAR_CELL_BASE_STYLE,
+          count > 0
+            ? CALENDAR_CELL_DENSITY_COLORS[density]
+            : differentMonth
+            ? CALENDAR_CELL_DIFFERENT_MONTH_STYLE
+            : CALENDAR_CELL_CURRENT_MONTH_STYLE
+        )}
+        onClick={onClick}
+      >
+        <div className="flex flex-col justify-between h-full">
+          {renderDate}
+          <span
+            className={clsx(
+              CALENDAR_CELL_CAPTION_STYLE,
+              CALENDAR_CELL_CAPTION_DENSITY_COLORS[density],
+              (events === undefined || count === 0) && "invisible"
+            )}
+          >
+            {count} event
+            {count > 1 && "s"}
+          </span>
+        </div>
+      </td>
+    ),
+    [count, density, differentMonth, events, onClick, renderDate]
   );
+
+  const renderMobileCell = useMemo(
+    () => (
+      <td
+        className={clsx(
+          CALENDAR_CELL_BASE_STYLE,
+          type === "mobile" && "!p-2",
+          count > 0
+            ? CALENDAR_CELL_DENSITY_COLORS[density]
+            : differentMonth
+            ? CALENDAR_CELL_DIFFERENT_MONTH_STYLE
+            : CALENDAR_CELL_CURRENT_MONTH_STYLE
+        )}
+        onClick={onClick}
+      >
+        <div className="flex flex-col items-center h-full">{renderDate}</div>
+      </td>
+    ),
+    [count, density, differentMonth, onClick, renderDate, type]
+  );
+
+  const renderCell = useMemo(
+    () => (type === "mobile" ? renderMobileCell : renderDesktopCell),
+    [renderDesktopCell, renderMobileCell, type]
+  );
+
+  return <>{renderCell}</>;
 }

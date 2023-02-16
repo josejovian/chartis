@@ -5,12 +5,8 @@ import { ScreenHomeCalendarDate, ScreenHomeCalendarFilter } from "@/components";
 import { CalendarDateType, EventType, StateObject } from "@/types";
 import { strDay, strMonth } from "@/utils";
 import { DAYS } from "@/consts";
+import { useScreen } from "@/hooks";
 
-const CALENDAR_TABLE_HEADER_CELL_STYLE = clsx(
-  "px-3 py-3 border-2 border-white bg-white",
-  "text-16px !text-left uppercase"
-);
-const CALENDAR_LEGEND_MARKER_BASE_STYLE = "w-8 h-8 rounded-lg";
 const CALENDAR_LEGEND_MARKER_STYLE = [
   "bg-emerald-100",
   "bg-emerald-300",
@@ -22,18 +18,22 @@ export interface LayoutCalendarProps {
   stateFocusDate: StateObject<Date>;
   stateFilters: StateObject<Record<number, boolean>>;
   visibleFilters: Record<number, boolean>;
+  stateSideBar: StateObject<boolean>;
   events: EventType[];
 }
 
 export function LayoutCalendar({
   stateFocusDate,
   stateFilters,
+  stateSideBar,
   visibleFilters,
   events,
 }: LayoutCalendarProps) {
+  const sideBar = stateSideBar[0];
   const [focusDate, setFocusDate] = stateFocusDate;
   const [calendar, setCalendar] = useState<CalendarDateType[]>();
   const [countData, setCountData] = useState<number[]>([]);
+  const { type } = useScreen();
 
   const handleChangeTime = useCallback(
     (direction: number) => {
@@ -109,29 +109,48 @@ export function LayoutCalendar({
 
   const renderMonthControls = useMemo(
     () => (
-      <div className="flex gap-4">
-        <Button basic circular icon onClick={() => handleChangeTime(-1)}>
+      <div className="flex items-center gap-4">
+        <Button
+          basic
+          circular
+          icon
+          onClick={() => handleChangeTime(-1)}
+          size={type === "mobile" ? "tiny" : undefined}
+        >
           <Icon name="chevron left" />
         </Button>
-        <h1 className="text-secondary-7 w-40 text-center">
+        <h1
+          className={clsx(
+            "text-secondary-7 w-40 text-center",
+            type === "mobile" && "!w-20 !text-lg"
+          )}
+        >
           {strMonth(focusDate.getMonth(), 3)} {focusDate.getFullYear()}
         </h1>
-        <Button basic circular icon onClick={() => handleChangeTime(1)}>
+        <Button
+          basic
+          circular
+          icon
+          onClick={() => handleChangeTime(1)}
+          size={type === "mobile" ? "tiny" : undefined}
+        >
           <Icon name="chevron right" />
         </Button>
       </div>
     ),
-    [focusDate, handleChangeTime]
+    [focusDate, handleChangeTime, type]
   );
 
   const renderFilterMenu = useMemo(
-    () => (
-      <ScreenHomeCalendarFilter
-        stateFilters={stateFilters}
-        visibleFilters={visibleFilters}
-      />
-    ),
-    [stateFilters, visibleFilters]
+    () =>
+      type !== "mobile" && (
+        <ScreenHomeCalendarFilter
+          stateFilters={stateFilters}
+          visibleFilters={visibleFilters}
+          asButton
+        />
+      ),
+    [stateFilters, type, visibleFilters]
   );
 
   const renderMenu = useMemo(() => {
@@ -145,13 +164,14 @@ export function LayoutCalendar({
             today.getDate() === focusDate.getDate() &&
             today.getMonth() === focusDate.getMonth()
           }
+          size={type === "mobile" ? "tiny" : undefined}
         >
           Today
         </Button>
         {renderFilterMenu}
       </div>
     );
-  }, [focusDate, handleChangeToToday, renderFilterMenu]);
+  }, [focusDate, handleChangeToToday, renderFilterMenu, type]);
 
   const renderHead = useMemo(
     () => (
@@ -163,46 +183,11 @@ export function LayoutCalendar({
     [renderMenu, renderMonthControls]
   );
 
-  const renderCalendar = useMemo(
-    () => (
-      <table className="w-full h-full table-fixed">
-        <thead>
-          <tr className="h-12">
-            {DAYS.map((day, idx) => (
-              <th className={CALENDAR_TABLE_HEADER_CELL_STYLE} key={day}>
-                {strDay(idx, 3)}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Array(6)
-            .fill(0)
-            .map((_, idx) => (
-              <tr key={`Calendar_${idx}`}>
-                {DAYS.map((_, idx2) => (
-                  <ScreenHomeCalendarDate
-                    key={`Calendar_${idx}_${idx2}`}
-                    calendarDate={calendar && calendar[7 * idx + idx2]}
-                    countData={countData}
-                    onClick={() => {
-                      if (calendar) setFocusDate(calendar[7 * idx + idx2].date);
-                    }}
-                  />
-                ))}
-              </tr>
-            ))}
-        </tbody>
-      </table>
-    ),
-    [calendar, countData, setFocusDate]
-  );
-
   const renderLegend = useMemo(
     () => (
       <div
         className={clsx(
-          "absolute bottom-8 right-24",
+          "place-self-end",
           "flex items-center justify-center gap-2"
         )}
       >
@@ -210,13 +195,63 @@ export function LayoutCalendar({
         {CALENDAR_LEGEND_MARKER_STYLE.map((MARKER_STYLE, idx) => (
           <div
             key={`Legend_${idx}`}
-            className={clsx(CALENDAR_LEGEND_MARKER_BASE_STYLE, MARKER_STYLE)}
+            className={clsx(
+              type === "mobile" ? "w-4 h-4 rounded-sm" : "w-8 h-8 rounded-lg",
+              MARKER_STYLE
+            )}
           />
         ))}
         <span>More</span>
       </div>
     ),
-    []
+    [type]
+  );
+
+  const renderCalendar = useMemo(
+    () => (
+      <div className="flex flex-col flex-auto gap-4">
+        <table className="w-full h-full table-fixed">
+          <thead>
+            <tr className={clsx(type !== "mobile" && "h-12")}>
+              {DAYS.map((day, idx) => (
+                <th
+                  className={clsx(
+                    "px-3 py-3 border-2 border-white bg-white",
+                    "text-16px !text-left uppercase",
+                    type === "mobile" && "!text-center !py-2"
+                  )}
+                  key={day}
+                >
+                  {strDay(idx, type === "mobile" ? 1 : 3)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array(6)
+              .fill(0)
+              .map((_, idx) => (
+                <tr key={`Calendar_${idx}`}>
+                  {DAYS.map((_, idx2) => (
+                    <ScreenHomeCalendarDate
+                      key={`Calendar_${idx}_${idx2}`}
+                      calendarDate={calendar && calendar[7 * idx + idx2]}
+                      countData={countData}
+                      type={type}
+                      onClick={() => {
+                        if (calendar)
+                          setFocusDate(calendar[7 * idx + idx2].date);
+                      }}
+                    />
+                  ))}
+                </tr>
+              ))}
+          </tbody>
+        </table>
+        {renderLegend}
+      </div>
+    ),
+    [calendar, countData, renderLegend, setFocusDate, type]
   );
 
   useEffect(() => {
@@ -224,10 +259,19 @@ export function LayoutCalendar({
   }, [handleBuildCalendar]);
 
   return (
-    <div className="relative flex flex-col w-full p-20 gap-16">
-      {renderHead}
-      {renderCalendar}
-      {renderLegend}
+    <div className={clsx("relative flex flex-col w-full p-8")}>
+      <div
+        className={clsx(
+          "relative flex flex-col h-full",
+          type === "mobile" ? "gap-8" : "gap-16"
+        )}
+        style={{
+          height: sideBar ? "8rem" : undefined,
+        }}
+      >
+        {renderHead}
+        {renderCalendar}
+      </div>
     </div>
   );
 }

@@ -1,18 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LayoutSidebar, LayoutCalendar } from "@/components";
+import clsx from "clsx";
+import {
+  LayoutSidebar,
+  LayoutCalendar,
+  LayoutTemplate,
+  ScreenHomeCalendarFilter,
+} from "@/components";
+import { useScreen, useNavBar } from "@/hooks";
+import { filterEventsFromTags } from "@/utils";
 import { EVENT_DUMMY_1, EVENT_TAGS } from "@/consts";
 import { EventType } from "@/types";
-import { filterEventsFromTags } from "@/utils";
 
 export default function Home() {
   const stateFocusDate = useState(new Date());
+  const stateSideBar = useState(false);
+  const stateNavBar = useNavBar();
   const focusDate = stateFocusDate[0];
 
   const [events, setEvents] = useState<EventType[]>([]);
   const stateFilters = useState<Record<number, boolean>>(
-    EVENT_TAGS.map((_, idx) => false)
+    EVENT_TAGS.map((_) => false)
   );
   const filters = stateFilters[0];
+  const { type } = useScreen();
+
   const atLeastOneFilter = useMemo(
     () => Object.values(stateFilters[0]).some((f) => f),
     [stateFilters]
@@ -65,11 +76,18 @@ export default function Home() {
       <LayoutCalendar
         stateFocusDate={stateFocusDate}
         stateFilters={stateFilters}
+        stateSideBar={stateSideBar}
         visibleFilters={visibleFilters}
         events={displayedEvents}
       />
     ),
-    [displayedEvents, stateFilters, stateFocusDate, visibleFilters]
+    [
+      displayedEvents,
+      stateFilters,
+      stateFocusDate,
+      stateSideBar,
+      visibleFilters,
+    ]
   );
 
   const renderSidebar = useMemo(
@@ -83,9 +101,10 @@ export default function Home() {
             date.getMonth() === focusDate.getMonth()
           );
         })}
+        stateSideBar={stateSideBar}
       />
     ),
-    [displayedEvents, focusDate]
+    [displayedEvents, focusDate, stateSideBar]
   );
 
   useEffect(() => {
@@ -93,9 +112,38 @@ export default function Home() {
   }, [handlePopulateRandomEvents]);
 
   return (
-    <div className="flex flex-auto">
-      {renderCalendar}
-      {renderSidebar}
-    </div>
+    <LayoutTemplate
+      stateNavBar={stateNavBar}
+      title="Home"
+      type={type}
+      rightButton={
+        <ScreenHomeCalendarFilter
+          stateFilters={stateFilters}
+          visibleFilters={visibleFilters}
+        />
+      }
+    >
+      <div
+        className={clsx(
+          "flex flex-auto",
+          type === "mobile" && "flex-col-reverse overflow-hidden"
+        )}
+        style={{
+          height: "calc(100vh - 64px)",
+        }}
+      >
+        {type === "mobile" ? (
+          <>
+            {renderSidebar}
+            {renderCalendar}
+          </>
+        ) : (
+          <>
+            {renderCalendar}
+            {renderSidebar}
+          </>
+        )}
+      </div>
+    </LayoutTemplate>
   );
 }

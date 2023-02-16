@@ -3,17 +3,21 @@ import { Dropdown, Icon, Label } from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_TAGS } from "@/consts";
 import { StateObject } from "@/types";
+import { useScreen } from "@/hooks";
 
 export interface LayoutCalendarFilterProps {
   stateFilters: StateObject<Record<number, boolean>>;
   visibleFilters: Record<number, boolean>;
+  asButton?: boolean;
 }
 
 export function ScreenHomeCalendarFilter({
   stateFilters,
   visibleFilters,
+  asButton,
 }: LayoutCalendarFilterProps) {
   const [filters, setFilters] = stateFilters;
+  const { type } = useScreen();
 
   const renderDropdownItems = useMemo(
     () =>
@@ -49,28 +53,36 @@ export function ScreenHomeCalendarFilter({
     [filters, setFilters, visibleFilters]
   );
 
+  const renderClearFilter = useMemo(
+    () => (
+      <Dropdown.Item
+        key="_all"
+        value="_all"
+        disabled={Object.values(filters).filter((x) => x).length === 0}
+        onClick={() => {
+          setFilters(EVENT_TAGS.map((_) => false));
+        }}
+      >
+        <Icon name="close" />
+        <span>Clear Filter</span>
+      </Dropdown.Item>
+    ),
+    [filters, setFilters]
+  );
+
   return (
     <Dropdown
-      text="Filter"
+      text={type !== "mobile" ? "Filter" : undefined}
       icon="filter"
-      className="icon"
-      labeled
+      className="icon z-10"
+      labeled={type !== "mobile"}
+      direction="left"
       floating
-      button
+      button={asButton}
     >
       <Dropdown.Menu>
         <Dropdown.Menu scrolling>
-          <Dropdown.Item
-            key="_all"
-            value="_all"
-            disabled={Object.values(filters).filter((x) => x).length === 0}
-            onClick={() => {
-              setFilters(EVENT_TAGS.map((_) => false));
-            }}
-          >
-            <Icon name="close" />
-            <span>Clear Filter</span>
-          </Dropdown.Item>
+          {renderClearFilter}
           {renderDropdownItems}
         </Dropdown.Menu>
       </Dropdown.Menu>
