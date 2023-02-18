@@ -7,11 +7,16 @@ import { EVENT_TAGS } from "@/consts/event";
 import { strDateTime } from "@/utils";
 
 export interface EventCardProps {
+  className?: string;
   event: EventType;
   type?: EventCardDisplayType;
 }
 
-export function EventCard({ event, type = "vertical" }: EventCardProps) {
+export function EventCard({
+  className,
+  event,
+  type = "vertical",
+}: EventCardProps) {
   const {
     id,
     authorId,
@@ -188,6 +193,7 @@ export function EventCard({ event, type = "vertical" }: EventCardProps) {
 
   return (
     <div
+      className={className}
       style={{
         width: type === "horizontal" ? "75%" : "100%",
         height: type === "horizontal" ? "120px" : undefined,

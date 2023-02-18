@@ -37,7 +37,7 @@ export default function Home() {
 
   const handlePopulateRandomEvents = useCallback(() => {
     let temp: EventType[] = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 100; i++) {
       let seed = Math.floor(Math.random() * 100000 * i) % 5000;
       while (randomEventsId.current[seed]) {
         seed = Math.floor(Math.random() * 100000 * i) % 5000;

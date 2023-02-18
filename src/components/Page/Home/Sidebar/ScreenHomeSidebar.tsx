@@ -1,15 +1,15 @@
 import { useMemo } from "react";
+import { Icon } from "semantic-ui-react";
+import Image from "next/image";
+import clsx from "clsx";
 import { EventCard } from "@/components";
 import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
 import { strDate } from "@/utils";
 import { useScreen } from "@/hooks";
-import clsx from "clsx";
-import { Icon } from "semantic-ui-react";
-import Image from "next/image";
 
 const SIDEBAR_WRAPPER_STYLE = clsx(
   "flex flex-col p-8",
-  "bg-slate-100 overflow-x-hidden z-10 transition-all"
+  "bg-slate-100 overflow-x-hidden overflow-y-scroll z-10 transition-all"
 );
 
 const SIDEBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
@@ -90,7 +90,10 @@ export function LayoutSidebar({
 
   const renderEmpty = useMemo(
     () => (
-      <div className="flex flex-col items-center justify-center h-full">
+      <div
+        style={{ width: "75%" }}
+        className="flex flex-col items-center justify-center mx-auto"
+      >
         <Image
           src="/no-events.png"
           width="290"
@@ -118,7 +121,7 @@ export function LayoutSidebar({
       className={SIDEBAR_WRAPPER_STYLE}
       style={SIDEBAR_WRAPPER_RESPONSIVE_STYLE[type]}
     >
-      <div className={clsx(type === "mobile" ? "h-full" : "h-screen")}>
+      <div>
         {renderTitle}
         {renderSideBarContents}
       </div>
