@@ -7,25 +7,6 @@ import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
 import { strDate } from "@/utils";
 import { useScreen } from "@/hooks";
 
-const SIDEBAR_WRAPPER_STYLE = clsx(
-  "flex flex-col p-8",
-  "bg-slate-100 overflow-x-hidden overflow-y-scroll z-10 transition-all"
-);
-
-const SIDEBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
-  desktop_lg: {
-    height: "100vh",
-    minWidth: "504px",
-  },
-  desktop_sm: {
-    height: "100vh",
-    minWidth: "400px",
-  },
-  mobile: {
-    height: "100%",
-  },
-};
-
 export interface LayoutSidebarProps {
   focusDate: Date;
   events: EventType[];
@@ -118,8 +99,14 @@ export function LayoutSidebar({
 
   return (
     <div
-      className={SIDEBAR_WRAPPER_STYLE}
-      style={SIDEBAR_WRAPPER_RESPONSIVE_STYLE[type]}
+      className={clsx(
+        SIDEBAR_WRAPPER_STYLE,
+        sideBar ? ["fixed left-0 bottom-0"] : [type === "mobile" && "h-full"]
+      )}
+      style={{
+        ...SIDEBAR_WRAPPER_RESPONSIVE_STYLE[type],
+        height: sideBar ? "calc(100vh - 64px)" : undefined,
+      }}
     >
       <div>
         {renderTitle}
@@ -128,3 +115,23 @@ export function LayoutSidebar({
     </div>
   );
 }
+
+const SIDEBAR_WRAPPER_STYLE = clsx(
+  "flex flex-col p-8",
+  "bg-slate-100 overflow-x-hidden overflow-y-scroll z-10"
+);
+
+const SIDEBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
+  desktop_lg: {
+    height: "100vh",
+    minWidth: "504px",
+  },
+  desktop_sm: {
+    height: "100vh",
+    minWidth: "400px",
+  },
+  mobile: {
+    width: "100vw",
+    height: "100%",
+  },
+};

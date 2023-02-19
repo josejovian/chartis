@@ -72,7 +72,6 @@ export function ScreenHomeCalendarFilter({
 
   return (
     <Dropdown
-      text={type !== "mobile" ? "Filter" : undefined}
       icon="filter"
       className="icon z-10"
       labeled={type !== "mobile"}
