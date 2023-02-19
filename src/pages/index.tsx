@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import clsx from "clsx";
 import {
   LayoutSidebar,
   LayoutCalendar,
@@ -75,19 +74,10 @@ export default function Home() {
     () => (
       <LayoutCalendar
         stateFocusDate={stateFocusDate}
-        stateFilters={stateFilters}
-        stateSideBar={stateSideBar}
-        visibleFilters={visibleFilters}
         events={displayedEvents}
       />
     ),
-    [
-      displayedEvents,
-      stateFilters,
-      stateFocusDate,
-      stateSideBar,
-      visibleFilters,
-    ]
+    [displayedEvents, stateFocusDate]
   );
 
   const renderSidebar = useMemo(
@@ -122,28 +112,9 @@ export default function Home() {
           visibleFilters={visibleFilters}
         />
       }
+      side={renderSidebar}
     >
-      <div
-        className={clsx(
-          "flex flex-auto",
-          type === "mobile" && "flex-col-reverse overflow-hidden"
-        )}
-        style={{
-          height: "calc(100vh - 64px)",
-        }}
-      >
-        {type === "mobile" ? (
-          <>
-            {renderSidebar}
-            {renderCalendar}
-          </>
-        ) : (
-          <>
-            {renderCalendar}
-            {renderSidebar}
-          </>
-        )}
-      </div>
+      {renderCalendar}
     </LayoutTemplate>
   );
 }
