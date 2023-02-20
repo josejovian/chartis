@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  LayoutSidebar,
+  PageHomeSideBar,
   LayoutCalendar,
   LayoutTemplate,
-  ScreenHomeCalendarFilter,
+  PageHomeCalendarFilter,
 } from "@/components";
-import { useScreen, useNavBar } from "@/hooks";
 import { filterEventsFromTags } from "@/utils";
 import { EVENT_DUMMY_1, EVENT_TAGS } from "@/consts";
 import { EventType } from "@/types";
@@ -13,7 +12,6 @@ import { EventType } from "@/types";
 export default function Home() {
   const stateFocusDate = useState(new Date());
   const stateSideBar = useState(false);
-  const stateNavBar = useNavBar();
   const focusDate = stateFocusDate[0];
 
   const [events, setEvents] = useState<EventType[]>([]);
@@ -21,7 +19,6 @@ export default function Home() {
     EVENT_TAGS.map((_) => false)
   );
   const filters = stateFilters[0];
-  const { type } = useScreen();
 
   const atLeastOneFilter = useMemo(
     () => Object.values(stateFilters[0]).some((f) => f),
@@ -82,7 +79,7 @@ export default function Home() {
 
   const renderSidebar = useMemo(
     () => (
-      <LayoutSidebar
+      <PageHomeSideBar
         focusDate={focusDate}
         events={displayedEvents.filter((event) => {
           const date = new Date(event.startDate);
@@ -103,16 +100,15 @@ export default function Home() {
 
   return (
     <LayoutTemplate
-      stateNavBar={stateNavBar}
       title="Home"
-      type={type}
       rightButton={
-        <ScreenHomeCalendarFilter
+        <PageHomeCalendarFilter
           stateFilters={stateFilters}
           visibleFilters={visibleFilters}
         />
       }
       side={renderSidebar}
+      classNameMain="!bg-white"
     >
       {renderCalendar}
     </LayoutTemplate>

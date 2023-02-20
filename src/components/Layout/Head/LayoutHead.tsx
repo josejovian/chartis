@@ -53,8 +53,11 @@ export function LayoutHead({
         type === "mobile"
           ? LAYOUT_HEAD_MOBILE_STYLE
           : LAYOUT_HEAD_DESKTOP_STYLE,
-        type === "desktop_sm" && "px-8"
+        type === "desktop_sm" && "!px-8"
       )}
+      style={{
+        minHeight: "48px",
+      }}
     >
       {renderLeft}
       {renderTitle}
@@ -63,7 +66,9 @@ export function LayoutHead({
   );
 }
 
-const LAYOUT_HEAD_BASE_STYLE = clsx("flex items-center justify-between");
+const LAYOUT_HEAD_BASE_STYLE = clsx(
+  "flex items-center justify-between bg-white"
+);
 
 const LAYOUT_HEAD_MOBILE_STYLE = clsx(
   LAYOUT_HEAD_BASE_STYLE,

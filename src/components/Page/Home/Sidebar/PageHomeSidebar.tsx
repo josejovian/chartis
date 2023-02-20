@@ -7,17 +7,17 @@ import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
 import { strDate } from "@/utils";
 import { useScreen } from "@/hooks";
 
-export interface LayoutSidebarProps {
+export interface PageHomeSideBarProps {
   focusDate: Date;
   events: EventType[];
   stateSideBar: StateObject<boolean>;
 }
 
-export function LayoutSidebar({
+export function PageHomeSideBar({
   focusDate,
   events,
   stateSideBar,
-}: LayoutSidebarProps) {
+}: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
 

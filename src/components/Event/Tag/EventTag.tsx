@@ -1,13 +1,13 @@
-import { Label } from "semantic-ui-react";
+import { Label, SemanticSIZES } from "semantic-ui-react";
 import { EventTagType } from "@/types";
 
-export function EventTag({ name, color }: EventTagType) {
+export interface EventTagProps extends EventTagType {
+  size?: SemanticSIZES;
+}
+
+export function EventTag({ name, color, size = "small" }: EventTagProps) {
   return (
-    <Label
-      size="small"
-      color={color}
-      className="text-12px font-bold !uppercase"
-    >
+    <Label size={size} color={color} className="text-12px font-bold !uppercase">
       {name}
     </Label>
   );

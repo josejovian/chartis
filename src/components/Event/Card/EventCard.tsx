@@ -1,10 +1,11 @@
 import clsx from "clsx";
-import { useCallback, useMemo, useState } from "react";
-import { Button, Card, Icon, Label } from "semantic-ui-react";
+import { useMemo } from "react";
+import { Button, Card, Icon } from "semantic-ui-react";
 import { EventTag, EventCardDetail, EventThumbnail } from "@/components";
-import { EventCardDisplayType, EventExtraDetailType, EventType } from "@/types";
+import { EventCardDisplayType, EventDetailType, EventType } from "@/types";
 import { EVENT_TAGS } from "@/consts/event";
 import { strDateTime } from "@/utils";
+import { EventButtonFollow } from "../Button";
 
 export interface EventCardProps {
   className?: string;
@@ -17,21 +18,7 @@ export function EventCard({
   event,
   type = "vertical",
 }: EventCardProps) {
-  const {
-    id,
-    authorId,
-    description,
-    name,
-    organizer,
-    tags,
-    src,
-    followerIds = [],
-    guestFollowerCount,
-  } = event;
-
-  const [followCount, setFollowCount] = useState(
-    followerIds.length + (guestFollowerCount ?? 0)
-  );
+  const { id, name, description, authorId, organizer, src, tags } = event;
 
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
@@ -40,7 +27,7 @@ export function EventCard({
   );
 
   const details = useMemo(() => {
-    const array: EventExtraDetailType[] = [
+    const array: EventDetailType[] = [
       {
         icon: "calendar",
         name: "Start Date",
@@ -57,21 +44,6 @@ export function EventCard({
 
     return array;
   }, [endDate, startDate]);
-
-  const handleFollowEvent = useCallback(async () => {
-    const follow = JSON.parse(localStorage.getItem("follow") ?? "{}") as Record<
-      string,
-      boolean
-    >;
-    setFollowCount((prev) => prev + 1 * (follow[id] ? -1 : 1));
-    localStorage.setItem(
-      "follow",
-      JSON.stringify({
-        ...follow,
-        [id]: !follow[id],
-      })
-    );
-  }, [id]);
 
   const renderEventExtraDetails = useMemo(
     () => (
@@ -120,7 +92,7 @@ export function EventCard({
   const renderEventTitle = useMemo(
     () => (
       <div className="inline-block leading-7">
-        <h2 className="inline text-18px pr-1">{name}</h2>
+        <h2 className="inline text-18px pr-1 hover:underline">{name}</h2>
         {renderEventTags}
       </div>
     ),
@@ -134,22 +106,19 @@ export function EventCard({
 
   const renderEventActions = useMemo(
     () => (
-      <div className={clsx("flex gap-2", type === "vertical" && "mt-2")}>
-        <Button as="div" labelPosition="right">
-          <Button onClick={handleFollowEvent}>
-            <Icon name="calendar plus" />
-            Follow
-          </Button>
-          <Label as="a" basic>
-            {followCount}
-          </Label>
-        </Button>
+      <div
+        className={clsx("flex gap-2 z-10", type === "vertical" && "mt-2")}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <EventButtonFollow event={event} />
         <Button icon>
           <Icon name="ellipsis vertical" />
         </Button>
       </div>
     ),
-    [followCount, handleFollowEvent, type]
+    [event, type]
   );
 
   const renderCardContents = useMemo(
@@ -181,13 +150,13 @@ export function EventCard({
         </Card>
       ),
     [
-      renderEventActions,
-      renderEventCreators,
-      renderEventDescription,
-      renderEventExtraDetails,
-      renderEventTitle,
       type,
       src,
+      renderEventCreators,
+      renderEventTitle,
+      renderEventDescription,
+      renderEventExtraDetails,
+      renderEventActions,
     ]
   );
 

@@ -22,6 +22,16 @@
   .EventCard {
     min-width: 440px;
   }
+  .EventButtonMore > div {
+    @apply !p-2 !h-8;
+  }
+  .EventButtonMore > div > i {
+    @apply !m-0;
+    margin: 0 !important;
+  }
+  button {
+    @apply !m-0 !h-fit;
+  }
 }
 @tailwind components;
 @layer utilities {
