@@ -3,19 +3,19 @@ import clsx from "clsx";
 import { strMonth } from "@/utils";
 import { CalendarDateType, ScreenSizeCategoryType } from "@/types";
 
-export interface ScreenHomeCalendarDateProps {
+export interface PageHomeCalendarDateProps {
   calendarDate?: CalendarDateType;
   countData: number[];
   type: ScreenSizeCategoryType;
   onClick: () => void;
 }
 
-export function ScreenHomeCalendarDate({
+export function PageHomeCalendarDate({
   calendarDate,
   countData,
   type,
   onClick,
-}: ScreenHomeCalendarDateProps) {
+}: PageHomeCalendarDateProps) {
   const month = calendarDate && calendarDate.date.getMonth();
   const date = calendarDate && calendarDate.date.getDate();
   const focus = calendarDate && calendarDate.focus;

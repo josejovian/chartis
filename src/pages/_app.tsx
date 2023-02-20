@@ -1,15 +1,18 @@
 import type { AppProps } from "next/app";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import "@/styles/globals.css";
 import "semantic-ui-css/semantic.min.css";
 import { Lato } from "@next/font/google";
 import clsx from "clsx";
-import { LayoutNavbar } from "@/components";
-import {
-  NavBarContext,
-  ScreenContext,
-  SCREEN_CONTEXT_DEFAULT,
-} from "@/contexts";
+import { LayoutNavbar, Modal } from "@/components";
+import { SCREEN_CONTEXT_DEFAULT, ContextWrapper } from "@/contexts";
 import { ScreenSizeCategoryType, ScreenSizeType } from "@/types";
 import {
   DESKTOP_SMALL_SCREEN_THRESHOLD,
@@ -21,6 +24,8 @@ const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 export default function App({ Component, pageProps }: AppProps) {
   const stateNavBar = useState(false);
   const [navBar, setNavBar] = stateNavBar;
+  const stateModal = useState<ReactNode>(null);
+  const [modal, setModal] = stateModal;
   const [screen, setScreen] = useState<ScreenSizeType>(SCREEN_CONTEXT_DEFAULT);
   const initialize = useRef(false);
 
@@ -54,7 +59,7 @@ export default function App({ Component, pageProps }: AppProps) {
     }
   }, [screen, setNavBar]);
 
-  const renderShade = useMemo(
+  const renderShadeNavBar = useMemo(
     () => (
       <>
         {screen.type !== "desktop_lg" && navBar && (
@@ -68,6 +73,22 @@ export default function App({ Component, pageProps }: AppProps) {
       </>
     ),
     [navBar, screen.type, setNavBar]
+  );
+
+  const renderShadeModal = useMemo(
+    () =>
+      modal && (
+        <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen z-40">
+          <div
+            className="w-screen h-screen z-40 bg-slate-900 opacity-70"
+            onClick={() => {
+              setModal(false);
+            }}
+          />
+          <Modal content={modal} />
+        </div>
+      ),
+    [modal, setModal]
   );
 
   useEffect(() => {
@@ -85,17 +106,20 @@ export default function App({ Component, pageProps }: AppProps) {
           font-family: ${lato.style.fontFamily};
         }
       `}</style>
-      <NavBarContext.Provider value={stateNavBar}>
-        <ScreenContext.Provider value={screen}>
-          <div id="App" className={clsx("flex flex-row")}>
-            {renderShade}
-            <LayoutNavbar stateNavBar={stateNavBar} />
-            <div className={clsx(screen.type === "mobile" && "mt-16")}>
-              <Component {...pageProps} />
-            </div>
+      <ContextWrapper
+        screen={screen}
+        stateModal={stateModal}
+        stateNavBar={stateNavBar}
+      >
+        <div id="App" className={clsx("flex flex-row w-full")}>
+          {renderShadeNavBar}
+          {renderShadeModal}
+          <LayoutNavbar stateNavBar={stateNavBar} />
+          <div className="flex flex-auto w-full">
+            <Component {...pageProps} />
           </div>
-        </ScreenContext.Provider>
-      </NavBarContext.Provider>
+        </div>
+      </ContextWrapper>
     </>
   );
 }

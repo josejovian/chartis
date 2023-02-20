@@ -1,9 +1,11 @@
+import { ReactNode } from "react";
 import { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
 
 export interface EventType {
   id: string;
   name: string;
   description: string;
+  location?: string;
   authorId: string;
   organizer?: string;
   src?: string;
@@ -14,10 +16,10 @@ export interface EventType {
   tags: number[];
 }
 
-export interface EventExtraDetailType {
+export interface EventDetailType {
   icon: SemanticICONS;
   name: string;
-  value: string;
+  value: ReactNode;
 }
 
 export interface EventTagType {
@@ -31,3 +33,8 @@ export type EventThumbnailDisplayType =
   | "thumbnail-fixed-width"
   | "thumbnail-fixed-height"
   | "banner";
+
+export interface EventModalTabType {
+  name: string;
+  onClick?: () => void;
+}

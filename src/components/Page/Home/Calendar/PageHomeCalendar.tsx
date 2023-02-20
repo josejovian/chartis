@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon } from "semantic-ui-react";
 import clsx from "clsx";
-import { ScreenHomeCalendarDate } from "@/components";
+import { PageHomeCalendarDate } from "@/components";
 import { CalendarDateType, EventType, StateObject } from "@/types";
 import { strDay, strMonth } from "@/utils";
 import { DAYS } from "@/consts";
@@ -206,7 +206,7 @@ export function LayoutCalendar({
               .map((_, idx) => (
                 <tr key={`Calendar_${idx}`}>
                   {DAYS.map((_, idx2) => (
-                    <ScreenHomeCalendarDate
+                    <PageHomeCalendarDate
                       key={`Calendar_${idx}_${idx2}`}
                       calendarDate={calendar && calendar[7 * idx + idx2]}
                       countData={countData}

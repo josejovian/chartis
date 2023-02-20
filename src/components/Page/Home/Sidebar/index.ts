@@ -1,1 +1,1 @@
-export * from "./ScreenHomeSidebar";
+export * from "./PageHomeSidebar";

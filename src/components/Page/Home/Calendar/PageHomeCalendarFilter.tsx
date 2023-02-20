@@ -5,17 +5,17 @@ import { EVENT_TAGS } from "@/consts";
 import { StateObject } from "@/types";
 import { useScreen } from "@/hooks";
 
-export interface LayoutCalendarFilterProps {
+export interface PageHomeCalendarFilterProps {
   stateFilters: StateObject<Record<number, boolean>>;
   visibleFilters: Record<number, boolean>;
   asButton?: boolean;
 }
 
-export function ScreenHomeCalendarFilter({
+export function PageHomeCalendarFilter({
   stateFilters,
   visibleFilters,
   asButton,
-}: LayoutCalendarFilterProps) {
+}: PageHomeCalendarFilterProps) {
   const [filters, setFilters] = stateFilters;
   const { type } = useScreen();
 
