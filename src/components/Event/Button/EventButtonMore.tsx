@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { Button, Dropdown, Icon } from "semantic-ui-react";
+import { Button, Dropdown, Icon, SemanticSIZES } from "semantic-ui-react";
 
 export interface EventButtonMoreProps {
   hasPermission?: boolean;
+  size?: SemanticSIZES;
   onDelete?: () => void;
   onEdit?: () => void;
   onReport?: () => void;
@@ -10,6 +11,7 @@ export interface EventButtonMoreProps {
 
 export function EventButtonMore({
   hasPermission = true,
+  size,
   onDelete,
   onEdit,
   onReport,
@@ -38,7 +40,7 @@ export function EventButtonMore({
         className="icon"
         direction="left"
         trigger={
-          <Button className="!m-0" icon>
+          <Button className="!m-0" icon size={size}>
             <Icon name="ellipsis vertical" />
           </Button>
         }

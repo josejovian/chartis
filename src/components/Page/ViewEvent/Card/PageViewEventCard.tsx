@@ -2,7 +2,7 @@ import { useState } from "react";
 import clsx from "clsx";
 import { PageViewEventBody, PageViewEventFoot, PageViewEventHead } from ".";
 import { useScreen } from "@/hooks";
-import { EventType, ResponsiveInlineStyleType } from "@/types";
+import { EventType, ResponsiveStyleType } from "@/types";
 
 export interface ModalViewEventProps {
   event: EventType;
@@ -18,27 +18,20 @@ export function PageViewEventCard({ event }: ModalViewEventProps) {
   return (
     <div
       className={clsx(
-        "card ui flex flex-col bg-white",
-        type !== "mobile" && "rounded-lg"
+        "card ui flex flex-col bg-white min-w-full",
+        type !== "mobile" && "rounded-lg",
+        VIEW_EVENT_CARD_WRAPPER_RESPONSIVE_STYLE
       )}
-      style={VIEW_EVENT_CARD_WRAPPER_RESPONSIVE_INLINE_STYLE[type]}
     >
-      <PageViewEventHead event={event} stateEdit={stateEdit} />
+      <PageViewEventHead event={event} type={type} stateEdit={stateEdit} />
       <PageViewEventBody event={event} type={type} />
       <PageViewEventFoot event={event} stateEdit={stateEdit} />
     </div>
   );
 }
 
-const VIEW_EVENT_CARD_WRAPPER_RESPONSIVE_INLINE_STYLE: ResponsiveInlineStyleType =
-  {
-    desktop_lg: {
-      width: "1024px",
-    },
-    desktop_sm: {
-      width: "800px",
-    },
-    mobile: {
-      width: "100%",
-    },
-  };
+const VIEW_EVENT_CARD_WRAPPER_RESPONSIVE_STYLE: ResponsiveStyleType = {
+  desktop_lg: "!mx-80",
+  desktop_sm: "!mx-10",
+  mobile: "",
+};

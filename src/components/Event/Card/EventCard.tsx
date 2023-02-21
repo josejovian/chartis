@@ -1,11 +1,17 @@
 import clsx from "clsx";
 import { useMemo } from "react";
-import { Button, Card, Icon } from "semantic-ui-react";
-import { EventTag, EventCardDetail, EventThumbnail } from "@/components";
-import { EventCardDisplayType, EventDetailType, EventType } from "@/types";
-import { EVENT_TAGS } from "@/consts/event";
+import { Card } from "semantic-ui-react";
+import {
+  EventTag,
+  EventCardDetail,
+  EventThumbnail,
+  EventButtonFollow,
+  EventButtonMore,
+} from "@/components";
 import { strDateTime } from "@/utils";
-import { EventButtonFollow } from "../Button";
+import { EVENT_TAGS } from "@/consts";
+import { EventCardDisplayType, EventDetailType, EventType } from "@/types";
+import Link from "next/link";
 
 export interface EventCardProps {
   className?: string;
@@ -25,6 +31,7 @@ export function EventCard({
     () => (event.endDate ? new Date(event.endDate) : null),
     [event]
   );
+  const eventLink = useMemo(() => "/event/ok", []);
 
   const details = useMemo(() => {
     const array: EventDetailType[] = [
@@ -47,7 +54,7 @@ export function EventCard({
 
   const renderEventExtraDetails = useMemo(
     () => (
-      <ul className="flex flex-col text-secondary-5 gap-1">
+      <ul className="flex flex-col text-secondary-5 gap-1 mt-1">
         {details.map(
           (detail, idx) =>
             ((type === "horizontal" && idx === 0) || type === "vertical") && (
@@ -92,30 +99,38 @@ export function EventCard({
   const renderEventTitle = useMemo(
     () => (
       <div className="inline-block leading-7">
-        <h2 className="inline text-18px pr-1 hover:underline">{name}</h2>
+        <Link href={eventLink}>
+          <h2 className="inline text-18px pr-1 hover:underline">{name}</h2>
+        </Link>
         {renderEventTags}
       </div>
     ),
-    [name, renderEventTags]
+    [eventLink, name, renderEventTags]
   );
 
   const renderEventDescription = useMemo(
-    () => <p className="m-0 mt-1 mb-2">{description}</p>,
-    [description]
+    () => (
+      <Link href={eventLink}>
+        <p className="m-0 mt-1 mb-2">{description}</p>
+      </Link>
+    ),
+    [description, eventLink]
   );
 
   const renderEventActions = useMemo(
     () => (
       <div
-        className={clsx("flex gap-2 z-10", type === "vertical" && "mt-2")}
-        onClick={(e) => {
-          e.stopPropagation();
+        className={clsx(
+          "flex flex-auto gap-4 z-10",
+          type === "vertical" && "mt-2"
+        )}
+        style={{
+          width: "192px",
+          minWidth: "192px",
         }}
       >
-        <EventButtonFollow event={event} />
-        <Button icon>
-          <Icon name="ellipsis vertical" />
-        </Button>
+        <EventButtonFollow event={event} size="tiny" />
+        <EventButtonMore size="tiny" />
       </div>
     ),
     [event, type]
@@ -124,18 +139,20 @@ export function EventCard({
   const renderCardContents = useMemo(
     () =>
       type === "vertical" ? (
-        <Card fluid>
+        <Card className="EventCard" fluid>
           <EventThumbnail src={src} />
           <div className="flex flex-col py-2 pb-3 px-10 w-full">
             {renderEventCreators}
-            {renderEventTitle}
-            {renderEventDescription}
+            <div className="EventDetail flex flex-col">
+              {renderEventTitle}
+              {renderEventDescription}
+            </div>
             {renderEventExtraDetails}
             {renderEventActions}
           </div>
         </Card>
       ) : (
-        <Card fluid className="flex !flex-row h-full">
+        <Card fluid className="EventCard flex !flex-row h-full">
           <EventThumbnail src={src} type="thumbnail-fixed-height" />
           <div className="flex flex-col py-2 pb-3 px-10 w-full h-full justify-between">
             <div className="flex flex-col">

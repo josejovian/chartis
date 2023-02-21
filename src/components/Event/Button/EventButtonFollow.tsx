@@ -1,12 +1,13 @@
 import { EventType } from "@/types";
 import { useCallback, useState } from "react";
-import { Button, Icon, Label } from "semantic-ui-react";
+import { Button, Label, SemanticSIZES } from "semantic-ui-react";
 
 export interface EventButtonFollowProps {
   event: EventType;
+  size?: SemanticSIZES;
 }
 
-export function EventButtonFollow({ event }: EventButtonFollowProps) {
+export function EventButtonFollow({ event, size }: EventButtonFollowProps) {
   const { id, followerIds = [], guestFollowerCount } = event;
 
   const [followCount, setFollowCount] = useState(
@@ -31,10 +32,9 @@ export function EventButtonFollow({ event }: EventButtonFollowProps) {
   }, [id]);
 
   return (
-    <Button className="!m-0" as="div" labelPosition="right">
-      <Button onClick={handleFollowEvent}>
-        <Icon name={followed ? "calendar check" : "calendar plus"} />
-        {followed ? "Followed" : "Follow"}
+    <Button className="!m-0 !w-full" as="div" labelPosition="right" size={size}>
+      <Button className="!w-full" size={size} onClick={handleFollowEvent}>
+        {followed ? "Unfollow" : "Follow"}
       </Button>
       <Label as="a" basic>
         {followCount}

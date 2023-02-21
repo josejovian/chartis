@@ -2,13 +2,17 @@ import { ReactNode, useMemo } from "react";
 import { LayoutHead } from "@/components";
 import clsx from "clsx";
 import { useNavBar, useScreen } from "@/hooks";
+import { LayoutHeadButtonProps } from "../Head/LayoutHeadButton";
 
 export interface LayoutTemplateProps {
   classNameWrapper?: string;
   classNameMain?: string;
   children: ReactNode;
   side?: ReactNode;
-  rightButton?: ReactNode;
+  leftButton?: LayoutHeadButtonProps;
+  leftElement?: ReactNode;
+  rightButton?: LayoutHeadButtonProps;
+  rightElement?: ReactNode;
   title: string;
 }
 
@@ -17,7 +21,10 @@ export function LayoutTemplate({
   classNameMain,
   children,
   side,
+  leftButton,
+  leftElement,
   rightButton,
+  rightElement,
   title,
 }: LayoutTemplateProps) {
   const stateNavBar = useNavBar();
@@ -28,13 +35,16 @@ export function LayoutTemplate({
       <div className={clsx("flex flex-col w-full", "h-screen")}>
         <LayoutHead
           stateNavBar={stateNavBar}
+          leftButton={leftButton}
+          leftElement={leftElement}
           rightButton={rightButton}
+          rightElement={rightElement}
           title={title}
           type={type}
         />
         <div
           className={clsx(
-            "flex w-full h-full bg-amber-50 overflow-hidden",
+            "flex w-full h-full bg-sky-50 overflow-hidden",
             classNameMain
           )}
         >
@@ -42,7 +52,17 @@ export function LayoutTemplate({
         </div>
       </div>
     ),
-    [children, classNameMain, rightButton, stateNavBar, title, type]
+    [
+      children,
+      classNameMain,
+      leftButton,
+      leftElement,
+      rightButton,
+      rightElement,
+      stateNavBar,
+      title,
+      type,
+    ]
   );
 
   return (

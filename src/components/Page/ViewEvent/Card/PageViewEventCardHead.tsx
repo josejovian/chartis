@@ -6,17 +6,24 @@ import {
   EventButtonFollow,
   EventButtonMore,
 } from "@/components";
-import { EventModalTabType, EventType, StateObject } from "@/types";
+import {
+  EventModalTabType,
+  EventType,
+  ScreenSizeCategoryType,
+  StateObject,
+} from "@/types";
 import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventHeadProps {
   event: EventType;
   stateEdit: StateObject<boolean>;
+  type: ScreenSizeCategoryType;
 }
 
 export function PageViewEventHead({
-  stateEdit,
   event,
+  stateEdit,
+  type,
 }: PageViewEventHeadProps) {
   const stateActiveTab = useState(0);
   const activeTab = stateActiveTab[0];
@@ -70,6 +77,7 @@ export function PageViewEventHead({
                   activeTab === idx &&
                     "!bg-white hover:!bg-gray-100 active:!bg-gray-200 focus:!bg-gray-200"
                 )}
+                size={type === "mobile" ? "tiny" : undefined}
                 onClick={onClick}
               >
                 {name}
@@ -77,8 +85,11 @@ export function PageViewEventHead({
             ))}
           </div>
           <div className="flex items-between p-4 gap-4">
-            <EventButtonFollow event={event} />
-            <EventButtonMore />
+            <EventButtonFollow
+              event={event}
+              size={type === "mobile" ? "tiny" : undefined}
+            />
+            <EventButtonMore size={type === "mobile" ? "tiny" : undefined} />
           </div>
         </div>
       </div>
