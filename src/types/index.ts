@@ -1,4 +1,4 @@
 export * from "./calendar";
 export * from "./event";
-export * from "./interface";
+export * from "./layout";
 export * from "./misc";

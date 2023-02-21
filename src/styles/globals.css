@@ -8,6 +8,12 @@
   h4 {
     margin: 0 !important;
   }
+  *:not(:is(button, .item)) > i {
+    margin: 0 !important;
+  }
+  a {
+    color: unset !important;
+  }
 }
 @tailwind base;
 @layer components {
@@ -19,8 +25,8 @@
     height: 36px;
     padding: 0 12px;
   }
-  .EventCard {
-    min-width: 440px;
+  .EventDetail:hover :is(h2, p) {
+    @apply underline cursor-pointer;
   }
   .EventButtonMore > div {
     @apply !p-2 !h-8;

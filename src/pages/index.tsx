@@ -101,7 +101,7 @@ export default function Home() {
   return (
     <LayoutTemplate
       title="Home"
-      rightButton={
+      rightElement={
         <PageHomeCalendarFilter
           stateFilters={stateFilters}
           visibleFilters={visibleFilters}

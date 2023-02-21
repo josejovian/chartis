@@ -1,4 +1,5 @@
 import { CSSProperties } from "react";
+import { SemanticICONS } from "semantic-ui-react";
 
 export interface ScreenSizeType {
   width: number;
@@ -12,3 +13,8 @@ export type ResponsiveInlineStyleType = Record<
   ScreenSizeCategoryType,
   Partial<CSSProperties> | undefined
 >;
+
+export interface LayoutHeadButtonType {
+  icon: SemanticICONS;
+  onClick: () => void;
+}
