@@ -3,7 +3,7 @@ import {
   PageHomeSideBar,
   LayoutCalendar,
   LayoutTemplate,
-  PageHomeCalendarFilter,
+  EventButtonFilter,
 } from "@/components";
 import { filterEventsFromTags } from "@/utils";
 import { EVENT_DUMMY_1, EVENT_TAGS } from "@/consts";
@@ -102,7 +102,7 @@ export default function Home() {
     <LayoutTemplate
       title="Home"
       rightElement={
-        <PageHomeCalendarFilter
+        <EventButtonFilter
           stateFilters={stateFilters}
           visibleFilters={visibleFilters}
         />

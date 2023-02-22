@@ -1,10 +1,11 @@
-import { EventTagType, EventType } from "@/types";
+import { EventSortType, EventTagType, EventType } from "@/types";
 
 export const EVENT_DUMMY_1: EventType = {
   id: "0",
   authorId: "admin",
   name: "December Monthly Report Deadline",
   description: "Reminder pengumpulan laporan enrichment untuk bulan Desember.",
+  postDate: 0,
   startDate: 0,
   endDate: 10,
   tags: [3],
@@ -15,6 +16,7 @@ export const EVENT_DUMMY_2: EventType = {
   authorId: "admin",
   name: "December Monthly Report Deadline",
   description: "Reminder pengumpulan laporan enrichment untuk bulan Desember.",
+  postDate: 0,
   startDate: 0,
   endDate: 10,
   tags: [3],
@@ -41,4 +43,9 @@ export const EVENT_TAGS: EventTagType[] = [
     name: "Competition",
     color: "green",
   },
+];
+
+export const EVENT_SORTS: EventSortType[] = [
+  { id: "postDate", name: "Post Date" },
+  { id: "follow", name: "Follow" },
 ];
