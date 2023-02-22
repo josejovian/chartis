@@ -1,23 +1,33 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Input } from "semantic-ui-react";
-import { EventButtonFilter } from "@/components";
-import { ScreenSizeCategoryType, StateObject } from "@/types";
+import {
+  EventButtonFilter,
+  EventButtonSort,
+  EventButtonSortType,
+  PageSearchEventInput,
+} from "@/components";
+import { EventSortType, ScreenSizeCategoryType, StateObject } from "@/types";
 
 export interface PageSearchEventHeadProps {
+  stateQuery: StateObject<string>;
   stateFilters: StateObject<Record<number, boolean>>;
+  stateSortBy: StateObject<EventSortType>;
+  stateSortDescending: StateObject<boolean>;
   type?: ScreenSizeCategoryType;
 }
 
-export function PageSearchEventHead({
+export function PageSearchEventCardHead({
+  stateQuery,
   stateFilters,
-  type,
+  stateSortBy,
+  stateSortDescending,
 }: PageSearchEventHeadProps) {
-  const filters = stateFilters[0];
-
   return (
-    <div className="flex">
-      <Input placeholder="Search events..." />
-      <EventButtonFilter stateFilters={stateFilters} asButton />
+    <div className="flex gap-4 pl-4">
+      <PageSearchEventInput stateQuery={stateQuery} />
+      <div className="flex grow-0 gap-4">
+        <EventButtonFilter stateFilters={stateFilters} asButton />
+        <EventButtonSort stateSortBy={stateSortBy} />
+        <EventButtonSortType stateSortDescending={stateSortDescending} />
+      </div>
     </div>
   );
 }

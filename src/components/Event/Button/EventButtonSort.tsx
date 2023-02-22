@@ -1,96 +1,50 @@
 import { useMemo } from "react";
-import { Button, Dropdown, Icon, Label } from "semantic-ui-react";
+import { Button, Dropdown, Icon } from "semantic-ui-react";
 import clsx from "clsx";
-import { EVENT_TAGS } from "@/consts";
-import { StateObject } from "@/types";
-import { useScreen } from "@/hooks";
+import { EVENT_SORT_CRITERIA } from "@/consts";
+import { EventSortType, StateObject } from "@/types";
 
 export interface EventButtonSortProps {
-  stateFilters: StateObject<Record<number, boolean>>;
-  visibleFilters?: Record<number, boolean>;
-  asButton?: boolean;
+  stateSortBy: StateObject<EventSortType>;
 }
 
-export function EventButtonSort({
-  stateFilters,
-  visibleFilters,
-  asButton,
-}: EventButtonSortProps) {
-  const [filters, setFilters] = stateFilters;
-  const { type } = useScreen();
+export function EventButtonSort({ stateSortBy }: EventButtonSortProps) {
+  const [sortBy, setSortBy] = stateSortBy;
 
   const renderDropdownItems = useMemo(
     () =>
-      EVENT_TAGS.map((tag, idx) => ({
-        ...tag,
-        idx,
-      }))
-        .filter((tag) => !visibleFilters || visibleFilters[tag.idx])
-        .map((tag) => {
-          const { color, name, idx } = tag;
-          return (
-            <Dropdown.Item
-              key={name}
-              value={name}
-              label={{
-                color,
-                empty: true,
-                circular: true,
-              }}
-              className={clsx(filters[idx] && "bg-secondary-3")}
-              onClick={() => {
-                setFilters((prev) => ({
-                  ...prev,
-                  [idx]: !prev[idx],
-                }));
-              }}
-            >
-              <Label color={color} circular empty />
-              <span>{name}</span>
-            </Dropdown.Item>
-          );
-        }),
-    [filters, setFilters, visibleFilters]
+      EVENT_SORT_CRITERIA.map((criterion) => {
+        const { id, name } = criterion;
+        return (
+          <Dropdown.Item
+            key={name}
+            value={id}
+            className={clsx(sortBy.id === id && "bg-secondary-3")}
+            onClick={() => {
+              setSortBy(criterion);
+            }}
+          >
+            <span>{name}</span>
+          </Dropdown.Item>
+        );
+      }),
+    [setSortBy, sortBy]
   );
-
-  const renderClearFilter = useMemo(
-    () => (
-      <Dropdown.Item
-        key="_all"
-        value="_all"
-        disabled={Object.values(filters).filter((x) => x).length === 0}
-        onClick={() => {
-          setFilters(EVENT_TAGS.map((_) => false));
-        }}
-      >
-        <Icon name="close" />
-        <span>Clear Filter</span>
-      </Dropdown.Item>
-    ),
-    [filters, setFilters]
-  );
-
   return (
     <Dropdown
-      icon={asButton ? undefined : "filter"}
       className="icon z-10"
-      labeled={asButton ? true : type !== "mobile"}
+      labeled
       direction="left"
-      floating={!asButton}
+      floating
       trigger={
-        asButton ? (
-          <Button>
-            <Icon name="filter" />
-            Filter
-          </Button>
-        ) : undefined
+        <Button className="w-fit">
+          <Icon name="database" />
+          Sort By
+        </Button>
       }
     >
       <Dropdown.Menu>
-        <Dropdown.Menu scrolling>
-          {renderClearFilter}
-          {renderDropdownItems}
-        </Dropdown.Menu>
+        <Dropdown.Menu scrolling>{renderDropdownItems}</Dropdown.Menu>
       </Dropdown.Menu>
     </Dropdown>
   );
