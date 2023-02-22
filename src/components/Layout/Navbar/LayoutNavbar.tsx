@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { useScreen } from "@/hooks";
 import { ResponsiveInlineStyleType, StateObject } from "@/types";
 import { LayoutNavbarItem, LayoutNavbarItemProps } from "@/components";
+import { useRouter } from "next/router";
 
 export interface LayoutNavbarProps {
   stateNavBar: StateObject<boolean>;
@@ -27,7 +28,8 @@ const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
 
 export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [navBar, setNavBar] = stateNavBar;
-  const type = useScreen().type;
+  const { type } = useScreen();
+  const router = useRouter();
 
   const links = useMemo<Record<string, LayoutNavbarItemProps[]>>(
     () => ({
@@ -125,11 +127,14 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           "bg-slate-800 hover:bg-slate-900 text-primary-5 border border-primary-5",
           "rounded-md cursor-pointer"
         )}
+        onClick={() => {
+          router.push("/search");
+        }}
       >
         Search
       </div>
     ),
-    []
+    [router]
   );
 
   const renderLinks = useMemo(

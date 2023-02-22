@@ -1,17 +1,16 @@
-import clsx from "clsx";
 import { useMemo } from "react";
+import Link from "next/link";
 import { Card } from "semantic-ui-react";
+import clsx from "clsx";
 import {
-  EventTag,
   EventCardDetail,
   EventThumbnail,
   EventButtonFollow,
   EventButtonMore,
+  EventTags,
 } from "@/components";
-import { strDateTime } from "@/utils";
-import { EVENT_TAGS } from "@/consts";
+import { getTimeDifference, strDateTime } from "@/utils";
 import { EventCardDisplayType, EventDetailType, EventType } from "@/types";
-import Link from "next/link";
 
 export interface EventCardProps {
   className?: string;
@@ -24,7 +23,16 @@ export function EventCard({
   event,
   type = "vertical",
 }: EventCardProps) {
-  const { id, name, description, authorId, organizer, src, tags } = event;
+  const {
+    id,
+    name,
+    description,
+    authorId,
+    organizer,
+    thumbnailSrc,
+    tags,
+    postDate,
+  } = event;
 
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
@@ -73,26 +81,17 @@ export function EventCard({
     /** @todo Replace authorId with real username. */
     () => (
       <span className="text-12px text-secondary-4">
-        Posted by <b>{authorId}</b> a week ago{" "}
+        Posted by <b>{authorId}</b> {getTimeDifference(postDate)} ago
         {organizer &&
           `- Organized by
 				<b>${organizer}</b>`}
       </span>
     ),
-    [authorId, organizer]
+    [authorId, organizer, postDate]
   );
 
   const renderEventTags = useMemo(
-    () => (
-      <>
-        {tags.map((tag) => (
-          <EventTag
-            key={`EventExtraDetail_${id}_${tag}`}
-            {...EVENT_TAGS[tag]}
-          />
-        ))}
-      </>
-    ),
+    () => <EventTags id={id} tags={tags} />,
     [id, tags]
   );
 
@@ -140,7 +139,7 @@ export function EventCard({
     () =>
       type === "vertical" ? (
         <Card className="EventCard" fluid>
-          <EventThumbnail src={src} />
+          <EventThumbnail src={thumbnailSrc} />
           <div className="flex flex-col py-2 pb-3 px-10 w-full">
             {renderEventCreators}
             <div className="EventDetail flex flex-col">
@@ -153,7 +152,7 @@ export function EventCard({
         </Card>
       ) : (
         <Card fluid className="EventCard flex !flex-row h-full">
-          <EventThumbnail src={src} type="thumbnail-fixed-height" />
+          <EventThumbnail src={thumbnailSrc} type="thumbnail-fixed-height" />
           <div className="flex flex-col py-2 pb-3 px-10 w-full h-full justify-between">
             <div className="flex flex-col">
               {renderEventCreators}
@@ -168,7 +167,7 @@ export function EventCard({
       ),
     [
       type,
-      src,
+      thumbnailSrc,
       renderEventCreators,
       renderEventTitle,
       renderEventDescription,

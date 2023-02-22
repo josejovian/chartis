@@ -9,9 +9,10 @@ export interface EventType {
   authorId: string;
   postDate: number;
   organizer?: string;
-  src?: string;
+  thumbnailSrc?: string;
   startDate: number;
   endDate?: number;
+  followCount?: number;
   followerIds?: string[];
   guestFollowerCount?: number;
   tags: number[];
@@ -41,6 +42,11 @@ export interface EventModalTabType {
 }
 
 export interface EventSortType {
-  id: string;
+  id: keyof EventType;
+  name: string;
+}
+
+export interface EventSortDirectionType {
+  value: boolean;
   name: string;
 }

@@ -1,21 +1,24 @@
-import { useState } from "react";
-import { PageViewEventBody, PageViewEventFoot, PageViewEventHead } from ".";
-import { useScreen } from "@/hooks";
-import { EventType } from "@/types";
-import { LayoutCard } from "@/components/Layout";
+import {
+  LayoutCard,
+  PageViewEventBody,
+  PageViewEventFoot,
+  PageViewEventHead,
+} from "@/components";
+import { EventType, ScreenSizeCategoryType, StateObject } from "@/types";
 
 export interface ModalViewEventProps {
   className?: string;
   event: EventType;
+  stateEdit: StateObject<boolean>;
+  type: ScreenSizeCategoryType;
 }
 
-export function PageViewEventCard({ className, event }: ModalViewEventProps) {
-  const stateEdit = useState(false);
-  const stateActiveTab = useState(0);
-  const { type } = useScreen();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const activeTab = stateActiveTab[0];
-
+export function PageViewEventCard({
+  className,
+  event,
+  stateEdit,
+  type,
+}: ModalViewEventProps) {
   return (
     <LayoutCard className={className}>
       <PageViewEventHead event={event} type={type} stateEdit={stateEdit} />

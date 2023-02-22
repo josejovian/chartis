@@ -74,12 +74,12 @@ export function EventButtonFilter({
     <Dropdown
       icon={asButton ? undefined : "filter"}
       className="icon z-10"
-      labeled={asButton ? true : type !== "mobile"}
+      labeled={asButton ? undefined : type !== "mobile"}
+      floating
       direction="left"
-      floating={!asButton}
       trigger={
         asButton ? (
-          <Button>
+          <Button className="w-fit">
             <Icon name="filter" />
             Filter
           </Button>

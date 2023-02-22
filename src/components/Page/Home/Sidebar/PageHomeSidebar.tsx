@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import { Icon } from "semantic-ui-react";
-import Image from "next/image";
 import clsx from "clsx";
-import { EventCard } from "@/components";
+import { EventCard, LayoutNotice } from "@/components";
 import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
 import { strDate } from "@/utils";
 import { useScreen } from "@/hooks";
@@ -71,23 +70,10 @@ export function PageHomeSideBar({
 
   const renderEmpty = useMemo(
     () => (
-      <div
-        style={{ width: "75%" }}
-        className="flex flex-col items-center justify-center mx-auto"
-      >
-        <Image
-          src="/no-events.png"
-          width="290"
-          height="180"
-          alt="No Events on This Date"
-        />
-        <span className="text-18px italic font-bold text-slate-500">
-          It&apos;s Empty!
-        </span>
-        <span className="mt-1 text-16px italic text-slate-500">
-          There are no events on this date.
-        </span>
-      </div>
+      <LayoutNotice
+        title="It's Empty"
+        desc="There are no events on this date."
+      />
     ),
     []
   );

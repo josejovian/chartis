@@ -16,7 +16,12 @@ export function PageViewEventBody({ event, type }: PageViewEventBodyProps) {
   const renderEventTags = useMemo(
     () => (
       <div className="flex gap-2">
-        <EventTags event={event} type="EventCardDetail" size="tiny" />
+        <EventTags
+          id={event.id}
+          tags={event.tags}
+          type="EventCardDetail"
+          size="tiny"
+        />
       </div>
     ),
     [event]

@@ -1,4 +1,9 @@
-import { EventSortType, EventTagType, EventType } from "@/types";
+import {
+  EventSortDirectionType,
+  EventSortType,
+  EventTagType,
+  EventType,
+} from "@/types";
 
 export const EVENT_DUMMY_1: EventType = {
   id: "0",
@@ -45,7 +50,12 @@ export const EVENT_TAGS: EventTagType[] = [
   },
 ];
 
-export const EVENT_SORTS: EventSortType[] = [
+export const EVENT_SORT_CRITERIA: EventSortType[] = [
   { id: "postDate", name: "Post Date" },
-  { id: "follow", name: "Follow" },
+  { id: "followCount", name: "Followers" },
+];
+
+export const EVENT_SORT_TYPE: EventSortDirectionType[] = [
+  { value: false, name: "Ascending" },
+  { value: true, name: "Descending" },
 ];
