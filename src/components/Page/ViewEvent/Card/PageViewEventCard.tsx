@@ -1,14 +1,15 @@
 import { useState } from "react";
-import clsx from "clsx";
 import { PageViewEventBody, PageViewEventFoot, PageViewEventHead } from ".";
 import { useScreen } from "@/hooks";
-import { EventType, ResponsiveStyleType } from "@/types";
+import { EventType } from "@/types";
+import { LayoutCard } from "@/components/Layout";
 
 export interface ModalViewEventProps {
+  className?: string;
   event: EventType;
 }
 
-export function PageViewEventCard({ event }: ModalViewEventProps) {
+export function PageViewEventCard({ className, event }: ModalViewEventProps) {
   const stateEdit = useState(false);
   const stateActiveTab = useState(0);
   const { type } = useScreen();
@@ -16,22 +17,10 @@ export function PageViewEventCard({ event }: ModalViewEventProps) {
   const activeTab = stateActiveTab[0];
 
   return (
-    <div
-      className={clsx(
-        "card ui flex flex-col bg-white min-w-full",
-        type !== "mobile" && "rounded-lg",
-        VIEW_EVENT_CARD_WRAPPER_RESPONSIVE_STYLE
-      )}
-    >
+    <LayoutCard className={className}>
       <PageViewEventHead event={event} type={type} stateEdit={stateEdit} />
       <PageViewEventBody event={event} type={type} />
       <PageViewEventFoot event={event} stateEdit={stateEdit} />
-    </div>
+    </LayoutCard>
   );
 }
-
-const VIEW_EVENT_CARD_WRAPPER_RESPONSIVE_STYLE: ResponsiveStyleType = {
-  desktop_lg: "!mx-80",
-  desktop_sm: "!mx-10",
-  mobile: "",
-};

@@ -14,6 +14,9 @@
   a {
     color: unset !important;
   }
+  button {
+    @apply !m-0 !h-fit;
+  }
 }
 @tailwind base;
 @layer components {
@@ -35,8 +38,8 @@
     @apply !m-0;
     margin: 0 !important;
   }
-  button {
-    @apply !m-0 !h-fit;
+  .PageSearchEventCard i.dropdown.icon {
+    display: none !important;
   }
 }
 @tailwind components;

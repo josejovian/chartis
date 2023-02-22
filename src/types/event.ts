@@ -7,6 +7,7 @@ export interface EventType {
   description: string;
   location?: string;
   authorId: string;
+  postDate: number;
   organizer?: string;
   src?: string;
   startDate: number;
@@ -37,4 +38,9 @@ export type EventThumbnailDisplayType =
 export interface EventModalTabType {
   name: string;
   onClick?: () => void;
+}
+
+export interface EventSortType {
+  id: string;
+  name: string;
 }

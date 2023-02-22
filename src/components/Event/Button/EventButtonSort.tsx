@@ -1,21 +1,21 @@
 import { useMemo } from "react";
-import { Dropdown, Icon, Label } from "semantic-ui-react";
+import { Button, Dropdown, Icon, Label } from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_TAGS } from "@/consts";
 import { StateObject } from "@/types";
 import { useScreen } from "@/hooks";
 
-export interface PageHomeCalendarFilterProps {
+export interface EventButtonSortProps {
   stateFilters: StateObject<Record<number, boolean>>;
-  visibleFilters: Record<number, boolean>;
+  visibleFilters?: Record<number, boolean>;
   asButton?: boolean;
 }
 
-export function PageHomeCalendarFilter({
+export function EventButtonSort({
   stateFilters,
   visibleFilters,
   asButton,
-}: PageHomeCalendarFilterProps) {
+}: EventButtonSortProps) {
   const [filters, setFilters] = stateFilters;
   const { type } = useScreen();
 
@@ -25,7 +25,7 @@ export function PageHomeCalendarFilter({
         ...tag,
         idx,
       }))
-        .filter((tag) => visibleFilters[tag.idx])
+        .filter((tag) => !visibleFilters || visibleFilters[tag.idx])
         .map((tag) => {
           const { color, name, idx } = tag;
           return (
@@ -72,12 +72,19 @@ export function PageHomeCalendarFilter({
 
   return (
     <Dropdown
-      icon="filter"
+      icon={asButton ? undefined : "filter"}
       className="icon z-10"
-      labeled={type !== "mobile"}
+      labeled={asButton ? true : type !== "mobile"}
       direction="left"
-      floating
-      button={asButton}
+      floating={!asButton}
+      trigger={
+        asButton ? (
+          <Button>
+            <Icon name="filter" />
+            Filter
+          </Button>
+        ) : undefined
+      }
     >
       <Dropdown.Menu>
         <Dropdown.Menu scrolling>
