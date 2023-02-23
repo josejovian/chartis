@@ -12,6 +12,8 @@ import {
 } from "@/types";
 import { useMemo } from "react";
 import clsx from "clsx";
+import { validateEventQuery } from "@/utils";
+import { EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
 
 export interface PageSearchEventCardProps {
   className?: string;
@@ -44,10 +46,13 @@ export function PageSearchEventCard({
     [sortBy, sortDescending]
   );
 
-  const mainCaption = useMemo(() => `Searching for ${query} events`, [query]);
+  const mainCaption = useMemo(() => `Searching for "${query}" events`, [query]);
 
   const renderCaption = useMemo(
-    () => query !== "" && `${mainCaption} ${sortCaption}`,
+    () =>
+      validateEventQuery(query) && query !== ""
+        ? `${mainCaption} ${sortCaption}`
+        : `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters.`,
     [mainCaption, query, sortCaption]
   );
 

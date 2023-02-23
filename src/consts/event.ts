@@ -59,3 +59,5 @@ export const EVENT_SORT_TYPE: EventSortDirectionType[] = [
   { value: false, name: "Ascending" },
   { value: true, name: "Descending" },
 ];
+
+export const EVENT_QUERY_LENGTH_CONSTRAINTS = [3, 20]; //[min, max]
