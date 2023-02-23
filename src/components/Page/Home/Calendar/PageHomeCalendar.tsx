@@ -1,35 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon } from "semantic-ui-react";
 import clsx from "clsx";
-import { ScreenHomeCalendarDate, ScreenHomeCalendarFilter } from "@/components";
+import { PageHomeCalendarDate } from "@/components";
 import { CalendarDateType, EventType, StateObject } from "@/types";
 import { strDay, strMonth } from "@/utils";
 import { DAYS } from "@/consts";
 import { useScreen } from "@/hooks";
 
-const CALENDAR_LEGEND_MARKER_STYLE = [
-  "bg-emerald-100",
-  "bg-emerald-300",
-  "bg-emerald-500",
-  "bg-emerald-700",
-];
-
 export interface LayoutCalendarProps {
   stateFocusDate: StateObject<Date>;
-  stateFilters: StateObject<Record<number, boolean>>;
-  visibleFilters: Record<number, boolean>;
-  stateSideBar: StateObject<boolean>;
   events: EventType[];
 }
 
 export function LayoutCalendar({
   stateFocusDate,
-  stateFilters,
-  stateSideBar,
-  visibleFilters,
   events,
 }: LayoutCalendarProps) {
-  const sideBar = stateSideBar[0];
   const [focusDate, setFocusDate] = stateFocusDate;
   const [calendar, setCalendar] = useState<CalendarDateType[]>();
   const [countData, setCountData] = useState<number[]>([]);
@@ -141,18 +127,6 @@ export function LayoutCalendar({
     [focusDate, handleChangeTime, type]
   );
 
-  const renderFilterMenu = useMemo(
-    () =>
-      type !== "mobile" && (
-        <ScreenHomeCalendarFilter
-          stateFilters={stateFilters}
-          visibleFilters={visibleFilters}
-          asButton
-        />
-      ),
-    [stateFilters, type, visibleFilters]
-  );
-
   const renderMenu = useMemo(() => {
     const today = new Date();
     return (
@@ -168,10 +142,9 @@ export function LayoutCalendar({
         >
           Today
         </Button>
-        {renderFilterMenu}
       </div>
     );
-  }, [focusDate, handleChangeToToday, renderFilterMenu, type]);
+  }, [focusDate, handleChangeToToday, type]);
 
   const renderHead = useMemo(
     () => (
@@ -233,7 +206,7 @@ export function LayoutCalendar({
               .map((_, idx) => (
                 <tr key={`Calendar_${idx}`}>
                   {DAYS.map((_, idx2) => (
-                    <ScreenHomeCalendarDate
+                    <PageHomeCalendarDate
                       key={`Calendar_${idx}_${idx2}`}
                       calendarDate={calendar && calendar[7 * idx + idx2]}
                       countData={countData}
@@ -259,15 +232,18 @@ export function LayoutCalendar({
   }, [handleBuildCalendar]);
 
   return (
-    <div className={clsx("relative flex flex-col w-full p-8")}>
+    <div
+      className={clsx(
+        "relative flex flex-col w-full py-8",
+        type === "desktop_lg" ? "px-16" : "px-8",
+        type === "mobile" ? "h-fit" : "h-full"
+      )}
+    >
       <div
         className={clsx(
-          "relative flex flex-col h-full",
-          type === "mobile" ? "gap-8" : "gap-16"
+          "relative flex flex-col",
+          type === "mobile" ? "gap-8" : "gap-16 h-full"
         )}
-        style={{
-          height: sideBar ? "8rem" : undefined,
-        }}
       >
         {renderHead}
         {renderCalendar}
@@ -275,3 +251,10 @@ export function LayoutCalendar({
     </div>
   );
 }
+
+const CALENDAR_LEGEND_MARKER_STYLE = [
+  "bg-emerald-100",
+  "bg-emerald-300",
+  "bg-emerald-500",
+  "bg-emerald-700",
+];

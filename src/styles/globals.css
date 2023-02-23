@@ -8,6 +8,15 @@
   h4 {
     margin: 0 !important;
   }
+  *:not(:is(button, .item)) > i {
+    margin: 0 !important;
+  }
+  a {
+    color: unset !important;
+  }
+  button {
+    @apply !m-0 !h-fit;
+  }
 }
 @tailwind base;
 @layer components {
@@ -19,8 +28,27 @@
     height: 36px;
     padding: 0 12px;
   }
-  .EventCard {
-    min-width: 440px;
+  .EventDetail:hover :is(h2, p) {
+    @apply underline cursor-pointer;
+  }
+  .EventButtonMore > div {
+    @apply !p-2 !h-8;
+  }
+  .EventButtonMore > div > i {
+    @apply !m-0;
+    margin: 0 !important;
+  }
+  .PageSearchEventCard i.dropdown.icon {
+    display: none !important;
+  }
+  [role="listbox"] .ui.label.empty {
+    @apply border;
+  }
+  [role="option"] {
+    @apply !flex items-center;
+  }
+  .InactiveFilter .ui.label.empty {
+    background: transparent !important;
   }
 }
 @tailwind components;

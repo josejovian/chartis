@@ -1,33 +1,86 @@
-import { ReactNode } from "react";
+import { CSSProperties, ReactNode, useMemo } from "react";
 import { LayoutHead } from "@/components";
-import { ScreenSizeCategoryType, StateObject } from "@/types";
+import clsx from "clsx";
+import { useNavBar, useScreen } from "@/hooks";
+import { LayoutHeadButtonProps } from "../Head/LayoutHeadButton";
 
 export interface LayoutTemplateProps {
+  classNameWrapper?: string;
+  classNameMain?: string;
+  inlineMain?: CSSProperties;
   children: ReactNode;
-  rightButton?: ReactNode;
-  stateNavBar: StateObject<boolean>;
+  side?: ReactNode;
+  leftButton?: LayoutHeadButtonProps;
+  leftElement?: ReactNode;
+  rightButton?: LayoutHeadButtonProps;
+  rightElement?: ReactNode;
   title: string;
-  type: ScreenSizeCategoryType;
 }
 
 export function LayoutTemplate({
+  classNameWrapper,
+  classNameMain,
+  inlineMain,
   children,
+  side,
+  leftButton,
+  leftElement,
   rightButton,
-  stateNavBar,
+  rightElement,
   title,
-  type,
 }: LayoutTemplateProps) {
-  return (
-    <>
-      <div className="z-20">
+  const stateNavBar = useNavBar();
+  const { type } = useScreen();
+
+  console.log(inlineMain);
+
+  const renderMain = useMemo(
+    () => (
+      <div className={clsx("flex flex-col w-full", "h-screen")}>
         <LayoutHead
           stateNavBar={stateNavBar}
+          leftButton={leftButton}
+          leftElement={leftElement}
           rightButton={rightButton}
+          rightElement={rightElement}
           title={title}
           type={type}
         />
+        <div
+          className={clsx(
+            "flex w-full h-full bg-sky-50 overflow-hidden",
+            classNameMain
+          )}
+          style={inlineMain}
+        >
+          {children}
+        </div>
       </div>
-      {children}
-    </>
+    ),
+    [
+      children,
+      classNameMain,
+      inlineMain,
+      leftButton,
+      leftElement,
+      rightButton,
+      rightElement,
+      stateNavBar,
+      title,
+      type,
+    ]
+  );
+
+  return (
+    <div
+      className={clsx(
+        "flex h-screen w-full",
+        type === "mobile" && "flex flex-col flex-auto overflow-hidden",
+        classNameWrapper
+      )}
+    >
+      {renderMain}
+      {side}
+    </div>
   );
 }
