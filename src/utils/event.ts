@@ -1,4 +1,4 @@
-import { EVENT_DUMMY_1 } from "@/consts";
+import { EVENT_DUMMY_1, EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
 import { EventType } from "@/types";
 
 export function filterEventsFromTags(
@@ -47,6 +47,10 @@ export function populateEvents() {
 }
 
 export function validateEventQuery(newQuery: string) {
-  if (newQuery.length <= 3 || newQuery.length >= 20) return false;
+  if (
+    newQuery.length <= EVENT_QUERY_LENGTH_CONSTRAINTS[0] ||
+    newQuery.length >= EVENT_QUERY_LENGTH_CONSTRAINTS[1]
+  )
+    return false;
   return true;
 }
