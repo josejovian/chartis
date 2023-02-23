@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from "react";
+import { CSSProperties, ReactNode, useMemo } from "react";
 import { LayoutHead } from "@/components";
 import clsx from "clsx";
 import { useNavBar, useScreen } from "@/hooks";
@@ -7,6 +7,7 @@ import { LayoutHeadButtonProps } from "../Head/LayoutHeadButton";
 export interface LayoutTemplateProps {
   classNameWrapper?: string;
   classNameMain?: string;
+  inlineMain?: CSSProperties;
   children: ReactNode;
   side?: ReactNode;
   leftButton?: LayoutHeadButtonProps;
@@ -19,6 +20,7 @@ export interface LayoutTemplateProps {
 export function LayoutTemplate({
   classNameWrapper,
   classNameMain,
+  inlineMain,
   children,
   side,
   leftButton,
@@ -29,6 +31,8 @@ export function LayoutTemplate({
 }: LayoutTemplateProps) {
   const stateNavBar = useNavBar();
   const { type } = useScreen();
+
+  console.log(inlineMain);
 
   const renderMain = useMemo(
     () => (
@@ -47,6 +51,7 @@ export function LayoutTemplate({
             "flex w-full h-full bg-sky-50 overflow-hidden",
             classNameMain
           )}
+          style={inlineMain}
         >
           {children}
         </div>
@@ -55,6 +60,7 @@ export function LayoutTemplate({
     [
       children,
       classNameMain,
+      inlineMain,
       leftButton,
       leftElement,
       rightButton,

@@ -4,13 +4,19 @@ import {
   LayoutNotice,
   PageSearchEventCardHead,
 } from "@/components";
-import { EventSortType, EventType, StateObject } from "@/types";
+import {
+  EventSortType,
+  EventType,
+  ScreenSizeCategoryType,
+  StateObject,
+} from "@/types";
 import { useMemo } from "react";
 import clsx from "clsx";
 
 export interface PageSearchEventCardProps {
   className?: string;
   events: EventType[];
+  type: ScreenSizeCategoryType;
   stateQuery: StateObject<string>;
   stateFilters: StateObject<Record<number, boolean>>;
   stateSortBy: StateObject<EventSortType>;
@@ -20,6 +26,7 @@ export interface PageSearchEventCardProps {
 export function PageSearchEventCard({
   className,
   events,
+  type,
   stateQuery,
   stateFilters,
   stateSortBy,
@@ -78,6 +85,7 @@ export function PageSearchEventCard({
   return (
     <LayoutCard className={className}>
       <PageSearchEventCardHead
+        type={type}
         stateQuery={stateQuery}
         stateFilters={stateFilters}
         stateSortBy={stateSortBy}
@@ -87,7 +95,7 @@ export function PageSearchEventCard({
       <div
         className={clsx(
           "flex flex-col gap-4",
-          "px-4 py-0.5 h-full overflow-y-auto"
+          "px-4 mr-4 py-0.5 h-full overflow-y-auto"
         )}
       >
         {renderContents}

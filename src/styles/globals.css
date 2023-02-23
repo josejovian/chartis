@@ -41,6 +41,15 @@
   .PageSearchEventCard i.dropdown.icon {
     display: none !important;
   }
+  [role="listbox"] .ui.label.empty {
+    @apply border;
+  }
+  [role="option"] {
+    @apply !flex items-center;
+  }
+  .InactiveFilter .ui.label.empty {
+    background: transparent !important;
+  }
 }
 @tailwind components;
 @layer utilities {

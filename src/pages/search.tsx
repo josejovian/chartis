@@ -4,10 +4,12 @@ import _ from "lodash";
 import { LayoutTemplateCard } from "@/components";
 import { PageSearchEventCard } from "@/components/Page/SearchEvent";
 import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
-import { EventSortType } from "@/types";
+import { EventSortType, ResponsiveStyleType } from "@/types";
 import { filterEventsFromTags, populateEvents } from "@/utils";
+import { useScreen } from "@/hooks";
 
 export default function SearchEvent() {
+  const { type } = useScreen();
   const stateFilters = useState<Record<number, boolean>>(
     EVENT_TAGS.map((_) => false)
   );
@@ -61,10 +63,12 @@ export default function SearchEvent() {
           router.back();
         },
       }}
+      classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
     >
       <PageSearchEventCard
-        className="PageSearchEventCard !bg-sky-50 p-4"
+        className="PageSearchEventCard !bg-sky-50 p-4 !h-screen"
         events={processedEvents}
+        type={type}
         stateQuery={stateQuery}
         stateFilters={stateFilters}
         stateSortBy={stateSortBy}
@@ -73,3 +77,9 @@ export default function SearchEvent() {
     </LayoutTemplateCard>
   );
 }
+
+const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {
+  desktop_lg: "!px-10",
+  desktop_sm: "!px-10",
+  mobile: "",
+};
