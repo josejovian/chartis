@@ -1,42 +1,22 @@
 import { useMemo } from "react";
-import { EventCard } from "@/components";
+import { Icon } from "semantic-ui-react";
+import clsx from "clsx";
+import { EventCard, LayoutNotice } from "@/components";
 import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
 import { strDate } from "@/utils";
 import { useScreen } from "@/hooks";
-import clsx from "clsx";
-import { Icon } from "semantic-ui-react";
-import Image from "next/image";
 
-const SIDEBAR_WRAPPER_STYLE = clsx(
-  "flex flex-col p-8",
-  "bg-slate-100 overflow-x-hidden z-10 transition-all"
-);
-
-const SIDEBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
-  desktop_lg: {
-    height: "100vh",
-    minWidth: "504px",
-  },
-  desktop_sm: {
-    height: "100vh",
-    minWidth: "400px",
-  },
-  mobile: {
-    height: "100%",
-  },
-};
-
-export interface LayoutSidebarProps {
+export interface PageHomeSideBarProps {
   focusDate: Date;
   events: EventType[];
   stateSideBar: StateObject<boolean>;
 }
 
-export function LayoutSidebar({
+export function PageHomeSideBar({
   focusDate,
   events,
   stateSideBar,
-}: LayoutSidebarProps) {
+}: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
 
@@ -90,20 +70,10 @@ export function LayoutSidebar({
 
   const renderEmpty = useMemo(
     () => (
-      <div className="flex flex-col items-center justify-center h-full">
-        <Image
-          src="/no-events.png"
-          width="290"
-          height="180"
-          alt="No Events on This Date"
-        />
-        <span className="text-18px italic font-bold text-slate-500">
-          It&apos;s Empty!
-        </span>
-        <span className="mt-1 text-16px italic text-slate-500">
-          There are no events on this date.
-        </span>
-      </div>
+      <LayoutNotice
+        title="It's Empty"
+        desc="There are no events on this date."
+      />
     ),
     []
   );
@@ -115,13 +85,39 @@ export function LayoutSidebar({
 
   return (
     <div
-      className={SIDEBAR_WRAPPER_STYLE}
-      style={SIDEBAR_WRAPPER_RESPONSIVE_STYLE[type]}
+      className={clsx(
+        SIDEBAR_WRAPPER_STYLE,
+        sideBar ? ["fixed left-0 bottom-0"] : [type === "mobile" && "h-full"]
+      )}
+      style={{
+        ...SIDEBAR_WRAPPER_RESPONSIVE_STYLE[type],
+        height: sideBar ? "calc(100vh - 64px)" : undefined,
+      }}
     >
-      <div className={clsx(type === "mobile" ? "h-full" : "h-screen")}>
+      <div>
         {renderTitle}
         {renderSideBarContents}
       </div>
     </div>
   );
 }
+
+const SIDEBAR_WRAPPER_STYLE = clsx(
+  "flex flex-col p-8",
+  "bg-slate-100 overflow-x-hidden overflow-y-scroll z-10"
+);
+
+const SIDEBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
+  desktop_lg: {
+    height: "100vh",
+    minWidth: "504px",
+  },
+  desktop_sm: {
+    height: "100vh",
+    minWidth: "400px",
+  },
+  mobile: {
+    width: "100vw",
+    height: "100%",
+  },
+};

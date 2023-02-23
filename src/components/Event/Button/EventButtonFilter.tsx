@@ -1,21 +1,29 @@
 import { useMemo } from "react";
-import { Dropdown, Icon, Label } from "semantic-ui-react";
+import {
+  Button,
+  Dropdown,
+  Icon,
+  Label,
+  SemanticSIZES,
+} from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_TAGS } from "@/consts";
 import { StateObject } from "@/types";
 import { useScreen } from "@/hooks";
 
-export interface LayoutCalendarFilterProps {
+export interface EventButtonFilterProps {
   stateFilters: StateObject<Record<number, boolean>>;
-  visibleFilters: Record<number, boolean>;
+  visibleFilters?: Record<number, boolean>;
   asButton?: boolean;
+  size?: SemanticSIZES;
 }
 
-export function ScreenHomeCalendarFilter({
+export function EventButtonFilter({
   stateFilters,
   visibleFilters,
   asButton,
-}: LayoutCalendarFilterProps) {
+  size,
+}: EventButtonFilterProps) {
   const [filters, setFilters] = stateFilters;
   const { type } = useScreen();
 
@@ -25,7 +33,7 @@ export function ScreenHomeCalendarFilter({
         ...tag,
         idx,
       }))
-        .filter((tag) => visibleFilters[tag.idx])
+        .filter((tag) => !visibleFilters || visibleFilters[tag.idx])
         .map((tag) => {
           const { color, name, idx } = tag;
           return (
@@ -37,7 +45,9 @@ export function ScreenHomeCalendarFilter({
                 empty: true,
                 circular: true,
               }}
-              className={clsx(filters[idx] && "bg-secondary-3")}
+              className={clsx(
+                filters[idx] ? "ActiveFilter bg-secondary-3" : "InactiveFilter"
+              )}
               onClick={() => {
                 setFilters((prev) => ({
                   ...prev,
@@ -72,13 +82,19 @@ export function ScreenHomeCalendarFilter({
 
   return (
     <Dropdown
-      text={type !== "mobile" ? "Filter" : undefined}
-      icon="filter"
+      icon={asButton ? undefined : "filter"}
       className="icon z-10"
-      labeled={type !== "mobile"}
-      direction="left"
+      labeled={asButton ? undefined : type !== "mobile"}
       floating
-      button={asButton}
+      direction="left"
+      trigger={
+        asButton ? (
+          <Button className="w-fit" size={size}>
+            <Icon name="filter" />
+            Filter
+          </Button>
+        ) : undefined
+      }
     >
       <Dropdown.Menu>
         <Dropdown.Menu scrolling>
