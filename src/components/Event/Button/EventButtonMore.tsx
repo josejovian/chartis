@@ -39,6 +39,7 @@ export function EventButtonMore({
         icon
         className="icon"
         direction="left"
+        floating
         trigger={
           <Button className="!m-0" icon size={size}>
             <Icon name="ellipsis vertical" />

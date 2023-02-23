@@ -1,5 +1,11 @@
 import { useMemo } from "react";
-import { Button, Dropdown, Icon, Label } from "semantic-ui-react";
+import {
+  Button,
+  Dropdown,
+  Icon,
+  Label,
+  SemanticSIZES,
+} from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_TAGS } from "@/consts";
 import { StateObject } from "@/types";
@@ -9,12 +15,14 @@ export interface EventButtonFilterProps {
   stateFilters: StateObject<Record<number, boolean>>;
   visibleFilters?: Record<number, boolean>;
   asButton?: boolean;
+  size?: SemanticSIZES;
 }
 
 export function EventButtonFilter({
   stateFilters,
   visibleFilters,
   asButton,
+  size,
 }: EventButtonFilterProps) {
   const [filters, setFilters] = stateFilters;
   const { type } = useScreen();
@@ -37,7 +45,9 @@ export function EventButtonFilter({
                 empty: true,
                 circular: true,
               }}
-              className={clsx(filters[idx] && "bg-secondary-3")}
+              className={clsx(
+                filters[idx] ? "ActiveFilter bg-secondary-3" : "InactiveFilter"
+              )}
               onClick={() => {
                 setFilters((prev) => ({
                   ...prev,
@@ -79,7 +89,7 @@ export function EventButtonFilter({
       direction="left"
       trigger={
         asButton ? (
-          <Button className="w-fit">
+          <Button className="w-fit" size={size}>
             <Icon name="filter" />
             Filter
           </Button>

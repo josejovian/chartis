@@ -1,14 +1,16 @@
 import { useMemo } from "react";
-import { Button, Dropdown, Icon } from "semantic-ui-react";
+import { Button, Dropdown, Icon, SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_SORT_TYPE } from "@/consts";
 import { StateObject } from "@/types";
 
 export interface EventButtonSortTypeProps {
+  size?: SemanticSIZES;
   stateSortDescending: StateObject<boolean>;
 }
 
 export function EventButtonSortType({
+  size,
   stateSortDescending,
 }: EventButtonSortTypeProps) {
   const [sortDescending, setSortDescending] = stateSortDescending;
@@ -38,7 +40,7 @@ export function EventButtonSortType({
       direction="left"
       floating
       trigger={
-        <Button className="w-fit" icon>
+        <Button className="w-fit" icon size={size}>
           <Icon
             name={`sort content ${sortDescending ? "descending" : "ascending"}`}
           />

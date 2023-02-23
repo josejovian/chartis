@@ -1,14 +1,15 @@
 import { useMemo } from "react";
-import { Button, Dropdown, Icon } from "semantic-ui-react";
+import { Button, Dropdown, Icon, SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_SORT_CRITERIA } from "@/consts";
 import { EventSortType, StateObject } from "@/types";
 
 export interface EventButtonSortProps {
+  size?: SemanticSIZES;
   stateSortBy: StateObject<EventSortType>;
 }
 
-export function EventButtonSort({ stateSortBy }: EventButtonSortProps) {
+export function EventButtonSort({ size, stateSortBy }: EventButtonSortProps) {
   const [sortBy, setSortBy] = stateSortBy;
 
   const renderDropdownItems = useMemo(
@@ -37,7 +38,7 @@ export function EventButtonSort({ stateSortBy }: EventButtonSortProps) {
       direction="left"
       floating
       trigger={
-        <Button className="w-fit">
+        <Button className="w-fit" size={size}>
           <Icon name="database" />
           Sort By
         </Button>
