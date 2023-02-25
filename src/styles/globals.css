@@ -8,9 +8,6 @@
   h4 {
     margin: 0 !important;
   }
-  *:not(:is(button, .item)) > i {
-    margin: 0 !important;
-  }
   a {
     color: unset !important;
   }
@@ -50,6 +47,9 @@
   .InactiveFilter .ui.label.empty {
     background: transparent !important;
   }
+  .ui.yellow.button {
+    color: black !important;
+  }
 }
 @tailwind components;
 @layer utilities {
@@ -67,6 +67,9 @@
   }
   .text-18px {
     font-size: 18px;
+  }
+  .text-20px {
+    font-size: 20px;
   }
 
   .bg-primary-1 {
