@@ -44,7 +44,7 @@ export default function App({ Component, pageProps }: AppProps) {
     });
   }, []);
 
-  const handleInitialize = useCallback(() => {
+  const handleInitialize = useCallback(async () => {
     if (initialize.current) return;
     window.addEventListener("resize", handleUpdateScreen);
     handleUpdateScreen();
