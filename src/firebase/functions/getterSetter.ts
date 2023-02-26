@@ -1,5 +1,5 @@
 import { child, get, ref, set } from "firebase/database";
-import { db } from "./config";
+import { db } from "../config";
 
 export async function getDataFromPath(path: string) {
   return await new Promise(function (res, rej) {

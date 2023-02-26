@@ -1,12 +1,24 @@
-import { useMemo } from "react";
-import { Button } from "semantic-ui-react";
-import clsx from "clsx";
-import { ModalAuthInput } from "@/components";
-import { useModal, useScreen } from "@/hooks";
+import { useCallback, useMemo } from "react";
+import { register } from "@/firebase";
+import { ModalAuthTemplate } from "@/components";
+import { useModal } from "@/hooks";
+import { FormRegister, SchemaRegister } from "@/utils";
+import { FormRegisterProps } from "@/types";
 
 export function ModalAuthRegister() {
-  const { type } = useScreen();
   const { showLogin } = useModal();
+
+  const handleRegister = useCallback(async (values: unknown) => {
+    await register({
+      ...(values as FormRegisterProps),
+      onSuccess: () => {
+        console.log("Login Success!");
+      },
+      onFail: () => {
+        console.log("Login Fail!");
+      },
+    });
+  }, []);
 
   const renderFormHead = useMemo(
     () => (
@@ -24,27 +36,13 @@ export function ModalAuthRegister() {
     [showLogin]
   );
 
-  const renderFormBody = useMemo(
-    () => (
-      <div
-        className={clsx(
-          "flex flex-col items-center bg-white",
-          type === "mobile" ? "w-full" : "!w-80"
-        )}
-      >
-        <ModalAuthInput iconLabel="user" placeholder="Enter your full name" />
-        <ModalAuthInput iconLabel="mail" placeholder="Enter your email" />
-        <ModalAuthInput iconLabel="key" placeholder="Enter your password" />
-        <Button color="yellow">Register</Button>
-      </div>
-    ),
-    [type]
-  );
-
   return (
-    <div className="flex flex-col items-center">
-      {renderFormHead}
-      {renderFormBody}
-    </div>
+    <ModalAuthTemplate
+      formFields={FormRegister}
+      formHead={renderFormHead}
+      formName="Register"
+      formSchema={SchemaRegister}
+      onSubmit={handleRegister}
+    />
   );
 }

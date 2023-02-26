@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Button, SemanticICONS } from "semantic-ui-react";
 import clsx from "clsx";
-import { auth } from "@/firebase";
+import { auth, logout } from "@/firebase";
 import { LayoutNavbarButton, UserPicture } from "@/components";
 import { useModal } from "@/hooks";
 
@@ -15,25 +15,25 @@ export interface LayoutNavbarAuthProps {
 
 export function LayoutNavbarAuth() {
   const user = auth.currentUser;
-  const { showRegister } = useModal();
+  const { showRegister, showLogin } = useModal();
 
   const renderUser = useMemo(
     () => (
       <>
         <div className="flex items-center gap-4">
           <UserPicture fullName="John Doe" />
-          <span>John Doe</span>
+          <span>{user?.uid}</span>
         </div>
         <LayoutNavbarButton
           icon="log out"
           className="text-red-200 hover:text-red-300 active:text-red-300 focus:text-red-300"
           onClick={() => {
-            console.log("Log Out");
+            logout();
           }}
         />
       </>
     ),
-    []
+    [user?.uid]
   );
 
   const renderGuest = useMemo(
@@ -42,12 +42,12 @@ export function LayoutNavbarAuth() {
         <Button size="tiny" onClick={showRegister}>
           Register
         </Button>
-        <Button color="yellow" size="tiny">
+        <Button color="yellow" size="tiny" onClick={showLogin}>
           Login
         </Button>
       </div>
     ),
-    [showRegister]
+    [showLogin, showRegister]
   );
 
   return (
