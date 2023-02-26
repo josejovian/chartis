@@ -1,17 +1,29 @@
-import { useMemo } from "react";
-import { Button } from "semantic-ui-react";
-import clsx from "clsx";
-import { ModalAuthInput } from "@/components";
-import { useModal, useScreen } from "@/hooks";
+import { useCallback, useMemo } from "react";
+import { login } from "@/firebase";
+import { ModalAuthTemplate } from "@/components";
+import { useModal } from "@/hooks";
+import { FormLogin, SchemaLogin } from "@/utils";
+import { FormLoginProps } from "@/types";
 
 export function ModalAuthLogin() {
-  const { type } = useScreen();
   const { showRegister } = useModal();
+
+  const handleLogin = useCallback(async (values: unknown) => {
+    await login({
+      ...(values as FormLoginProps),
+      onSuccess: () => {
+        console.log("Login Success!");
+      },
+      onFail: () => {
+        console.log("Login Fail!");
+      },
+    });
+  }, []);
 
   const renderFormHead = useMemo(
     () => (
       <div className="flex flex-col items-center bg-white mb-8">
-        <h2 className="text-20px">Login</h2>
+        <h2 className="text-20px">Register</h2>
         <span className="mt-2">
           No account?{" "}
           <u className="cursor-pointer" onClick={showRegister}>
@@ -24,26 +36,13 @@ export function ModalAuthLogin() {
     [showRegister]
   );
 
-  const renderFormBody = useMemo(
-    () => (
-      <div
-        className={clsx(
-          "flex flex-col items-center bg-white",
-          type === "mobile" ? "w-full" : "!w-80"
-        )}
-      >
-        <ModalAuthInput iconLabel="mail" placeholder="Enter your email" />
-        <ModalAuthInput iconLabel="key" placeholder="Enter your password" />
-        <Button color="yellow">Login</Button>
-      </div>
-    ),
-    [type]
-  );
-
   return (
-    <div className="flex flex-col items-center">
-      {renderFormHead}
-      {renderFormBody}
-    </div>
+    <ModalAuthTemplate
+      formFields={FormLogin}
+      formHead={renderFormHead}
+      formName="Login"
+      formSchema={SchemaLogin}
+      onSubmit={handleLogin}
+    />
   );
 }
