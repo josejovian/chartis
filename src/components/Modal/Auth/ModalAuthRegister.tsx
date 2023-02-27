@@ -1,24 +1,48 @@
 import { useCallback, useMemo } from "react";
-import { register } from "@/firebase";
+import { useRouter } from "next/router";
+import { updateProfile } from "firebase/auth";
+import { auth, register, setDataToPath } from "@/firebase";
 import { ModalAuthTemplate } from "@/components";
 import { useModal } from "@/hooks";
 import { FormRegister, SchemaRegister } from "@/utils";
 import { FormRegisterProps } from "@/types";
 
 export function ModalAuthRegister() {
-  const { showLogin } = useModal();
+  const { clearModal, showLogin } = useModal();
+  const router = useRouter();
 
-  const handleRegister = useCallback(async (values: unknown) => {
-    await register({
-      ...(values as FormRegisterProps),
-      onSuccess: () => {
-        console.log("Login Success!");
-      },
-      onFail: () => {
-        console.log("Login Fail!");
-      },
-    });
-  }, []);
+  const handleRegister = useCallback(
+    async (values: unknown) => {
+      const data = values as FormRegisterProps;
+      await register({
+        ...data,
+        onSuccess: async (cred) => {
+          await setDataToPath(`/user/${cred.user.uid}`, {
+            name: data.name,
+          })
+            .then(async () => {
+              if (auth.currentUser)
+                await updateProfile(auth.currentUser, {
+                  displayName: data.name,
+                });
+              else throw Error("Auth somehow doesn't have currentUser.");
+            })
+            .then(() => {
+              clearModal();
+              router.replace(router.asPath);
+            })
+            .catch((e) => {
+              console.log(e);
+              console.log("Login Fail!");
+            });
+        },
+        onFail: () => {
+          console.log("Login Fail!");
+        },
+      });
+    },
+    [clearModal, router]
+  );
 
   const renderFormHead = useMemo(
     () => (

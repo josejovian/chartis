@@ -1,4 +1,11 @@
 @layer base {
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-family: "Lato", sans-serif !important;
+  }
   html {
     font-size: 16px !important;
   }
@@ -7,6 +14,25 @@
   h3,
   h4 {
     margin: 0 !important;
+  }
+  h1,
+  .h1 {
+    @apply text-3xl;
+  }
+
+  h2,
+  .h2 {
+    @apply text-2xl;
+  }
+
+  h3,
+  .h3 {
+    @apply text-xl;
+  }
+
+  h4,
+  .h4 {
+    @apply text-base;
   }
   a {
     color: unset !important;
@@ -49,6 +75,23 @@
   }
   .ui.yellow.button {
     color: black !important;
+  }
+  input.search {
+    min-height: 0px !important;
+  }
+  i.dropdown.icon {
+    min-height: inherit !important;
+    height: inherit !important;
+  }
+  .visible.menu {
+    @apply !border-gray-300;
+  }
+  [role="combobox"] i.dropdown.icon {
+    height: 100% !important;
+    margin-top: -12px !important;
+  }
+  .EventDetailsTable .ui.transparent.input input {
+    @apply !px-3;
   }
 }
 @tailwind components;

@@ -2,7 +2,7 @@ import * as Yup from "yup";
 
 export const RuleName = Yup.string()
   .min(3, "Name is too short!")
-  .max(30, "Name is too long!")
+  .max(50, "Name is too long!")
   .required("Name is required.");
 
 export const RuleEmail = Yup.string()

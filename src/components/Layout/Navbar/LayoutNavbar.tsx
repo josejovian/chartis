@@ -1,13 +1,18 @@
 import { useMemo } from "react";
 import clsx from "clsx";
 import { useScreen } from "@/hooks";
-import { ResponsiveInlineStyleType, StateObject } from "@/types";
+import {
+  ResponsiveInlineStyleType,
+  StateObject,
+  UserPermissionType,
+} from "@/types";
 import {
   LayoutNavbarAuth,
   LayoutNavbarButton,
   LayoutNavbarItemProps,
   LayoutNavbarMain,
 } from "@/components";
+import { useUser } from "@/hooks/useUser";
 
 export interface LayoutNavbarProps {
   stateNavBar: StateObject<boolean>;
@@ -32,6 +37,12 @@ const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
 export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [navBar, setNavBar] = stateNavBar;
   const { type } = useScreen();
+  const user = useUser();
+
+  const permission = useMemo<UserPermissionType>(
+    () => (user ? "user" : "guest"),
+    [user]
+  );
 
   const links = useMemo<Record<string, LayoutNavbarItemProps[]>>(
     () => ({
@@ -48,16 +59,20 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         {
           name: "Profile",
           icon: "user",
+          permission: "user",
         },
       ],
       Events: [
         {
           name: "Post Event",
           icon: "calendar plus",
+          permission: "user",
+          href: "/event/new",
         },
         {
           name: "Your Events",
           icon: "calendar alternate",
+          permission: "user",
         },
       ],
       Following: [
@@ -93,6 +108,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         <>
           <LayoutNavbarMain
             links={links}
+            permission={permission}
             stateNavBar={stateNavBar}
             type={type}
           />
@@ -101,7 +117,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
       ) : (
         <div className="p-4">{renderNavBarToggle}</div>
       ),
-    [links, navBar, renderNavBarToggle, stateNavBar, type]
+    [links, navBar, permission, renderNavBarToggle, stateNavBar, type]
   );
 
   return (

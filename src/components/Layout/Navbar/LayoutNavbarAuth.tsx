@@ -21,8 +21,8 @@ export function LayoutNavbarAuth() {
     () => (
       <>
         <div className="flex items-center gap-4">
-          <UserPicture fullName="John Doe" />
-          <span>{user?.uid}</span>
+          <UserPicture fullName={user?.displayName ?? "?"} />
+          <span>{user?.displayName ?? "Unknown User"}</span>
         </div>
         <LayoutNavbarButton
           icon="log out"
@@ -33,7 +33,7 @@ export function LayoutNavbarAuth() {
         />
       </>
     ),
-    [user?.uid]
+    [user?.displayName]
   );
 
   const renderGuest = useMemo(

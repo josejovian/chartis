@@ -14,12 +14,15 @@ export function useModal() {
     setModal(<ModalAuthLogin />);
   }, [setModal]);
 
+  const clearModal = useCallback(() => setModal(null), [setModal]);
+
   return useMemo(
     () => ({
       params,
       showRegister,
       showLogin,
+      clearModal,
     }),
-    [params, showRegister, showLogin]
+    [params, showRegister, showLogin, clearModal]
   );
 }

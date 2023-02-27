@@ -13,11 +13,17 @@ import { Lato } from "@next/font/google";
 import clsx from "clsx";
 import { LayoutNavbar, Modal } from "@/components";
 import { SCREEN_CONTEXT_DEFAULT, ContextWrapper } from "@/contexts";
-import { ScreenSizeCategoryType, ScreenSizeType } from "@/types";
+import {
+  ScreenSizeCategoryType,
+  ScreenSizeType,
+  UserObjectType,
+} from "@/types";
 import {
   DESKTOP_SMALL_SCREEN_THRESHOLD,
   MOBILE_SCREEN_THRESHOLD,
 } from "@/consts";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/firebase";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
@@ -26,6 +32,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const [navBar, setNavBar] = stateNavBar;
   const stateModal = useState<ReactNode>(null);
   const [modal, setModal] = stateModal;
+  const [user, setUser] = useState<UserObjectType>(null);
   const [screen, setScreen] = useState<ScreenSizeType>(SCREEN_CONTEXT_DEFAULT);
   const initialize = useRef(false);
 
@@ -49,6 +56,9 @@ export default function App({ Component, pageProps }: AppProps) {
     window.addEventListener("resize", handleUpdateScreen);
     handleUpdateScreen();
     initialize.current = true;
+    onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
   }, [handleUpdateScreen]);
 
   const handleAdjustNavbar = useCallback(() => {
@@ -78,7 +88,12 @@ export default function App({ Component, pageProps }: AppProps) {
   const renderShadeModal = useMemo(
     () =>
       modal && (
-        <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen z-40">
+        <div
+          className={clsx(
+            "fixed left-0 top-0 w-screen h-screen",
+            "flex items-center justify-center z-40"
+          )}
+        >
           <div
             className="w-screen h-screen z-40 bg-slate-900 opacity-70"
             onClick={() => {
@@ -107,6 +122,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }
       `}</style>
       <ContextWrapper
+        user={user}
         screen={screen}
         stateModal={stateModal}
         stateNavBar={stateNavBar}

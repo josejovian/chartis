@@ -1,26 +1,33 @@
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import clsx from "clsx";
 import { useScreen } from "@/hooks";
 import { ResponsiveStyleType } from "@/types";
+import { Form } from "semantic-ui-react";
 
 export interface LayoutCardProps {
   className?: string;
   children: ReactNode;
+  form?: boolean;
 }
 
-export function LayoutCard({ className, children }: LayoutCardProps) {
+export function LayoutCard({ className, children, form }: LayoutCardProps) {
   const { type } = useScreen();
-  return (
-    <div
-      className={clsx(
+
+  const wrapperStyle = useMemo(
+    () =>
+      clsx(
         "flex flex-col bg-white min-w-full",
         type !== "mobile" && "rounded-lg",
         VIEW_EVENT_CARD_WRAPPER_RESPONSIVE_STYLE[type],
         className
-      )}
-    >
-      {children}
-    </div>
+      ),
+    [className, type]
+  );
+
+  return form ? (
+    <Form className={wrapperStyle}>{children}</Form>
+  ) : (
+    <div className={wrapperStyle}>{children}</div>
   );
 }
 
