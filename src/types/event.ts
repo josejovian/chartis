@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { HTMLInputTypeAttribute, ReactNode } from "react";
 import { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
 
 export interface EventType {
@@ -18,11 +18,32 @@ export interface EventType {
   tags: number[];
 }
 
-export interface EventDetailType {
+export interface EventDetailBaseType {
   icon: SemanticICONS;
   name: string;
-  value: ReactNode;
+  placeholder?: string;
 }
+
+export interface EventDetailSimpleTextType extends EventDetailBaseType {
+  icon: SemanticICONS;
+  name: string;
+  rawValue: string | string[] | number | number[] | undefined;
+  inputType: HTMLInputTypeAttribute;
+}
+
+export interface EventDetailComponentType extends EventDetailBaseType {
+  icon: SemanticICONS;
+  name: string;
+  viewElement: ReactNode;
+  editElement: ReactNode;
+}
+
+export type EventDetailType =
+  | EventDetailSimpleTextType
+  | EventDetailComponentType;
+
+export type EventDetailUnionType = EventDetailSimpleTextType &
+  EventDetailComponentType;
 
 export interface EventTagType {
   name: string;
@@ -50,3 +71,5 @@ export interface EventSortDirectionType {
   value: boolean;
   name: string;
 }
+
+export type EventModeType = "create" | "edit" | "view";

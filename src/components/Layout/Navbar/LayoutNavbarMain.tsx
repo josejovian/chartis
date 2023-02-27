@@ -1,18 +1,25 @@
 import { useMemo } from "react";
 import clsx from "clsx";
-import { ScreenSizeCategoryType, StateObject } from "@/types";
+import {
+  ScreenSizeCategoryType,
+  StateObject,
+  UserPermissionType,
+} from "@/types";
 import { LayoutNavbarItem, LayoutNavbarItemProps } from "@/components";
 import { useRouter } from "next/router";
 import { LayoutNavbarButton } from "./LayoutNavbarButton";
+import { hasPermission } from "@/utils";
 
 export interface LayoutNavbarMainProps {
   links: Record<string, LayoutNavbarItemProps[]>;
+  permission: UserPermissionType;
   stateNavBar: StateObject<boolean>;
   type: ScreenSizeCategoryType;
 }
 
 export function LayoutNavbarMain({
   links,
+  permission,
   stateNavBar,
   type,
 }: LayoutNavbarMainProps) {
@@ -75,27 +82,35 @@ export function LayoutNavbarMain({
   const renderLinks = useMemo(
     () => (
       <>
-        {Object.entries(links).map(([category, links], idx) => (
-          <div
-            className={clsx("mt-4", idx > 0 && "border-t border-slate-600")}
-            key={`LayoutNavbarCategory_${category}`}
-          >
-            <div className={idx > 0 ? "p-4" : "hidden"}>
-              <span className="text-slate-300 italic font-black uppercase">
-                {category}
-              </span>
-            </div>
-            {links.map((link) => (
-              <LayoutNavbarItem
-                key={`LayoutNavbarItem_${link.name}`}
-                {...link}
-              />
-            ))}
-          </div>
-        ))}
+        {Object.entries(links).map(([category, links], idx) => {
+          const allowedLinks = links.filter((link) =>
+            hasPermission(permission, link.permission ?? "guest")
+          );
+
+          return (
+            allowedLinks.length > 0 && (
+              <div
+                className={clsx("mt-4", idx > 0 && "border-t border-slate-600")}
+                key={`LayoutNavbarCategory_${category}`}
+              >
+                <div className={idx > 0 ? "p-4" : "hidden"}>
+                  <span className="text-slate-300 italic font-black uppercase">
+                    {category}
+                  </span>
+                </div>
+                {allowedLinks.map((link) => (
+                  <LayoutNavbarItem
+                    key={`LayoutNavbarItem_${link.name}`}
+                    {...link}
+                  />
+                ))}
+              </div>
+            )
+          );
+        })}
       </>
     ),
-    [links]
+    [links, permission]
   );
 
   return (

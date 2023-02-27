@@ -49,21 +49,19 @@ export function ModalAuthTemplate({
           onSubmit(values);
         }}
       >
-        {() => (
-          <Form
-            className={clsx(
-              "flex flex-col items-center bg-white",
-              type === "mobile" ? "w-full" : "!w-80"
-            )}
-          >
-            {formFields.map((field) => (
-              <ModalAuthInput key={`Field_${field.id}`} props={field} />
-            ))}
-            <Button className="mt-2" type="submit" color="yellow">
-              {formName}
-            </Button>
-          </Form>
-        )}
+        <Form
+          className={clsx(
+            "flex flex-col items-center bg-white",
+            type === "mobile" ? "w-full" : "!w-80"
+          )}
+        >
+          {formFields.map((field) => (
+            <ModalAuthInput key={`Field_${field.id}`} props={field} />
+          ))}
+          <Button className="mt-2" type="submit" color="yellow">
+            {formName}
+          </Button>
+        </Form>
       </Formik>
     ),
     [formFields, formName, formSchema, initialValues, onSubmit, type]

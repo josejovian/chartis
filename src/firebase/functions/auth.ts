@@ -2,13 +2,14 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  UserCredential,
 } from "firebase/auth";
 import { auth } from "../config";
 
 export interface loginParams {
   email: string;
   password: string;
-  onSuccess?: () => void;
+  onSuccess?: (cred: UserCredential) => void;
   onFail?: () => void;
 }
 
@@ -16,7 +17,7 @@ export interface registerParams {
   email: string;
   name: string;
   password: string;
-  onSuccess?: () => void;
+  onSuccess?: (cred: UserCredential) => void;
   onFail?: () => void;
 }
 
@@ -28,8 +29,8 @@ export async function login({
 }: loginParams) {
   return await new Promise((res, rej) => {
     signInWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        onSuccess && onSuccess();
+      .then((cred) => {
+        onSuccess && onSuccess(cred);
         res(null);
       })
       .catch((error) => {
@@ -48,8 +49,8 @@ export async function register({
 }: registerParams) {
   return await new Promise((res, rej) => {
     createUserWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        onSuccess && onSuccess();
+      .then((cred) => {
+        onSuccess && onSuccess(cred);
         res(null);
       })
       .catch((error) => {
@@ -60,5 +61,7 @@ export async function register({
 }
 
 export async function logout() {
-  return await signOut(auth);
+  setTimeout(async () => {
+    await signOut(auth);
+  }, 300);
 }
