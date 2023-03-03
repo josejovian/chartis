@@ -12,13 +12,13 @@ import {
   EventType,
   ScreenSizeCategoryType,
   StateObject,
-  UserType,
+  IdentificationType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventHeadProps {
   event: EventType;
-  identification: UserType;
+  identification: IdentificationType;
   onDelete: () => void;
   stateDeleting?: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;

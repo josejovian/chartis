@@ -13,13 +13,17 @@ import { Lato } from "@next/font/google";
 import clsx from "clsx";
 import { LayoutNavbar, Modal } from "@/components";
 import { SCREEN_CONTEXT_DEFAULT, ContextWrapper } from "@/contexts";
-import { ScreenSizeCategoryType, ScreenSizeType, UserType } from "@/types";
+import {
+  ScreenSizeCategoryType,
+  ScreenSizeType,
+  IdentificationType,
+} from "@/types";
 import {
   DESKTOP_SMALL_SCREEN_THRESHOLD,
   MOBILE_SCREEN_THRESHOLD,
 } from "@/consts";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/firebase";
+import { auth, getDataFromPath } from "@/firebase";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
@@ -28,11 +32,12 @@ export default function App({ Component, pageProps }: AppProps) {
   const [navBar, setNavBar] = stateNavBar;
   const stateModal = useState<ReactNode>(null);
   const [modal, setModal] = stateModal;
-  const [identification, setIdentification] = useState<UserType>({
+  const stateIdentification = useState<IdentificationType>({
     user: null,
     users: {},
     permission: "guest",
   });
+  const setIdentification = stateIdentification[1];
   const [screen, setScreen] = useState<ScreenSizeType>(SCREEN_CONTEXT_DEFAULT);
   const initialize = useRef(false);
 
@@ -56,14 +61,32 @@ export default function App({ Component, pageProps }: AppProps) {
     window.addEventListener("resize", handleUpdateScreen);
     handleUpdateScreen();
     initialize.current = true;
-    onAuthStateChanged(auth, (user) => {
+
+    onAuthStateChanged(auth, async (user) => {
+      let userData = null;
+      let newUsers = {};
+
+      if (user) {
+        userData = await getDataFromPath(`/user/${user.uid}`).catch(() => null);
+
+        if (userData) {
+          newUsers = {
+            [user.uid]: userData,
+          };
+        }
+      }
+
       setIdentification((prev) => ({
         ...prev,
         user,
         permission: user ? "user" : "guest",
+        users: {
+          ...prev.users,
+          ...newUsers,
+        },
       }));
     });
-  }, [handleUpdateScreen]);
+  }, [handleUpdateScreen, setIdentification]);
 
   const handleAdjustNavbar = useCallback(() => {
     if (screen.type === "desktop_lg") {
@@ -126,7 +149,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }
       `}</style>
       <ContextWrapper
-        identification={identification}
+        stateIdentification={stateIdentification}
         screen={screen}
         stateModal={stateModal}
         stateNavBar={stateNavBar}

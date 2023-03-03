@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { Button, Dropdown, Icon, SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
-import { EventType, StateObject, UserType } from "@/types";
+import { EventType, StateObject, IdentificationType } from "@/types";
 import { ModalEventDeleteConfirmation } from "@/components/Modal";
 
 export interface EventButtonMoreProps {
   event: EventType;
-  identification: UserType;
+  identification: IdentificationType;
   size?: SemanticSIZES;
   stateDeleting?: StateObject<boolean>;
   onDelete?: () => void;

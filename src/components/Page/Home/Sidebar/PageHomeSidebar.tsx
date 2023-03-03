@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { EventCard, LayoutNotice } from "@/components";
 import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
 import { strDate } from "@/utils";
-import { useScreen, useUser } from "@/hooks";
+import { useIdentification, useScreen } from "@/hooks";
 
 export interface PageHomeSideBarProps {
   focusDate: Date;
@@ -19,7 +19,8 @@ export function PageHomeSideBar({
 }: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
-  const identification = useUser();
+  const stateIdentification = useIdentification();
+  const identification = stateIdentification[0];
 
   const renderTitle = useMemo(
     () => (

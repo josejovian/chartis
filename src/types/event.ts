@@ -13,9 +13,9 @@ export interface EventType {
   thumbnailSrc?: string;
   startDate: number;
   endDate?: number;
-  followCount?: number;
-  followerIds?: string[];
-  guestFollowerCount?: number;
+  subscriberCount?: number;
+  subscriberIds?: string[];
+  guestSubscriberCount?: number;
   tags: number[];
 }
 

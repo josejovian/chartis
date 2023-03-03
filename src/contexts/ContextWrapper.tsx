@@ -2,12 +2,12 @@ import { ReactNode } from "react";
 import { ModalContext } from "./ModalContext";
 import { NavBarContext } from "./NavBarContext";
 import { ScreenContext } from "./ScreenContext";
-import { UserContext } from "./UserContext";
-import { ScreenSizeType, StateObject, UserType } from "@/types";
+import { IdentificationContext } from "./IdentificationContext";
+import { ScreenSizeType, StateObject, IdentificationType } from "@/types";
 
 export interface ContextWrapperProps {
   children: ReactNode;
-  identification: UserType;
+  stateIdentification: StateObject<IdentificationType>;
   stateModal: StateObject<ReactNode>;
   stateNavBar: StateObject<boolean>;
   screen: ScreenSizeType;
@@ -15,13 +15,13 @@ export interface ContextWrapperProps {
 
 export function ContextWrapper({
   children,
-  identification,
+  stateIdentification,
   stateModal,
   stateNavBar,
   screen,
 }: ContextWrapperProps) {
   return (
-    <UserContext.Provider value={identification}>
+    <IdentificationContext.Provider value={stateIdentification}>
       <ModalContext.Provider value={stateModal}>
         <NavBarContext.Provider value={stateNavBar}>
           <ScreenContext.Provider value={screen}>
@@ -29,6 +29,6 @@ export function ContextWrapper({
           </ScreenContext.Provider>
         </NavBarContext.Provider>
       </ModalContext.Provider>
-    </UserContext.Provider>
+    </IdentificationContext.Provider>
   );
 }
