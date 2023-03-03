@@ -98,10 +98,14 @@ export function LayoutNavbarMain({
                     {category}
                   </span>
                 </div>
-                {allowedLinks.map((link) => (
+                {allowedLinks.map(({ onClick, ...link }) => (
                   <LayoutNavbarItem
                     key={`LayoutNavbarItem_${link.name}`}
                     {...link}
+                    onClick={() => {
+                      onClick && onClick();
+                      if (type !== "desktop_lg") setNavBar(false);
+                    }}
                   />
                 ))}
               </div>
@@ -110,7 +114,7 @@ export function LayoutNavbarMain({
         })}
       </>
     ),
-    [links, permission]
+    [links, permission, setNavBar, type]
   );
 
   return (

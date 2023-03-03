@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "semantic-ui-react";
 import clsx from "clsx";
 import {
@@ -12,27 +12,36 @@ import {
   EventType,
   ScreenSizeCategoryType,
   StateObject,
+  UserType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventHeadProps {
   event: EventType;
+  identification: UserType;
+  onDelete: () => void;
+  stateDeleting?: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
 }
 
 export function PageViewEventHead({
   event,
+  identification,
+  onDelete,
+  stateDeleting,
   stateMode,
   type,
 }: PageViewEventHeadProps) {
   const stateActiveTab = useState(0);
   const activeTab = stateActiveTab[0];
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const mode = stateMode[0];
+  const [mode, setMode] = stateMode;
 
   const crumb = useMemo(
-    () => `Events / ${EVENT_TAGS[event.tags[0]].name} / ${event.name}`,
+    () =>
+      event.tags.length > 0 &&
+      `Events / ${EVENT_TAGS[event.tags[0]].name} / ${event.name}`,
     [event.name, event.tags]
   );
 
@@ -44,6 +53,10 @@ export function PageViewEventHead({
     ],
     []
   );
+
+  const handleEdit = useCallback(() => {
+    setMode("edit");
+  }, [setMode]);
 
   const renderDetailTabs = useMemo(
     () => (
@@ -72,12 +85,20 @@ export function PageViewEventHead({
       <div className="flex items-between p-4 gap-4">
         <EventButtonFollow
           event={event}
+          identification={identification}
           size={type === "mobile" ? "tiny" : undefined}
         />
-        <EventButtonMore size={type === "mobile" ? "tiny" : undefined} />
+        <EventButtonMore
+          event={event}
+          identification={identification}
+          size={type === "mobile" ? "tiny" : undefined}
+          onEdit={handleEdit}
+          onDelete={onDelete}
+          stateDeleting={stateDeleting}
+        />
       </div>
     ),
-    [event, type]
+    [event, identification, type, handleEdit, onDelete, stateDeleting]
   );
 
   const renderViewTabs = useMemo(

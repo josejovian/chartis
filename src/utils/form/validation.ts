@@ -10,3 +10,28 @@ export const RuleEmail = Yup.string()
   .required("Email is required.");
 
 export const RulePassword = Yup.string().required("Password is required.");
+
+export const RuleDescription = Yup.string()
+  .min(8, "Description is too short!")
+  .max(5000, "Description is too long!")
+  .required("Description is required.");
+
+export function validateStartDate(start?: number) {
+  if (!start) return "Start date is required.";
+  return undefined;
+}
+
+export function validateEndDate(start?: number, end?: number) {
+  if (start && end && end < start)
+    return "End date must not be earlier than the start date.";
+  if (start && end && end === start)
+    return "End date must not be the same as the start date.";
+  if (!start && end)
+    return "End date cannot be set unless start date is also set.";
+  return undefined;
+}
+
+export function validateTags(tags: number[]) {
+  if (tags.length === 0) return "Event should have one tag.";
+  return undefined;
+}

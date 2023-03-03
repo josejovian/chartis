@@ -40,14 +40,7 @@ export function EventButtonFilter({
             <Dropdown.Item
               key={name}
               value={name}
-              label={{
-                color,
-                empty: true,
-                circular: true,
-              }}
-              className={clsx(
-                filters[idx] ? "ActiveFilter bg-secondary-3" : "InactiveFilter"
-              )}
+              className={clsx(filters[idx] ? "ActiveFilter" : "InactiveFilter")}
               onClick={() => {
                 setFilters((prev) => ({
                   ...prev,

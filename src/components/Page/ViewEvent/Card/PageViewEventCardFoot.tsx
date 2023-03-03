@@ -2,40 +2,56 @@ import { useMemo } from "react";
 import { Button } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventModeType, EventType, StateObject } from "@/types";
+import { ModalEventLeaveEditConfirmation } from "@/components/Modal";
 
 export interface PageViewEventFootProps {
   event: EventType;
+  stateSubmitting: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;
-  onSubmit?: () => void;
+  onLeaveEdit?: () => void;
+  submitForm?: () => void;
 }
 
 export function PageViewEventFoot({
+  stateSubmitting,
   stateMode,
-  onSubmit,
+  onLeaveEdit,
+  submitForm,
 }: PageViewEventFootProps) {
   const mode = stateMode[0];
+  const submitting = stateSubmitting[0];
 
   const renderEdit = useMemo(
     () => (
       <div className={FOOT_STYLE}>
-        <Button>Cancel</Button>
-        <Button color="yellow" type="submit" onClick={onSubmit}>
-          Save
+        <ModalEventLeaveEditConfirmation onLeaveEdit={onLeaveEdit} />
+        <Button
+          color="yellow"
+          type="submit"
+          onClick={submitForm}
+          loading={submitting}
+        >
+          Update
         </Button>
       </div>
     ),
-    [onSubmit]
+    [onLeaveEdit, submitForm, submitting]
   );
 
   const renderCreate = useMemo(
     () => (
       <div className={FOOT_STYLE}>
-        <Button color="yellow" type="submit" onClick={onSubmit}>
+        <Button
+          color="yellow"
+          type="submit"
+          onClick={submitForm}
+          loading={submitting}
+        >
           Create
         </Button>
       </div>
     ),
-    [onSubmit]
+    [submitting, submitForm]
   );
 
   return (

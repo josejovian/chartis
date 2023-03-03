@@ -51,6 +51,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           name: "Home",
           icon: "home",
           active: true,
+          href: "/",
         },
         {
           name: "Notification",
