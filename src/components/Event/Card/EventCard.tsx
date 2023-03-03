@@ -14,12 +14,12 @@ import {
   EventCardDisplayType,
   EventDetailCompactType,
   EventType,
-  UserType,
+  IdentificationType,
 } from "@/types";
 
 export interface EventCardProps {
   className?: string;
-  identification: UserType;
+  identification: IdentificationType;
   event: EventType;
   type?: EventCardDisplayType;
 }

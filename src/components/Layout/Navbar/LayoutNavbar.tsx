@@ -12,7 +12,7 @@ import {
   LayoutNavbarItemProps,
   LayoutNavbarMain,
 } from "@/components";
-import { useUser } from "@/hooks/useUser";
+import { useIdentification } from "@/hooks/useIdentification";
 
 export interface LayoutNavbarProps {
   stateNavBar: StateObject<boolean>;
@@ -37,7 +37,8 @@ const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
 export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [navBar, setNavBar] = stateNavBar;
   const { type } = useScreen();
-  const user = useUser();
+  const stateIdentification = useIdentification();
+  const { user } = stateIdentification[0];
 
   const permission = useMemo<UserPermissionType>(
     () => (user ? "user" : "guest"),

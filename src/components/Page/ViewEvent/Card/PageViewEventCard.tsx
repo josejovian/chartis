@@ -7,7 +7,7 @@ import {
   PageViewEventFoot,
   PageViewEventHead,
 } from "@/components";
-import { useUser } from "@/hooks";
+import { useIdentification } from "@/hooks";
 import {
   SchemaEvent,
   sleep,
@@ -68,7 +68,8 @@ export function PageViewEventCard({
     return object;
   }, [event, mode]);
 
-  const identification = useUser();
+  const stateIdentification = useIdentification();
+  const identification = stateIdentification[0];
   const { user } = identification;
 
   const handleSubmitForm = useCallback(
