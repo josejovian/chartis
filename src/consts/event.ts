@@ -5,6 +5,18 @@ import {
   EventType,
 } from "@/types";
 
+export const EVENT_EMPTY: EventType = {
+  id: "unset",
+  authorId: "admin",
+  name: "",
+  description: "",
+  organizer: "",
+  location: "",
+  postDate: 0,
+  startDate: 0,
+  tags: [],
+};
+
 export const EVENT_DUMMY_1: EventType = {
   id: "0",
   authorId: "admin",

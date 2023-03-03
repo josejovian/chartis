@@ -1,27 +1,40 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Field } from "formik";
-import { Dropdown, Icon, Input, TextArea } from "semantic-ui-react";
+import { Dropdown, Input, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
-import { EventTags, PageViewEventCardDetailEditor } from "@/components";
+import {
+  EventTags,
+  FormErrorMessage,
+  PageViewEventCardDetail,
+} from "@/components";
 import { strDateTime } from "@/utils";
+import { EVENT_TAGS } from "@/consts";
 import {
   EventDetailType,
-  EventDetailUnionType,
   EventModeType,
   EventType,
   ScreenSizeCategoryType,
+  StateObject,
 } from "@/types";
-import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventBodyProps {
   event: EventType;
   mode: EventModeType;
+  stateTags: StateObject<number[]>;
   type: ScreenSizeCategoryType;
+  validateForm?: () => void;
 }
 
-export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
-  const { location, authorId, organizer, startDate, endDate } = event;
+export function PageViewEventBody({
+  event,
+  mode,
+  stateTags,
+  validateForm,
+}: PageViewEventBodyProps) {
+  const { location, authorId, organizer, startDate, endDate, description } =
+    event;
+  const [tags, setTags] = stateTags;
 
   const renderEventTags = useMemo(
     () => (
@@ -37,36 +50,67 @@ export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
     [event.id, event.tags]
   );
 
+  const handleUpdateTagJSON = useCallback(
+    (values: string[]) => {
+      setTags(values ? values.map((value) => Number(value)) : []);
+      setTimeout(() => {
+        validateForm && validateForm();
+      }, 100);
+    },
+    [setTags, validateForm]
+  );
+
   const renderEditEventTags = useMemo(
     () => (
-      <Dropdown
-        placeholder="Enter event tags"
-        className="!border-0 !min-h-0 !py-0"
-        fluid
-        multiple
-        search
-        selection
-        transparent
-        options={EVENT_TAGS.map(({ name }) => ({
-          key: `SelectTag_${name}`,
-          text: name,
-          value: name,
-        }))}
-      />
+      <>
+        <Dropdown
+          placeholder="Enter event tags"
+          className="!border-0 !min-h-0 !py-0"
+          fluid
+          search
+          selection
+          multiple
+          transparent
+          defaultValue={tags}
+          onChange={(_, { value }) => handleUpdateTagJSON(value as string[])}
+          onMouseDown={() => validateForm && validateForm()}
+          onBlur={() => validateForm && validateForm()}
+          options={EVENT_TAGS.map(({ name }, idx) => ({
+            key: `SelectTag_${name}`,
+            text: name,
+            value: idx,
+          }))}
+        />
+        <Field name="tags">
+          {({ field, meta }: any) => (
+            <div className="">
+              <Input
+                className="EventInput !hidden"
+                size="big"
+                transparent
+                {...field}
+              />
+              <FormErrorMessage meta={meta} className="!z-10" overlap />
+            </div>
+          )}
+        </Field>
+      </>
     ),
-    []
+    [handleUpdateTagJSON, tags, validateForm]
   );
 
   const details = useMemo<EventDetailType[]>(
     () => [
       {
         icon: "tags",
+        id: "tags",
         name: "TAGS",
         viewElement: renderEventTags,
         editElement: renderEditEventTags,
       },
       {
         icon: "group",
+        id: "organizer",
         name: "ORGANIZER",
         rawValue: organizer,
         inputType: "text",
@@ -74,6 +118,7 @@ export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
       },
       {
         icon: "location arrow",
+        id: "location",
         name: "LOCATION",
         rawValue: location,
         inputType: "text",
@@ -81,14 +126,18 @@ export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
       },
       {
         icon: "calendar",
+        id: "startDate",
         name: "START",
-        rawValue: startDate && strDateTime(new Date(startDate)),
+        rawValue: startDate,
+        moddedValue: startDate && strDateTime(new Date(startDate)),
         inputType: "datetime-local",
       },
       {
         icon: "calendar",
+        id: "endDate",
         name: "END",
-        rawValue: endDate && strDateTime(new Date(endDate)),
+        rawValue: endDate,
+        moddedValue: endDate && strDateTime(new Date(endDate)),
         inputType: "datetime-local",
       },
     ],
@@ -107,13 +156,10 @@ export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
     () =>
       mode === "view" && (
         <span className="text-14px text-secondary-4">
-          Posted by <b>{authorId}</b> a week ago{" "}
-          {organizer &&
-            `- Organized by
-				<b>${organizer}</b>`}
+          Posted by <b>{authorId}</b> a week ago
         </span>
       ),
-    [authorId, mode, organizer]
+    [authorId, mode]
   );
 
   const renderEventName = useMemo(
@@ -122,15 +168,18 @@ export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
         <h2 className="h2 text-secondary-7">{event.name}</h2>
       ) : (
         <Field name="name">
-          {({ field }: any) => (
-            <Input
-              className="w-full font-bold !text-red-100 !font-bold !h-8 !border-0"
-              style={{ fontSize: "1.5rem", marginTop: "20px" }}
-              size="big"
-              placeholder="Enter event name"
-              transparent
-              {...field}
-            />
+          {({ field, meta }: any) => (
+            <div className="mt-5">
+              <Input
+                className="EventInput w-full font-bold !text-red-100 !font-bold !h-8 !border-0"
+                style={{ fontSize: "1.5rem" }}
+                size="big"
+                placeholder="Enter event name"
+                transparent
+                {...field}
+              />
+              <FormErrorMessage meta={meta} className="mt-2" />
+            </div>
           )}
         </Field>
       ),
@@ -138,129 +187,25 @@ export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
   );
 
   const renderEventDetails = useMemo(
-    () => (
-      <table className="EventDetailsTable border-collapse mt-4">
-        <tbody>
-          {details.map((detail) => {
-            const {
-              name,
-              icon,
-              editElement,
-              rawValue,
-              viewElement,
-              placeholder,
-              inputType,
-            } = detail as EventDetailUnionType;
-
-            return (
-              <tr
-                key={`ModalViewEventBody_Detail-${name}`}
-                style={{
-                  height: "31px",
-                  maxHeight: "31px",
-                }}
-              >
-                <th
-                  className={clsx(DETAIL_CELL_BASE_STYLE, "w-fit")}
-                  style={{
-                    height: "31px",
-                    maxHeight: "31px",
-                  }}
-                >
-                  <div className="!w-fit flex gap-1 text-slate-500">
-                    <Icon name={icon} />
-                    <span>{name}</span>
-                  </div>
-                </th>
-                <td
-                  className={clsx(
-                    DETAIL_CELL_BASE_STYLE,
-                    "w-full",
-                    mode !== "view" && "!p-0",
-                    mode !== "view" && "hover:!bg-secondary-1"
-                  )}
-                  style={{
-                    maxHeight: "32px",
-                  }}
-                >
-                  {mode === "view" ? (
-                    viewElement || rawValue || "-"
-                  ) : editElement ? (
-                    editElement
-                  ) : (
-                    <PageViewEventCardDetailEditor
-                      defaultValues={rawValue}
-                      placeholder={placeholder}
-                      type={inputType}
-                    />
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    ),
+    () => <PageViewEventCardDetail details={details} mode={mode} />,
     [details, mode]
   );
 
   const renderEventDescription = useMemo(
     () =>
       mode === "view" ? (
-        <p className="mt-8">
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vel a
-          repudiandae debitis numquam, omnis deserunt reprehenderit aperiam nemo
-          similique voluptate accusantium ab vitae aliquid pariatur quis
-          distinctio expedita labore enim. Lorem ipsum dolor sit, amet
-          consectetur adipisicing elit. Vel a repudiandae debitis numquam, omnis
-          deserunt reprehenderit aperiam nemo similique voluptate accusantium ab
-          vitae aliquid pariatur quis distinctio expedita labore enim. Lorem
-          ipsum dolor sit, amet consectetur adipisicing elit. Vel a repudiandae
-          debitis numquam, omnis deserunt reprehenderit aperiam nemo similique
-          voluptate accusantium ab vitae aliquid pariatur quis distinctio
-          expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-          adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-          reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-          aliquid pariatur quis distinctio expedita labore enim. Lorem ipsum
-          dolor sit, amet consectetur adipisicing elit. Vel a repudiandae
-          debitis numquam, omnis deserunt reprehenderit aperiam nemo similique
-          voluptate accusantium ab vitae aliquid pariatur quis distinctio
-          expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-          adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-          reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-          aliquid pariatur quis distinctio expedita labore enim. Lorem ipsum
-          dolor sit, amet consectetur adipisicing elit. Vel a repudiandae
-          debitis numquam, omnis deserunt reprehenderit aperiam nemo similique
-          voluptate accusantium ab vitae aliquid pariatur quis distinctio
-          expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-          adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-          reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-          aliquid pariatur quis distinctio expedita labore enim. Lorem ipsum
-          dolor sit, amet consectetur adipisicing elit. Vel a repudiandae
-          debitis numquam, omnis deserunt reprehenderit aperiam nemo similique
-          voluptate accusantium ab vitae aliquid pariatur quis distinctio
-          expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-          adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-          reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-          aliquid pariatur quis distinctio expedita labore enim. Lorem ipsum
-          dolor sit, amet consectetur adipisicing elit. Vel a repudiandae
-          debitis numquam, omnis deserunt reprehenderit aperiam nemo similique
-          voluptate accusantium ab vitae aliquid pariatur quis distinctio
-          expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-          adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-          reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-          aliquid pariatur quis distinctio expedita labore enim.
-        </p>
+        <pre className="mt-8">{description}</pre>
       ) : (
         <Field name="description">
-          {({ field }: any) => (
-            <div>
+          {({ field, meta }: any) => (
+            <div className="mt-8">
               <TextArea
-                className="!mt-8 !p-0 !b-0 !text-14px hover:bg-secondary-1"
+                className="EventInput !p-0 !b-0 !text-14px"
                 transparent
                 style={{
                   resize: "none",
                   lineHeight: "1.25rem",
+                  minHeight: "4rem",
                   border: "0!important",
                 }}
                 onInput={(e) => {
@@ -268,14 +213,15 @@ export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
                   e.currentTarget.style.height =
                     e.currentTarget.scrollHeight + "px";
                 }}
-                placeholder="Enter event description"
+                placeholder="Enter event description (8 - 256 characters long)."
                 {...field}
               />
+              <FormErrorMessage meta={meta} className="mt-2" />
             </div>
           )}
         </Field>
       ),
-    [mode]
+    [description, mode]
   );
 
   const renderEventCardContent = useMemo(
@@ -307,6 +253,4 @@ export function PageViewEventBody({ event, mode }: PageViewEventBodyProps) {
   );
 }
 
-const DETAIL_CELL_BASE_STYLE = "pl-3 pr-4 text-14px border border-secondary-3";
-
-const EVENT_CARD_BODY_WRAPPER_STYLE = "px-12 pt-4 pb-6 overflow-y-scroll";
+const EVENT_CARD_BODY_WRAPPER_STYLE = "px-12 pt-4 pb-6 overflow-y-auto";

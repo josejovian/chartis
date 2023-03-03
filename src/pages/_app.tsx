@@ -13,11 +13,7 @@ import { Lato } from "@next/font/google";
 import clsx from "clsx";
 import { LayoutNavbar, Modal } from "@/components";
 import { SCREEN_CONTEXT_DEFAULT, ContextWrapper } from "@/contexts";
-import {
-  ScreenSizeCategoryType,
-  ScreenSizeType,
-  UserObjectType,
-} from "@/types";
+import { ScreenSizeCategoryType, ScreenSizeType, UserType } from "@/types";
 import {
   DESKTOP_SMALL_SCREEN_THRESHOLD,
   MOBILE_SCREEN_THRESHOLD,
@@ -32,7 +28,11 @@ export default function App({ Component, pageProps }: AppProps) {
   const [navBar, setNavBar] = stateNavBar;
   const stateModal = useState<ReactNode>(null);
   const [modal, setModal] = stateModal;
-  const [user, setUser] = useState<UserObjectType>(null);
+  const [identification, setIdentification] = useState<UserType>({
+    user: null,
+    users: {},
+    permission: "guest",
+  });
   const [screen, setScreen] = useState<ScreenSizeType>(SCREEN_CONTEXT_DEFAULT);
   const initialize = useRef(false);
 
@@ -57,7 +57,11 @@ export default function App({ Component, pageProps }: AppProps) {
     handleUpdateScreen();
     initialize.current = true;
     onAuthStateChanged(auth, (user) => {
-      setUser(user);
+      setIdentification((prev) => ({
+        ...prev,
+        user,
+        permission: user ? "user" : "guest",
+      }));
     });
   }, [handleUpdateScreen]);
 
@@ -95,7 +99,7 @@ export default function App({ Component, pageProps }: AppProps) {
           )}
         >
           <div
-            className="w-screen h-screen z-40 bg-slate-900 opacity-70"
+            className="w-screen h-screen z-40 bg-black opacity-80"
             onClick={() => {
               setModal(false);
             }}
@@ -122,7 +126,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }
       `}</style>
       <ContextWrapper
-        user={user}
+        identification={identification}
         screen={screen}
         stateModal={stateModal}
         stateNavBar={stateNavBar}

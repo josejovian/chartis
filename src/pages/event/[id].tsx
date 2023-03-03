@@ -1,10 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useRouter } from "next/router";
-import { LayoutTemplateCard, PageViewEventCard } from "@/components";
+import {
+  LayoutNotice,
+  LayoutTemplateCard,
+  PageViewEventCard,
+} from "@/components";
 import { EVENT_DUMMY_1 } from "@/consts";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useScreen } from "@/hooks";
-import { EventModeType, ResponsiveStyleType } from "@/types";
+import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
+import { getDataFromPath } from "@/firebase";
+import {
+  Button,
+  Dimmer,
+  Header,
+  Icon,
+  Loader,
+  Segment,
+} from "semantic-ui-react";
+import { sleep } from "@/utils";
 
 export default function ViewEvent() {
   const router = useRouter();
@@ -16,7 +30,59 @@ export default function ViewEvent() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const activeTab = stateActiveTab[0];
 
-  const event = EVENT_DUMMY_1;
+  const stateEvent = useState(EVENT_DUMMY_1);
+  const [event, setEvent] = stateEvent;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const initialize = useRef(0);
+
+  const handleGetEvent = useCallback(async () => {
+    if (!id) return;
+
+    await getDataFromPath(`/events/${id}`)
+      .then((result) => {
+        setLoading(false);
+        if (result) {
+          setError(false);
+          setEvent(result as EventType);
+        } else {
+          throw Error("Invalid event data.");
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        setError(true);
+      });
+  }, [id, setEvent]);
+
+  useEffect(() => {
+    handleGetEvent();
+  }, [handleGetEvent]);
+
+  const renderContent = useMemo(() => {
+    if (loading) return <LayoutNotice preset="loader" />;
+
+    if (error)
+      return (
+        <LayoutNotice
+          title="This event does not exist."
+          descriptionElement={
+            <Button color="yellow" onClick={() => router.push("/")}>
+              Go to Home
+            </Button>
+          }
+        />
+      );
+
+    return (
+      <PageViewEventCard
+        className="card ui"
+        stateEvent={stateEvent}
+        stateMode={stateMode}
+        type={type}
+      />
+    );
+  }, [error, loading, router, stateEvent, stateMode, type]);
 
   return (
     <LayoutTemplateCard
@@ -29,12 +95,7 @@ export default function ViewEvent() {
       }}
       classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
     >
-      <PageViewEventCard
-        className="card ui"
-        event={event}
-        stateMode={stateMode}
-        type={type}
-      />
+      {renderContent}
     </LayoutTemplateCard>
   );
 }

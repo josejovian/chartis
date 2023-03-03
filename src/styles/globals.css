@@ -3,7 +3,8 @@
   input,
   optgroup,
   select,
-  textarea {
+  textarea,
+  pre {
     font-family: "Lato", sans-serif !important;
   }
   html {
@@ -39,6 +40,9 @@
   }
   button {
     @apply !m-0 !h-fit;
+  }
+  pre {
+    white-space: pre-wrap;
   }
 }
 @tailwind base;
@@ -92,6 +96,36 @@
   }
   .EventDetailsTable .ui.transparent.input input {
     @apply !px-3;
+  }
+  .EventInput:hover > :is(input, textarea),
+  .EventInput:hover {
+    @apply !bg-gray-200;
+  }
+
+  .EventInput > :is(input, textarea),
+  .EventInput {
+    @apply !bg-gray-100 !border-none;
+  }
+
+  .Segment.ui {
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  .Segment.ui > .dimmer {
+    background: transparent !important;
+  }
+  @media only screen and (max-width: 1024px) {
+    .ui.modal.ModifiedModal {
+      @apply !rounded-none !rounded-t-lg;
+      display: fixed;
+      width: 100% !important;
+      bottom: 0;
+    }
+    .ui.modal.ModifiedModal > .actions {
+      @apply !p-1;
+      padding: 1rem !important;
+    }
   }
 }
 @tailwind components;

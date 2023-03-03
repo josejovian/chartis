@@ -1,14 +1,25 @@
-import { EventType } from "@/types";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button, Label, SemanticSIZES } from "semantic-ui-react";
+import { EventType, UserType } from "@/types";
 
 export interface EventButtonFollowProps {
   event: EventType;
+  identification: UserType;
   size?: SemanticSIZES;
 }
 
-export function EventButtonFollow({ event, size }: EventButtonFollowProps) {
-  const { id, followerIds = [], guestFollowerCount } = event;
+export function EventButtonFollow({
+  event,
+  identification,
+  size,
+}: EventButtonFollowProps) {
+  const { id, followerIds = [], guestFollowerCount, authorId } = event;
+  const { permission, user } = identification;
+
+  const isAuthor = useMemo(
+    () => Boolean(user && user.uid === authorId),
+    [authorId, user]
+  );
 
   const [followCount, setFollowCount] = useState(
     followerIds.length + (guestFollowerCount ?? 0)
@@ -16,6 +27,8 @@ export function EventButtonFollow({ event, size }: EventButtonFollowProps) {
   const [followed, setFollowed] = useState(false);
 
   const handleFollowEvent = useCallback(async () => {
+    if (permission === "guest" || isAuthor) return;
+
     const follow = JSON.parse(localStorage.getItem("follow") ?? "{}") as Record<
       string,
       boolean
@@ -29,11 +42,22 @@ export function EventButtonFollow({ event, size }: EventButtonFollowProps) {
         [id]: !follow[id],
       })
     );
-  }, [id]);
+  }, [id, isAuthor, permission]);
 
   return (
-    <Button className="!m-0 !w-full" as="div" labelPosition="right" size={size}>
-      <Button className="!w-full" size={size} onClick={handleFollowEvent}>
+    <Button
+      className="!m-0 !w-full"
+      as="div"
+      labelPosition="right"
+      size={size}
+      disabled={isAuthor}
+    >
+      <Button
+        className="!w-full"
+        size={size}
+        onClick={handleFollowEvent}
+        disabled={isAuthor}
+      >
         {followed ? "Unfollow" : "Follow"}
       </Button>
       <Label as="a" basic>

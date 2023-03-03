@@ -1,13 +1,12 @@
 import { useRouter } from "next/router";
 import { LayoutTemplateCard, PageViewEventCard } from "@/components";
-import { EVENT_DUMMY_1 } from "@/consts";
+import { EVENT_EMPTY } from "@/consts";
 import { useState } from "react";
 import { useScreen } from "@/hooks";
 import { EventModeType, ResponsiveStyleType } from "@/types";
 
 export default function CreateEvent() {
   const router = useRouter();
-  const { id } = router.query;
 
   const stateMode = useState<EventModeType>("create");
   const stateActiveTab = useState(0);
@@ -15,8 +14,7 @@ export default function CreateEvent() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const activeTab = stateActiveTab[0];
 
-  const event = EVENT_DUMMY_1;
-  console.log(id);
+  const stateEvent = useState(EVENT_EMPTY);
 
   return (
     <LayoutTemplateCard
@@ -31,7 +29,7 @@ export default function CreateEvent() {
     >
       <PageViewEventCard
         className="card ui"
-        event={event}
+        stateEvent={stateEvent}
         stateMode={stateMode}
         type={type}
       />

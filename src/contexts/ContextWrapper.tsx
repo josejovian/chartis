@@ -1,14 +1,13 @@
 import { ReactNode } from "react";
-import { User } from "firebase/auth";
 import { ModalContext } from "./ModalContext";
 import { NavBarContext } from "./NavBarContext";
 import { ScreenContext } from "./ScreenContext";
 import { UserContext } from "./UserContext";
-import { ScreenSizeType, StateObject } from "@/types";
+import { ScreenSizeType, StateObject, UserType } from "@/types";
 
 export interface ContextWrapperProps {
   children: ReactNode;
-  user: User | null;
+  identification: UserType;
   stateModal: StateObject<ReactNode>;
   stateNavBar: StateObject<boolean>;
   screen: ScreenSizeType;
@@ -16,13 +15,13 @@ export interface ContextWrapperProps {
 
 export function ContextWrapper({
   children,
-  user,
+  identification,
   stateModal,
   stateNavBar,
   screen,
 }: ContextWrapperProps) {
   return (
-    <UserContext.Provider value={user}>
+    <UserContext.Provider value={identification}>
       <ModalContext.Provider value={stateModal}>
         <NavBarContext.Provider value={stateNavBar}>
           <ScreenContext.Provider value={screen}>

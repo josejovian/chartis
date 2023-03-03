@@ -8,6 +8,7 @@ export interface EventType {
   location?: string;
   authorId: string;
   postDate: number;
+  editDate?: number;
   organizer?: string;
   thumbnailSrc?: string;
   startDate: number;
@@ -20,27 +21,31 @@ export interface EventType {
 
 export interface EventDetailBaseType {
   icon: SemanticICONS;
+  id: string;
   name: string;
   placeholder?: string;
+  validate?: (value: unknown) => string | null;
 }
 
 export interface EventDetailSimpleTextType extends EventDetailBaseType {
-  icon: SemanticICONS;
-  name: string;
   rawValue: string | string[] | number | number[] | undefined;
+  moddedValue?: string | string[] | number | number[] | undefined;
   inputType: HTMLInputTypeAttribute;
 }
 
+export interface EventDetailCompactType extends EventDetailBaseType {
+  value: string;
+}
+
 export interface EventDetailComponentType extends EventDetailBaseType {
-  icon: SemanticICONS;
-  name: string;
   viewElement: ReactNode;
   editElement: ReactNode;
 }
 
 export type EventDetailType =
   | EventDetailSimpleTextType
-  | EventDetailComponentType;
+  | EventDetailComponentType
+  | EventDetailCompactType;
 
 export type EventDetailUnionType = EventDetailSimpleTextType &
   EventDetailComponentType;

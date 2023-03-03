@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { createContext } from "react";
-import { UserObjectType } from "@/types";
+import { UserType } from "@/types";
 
-export const USER_CONTEXT_DEFAULT = null;
+export const USER_CONTEXT_DEFAULT: UserType = {
+  user: null,
+  users: {},
+  permission: "guest",
+};
 
-export const UserContext = createContext<UserObjectType>(USER_CONTEXT_DEFAULT);
+export const UserContext = createContext<UserType>(USER_CONTEXT_DEFAULT);

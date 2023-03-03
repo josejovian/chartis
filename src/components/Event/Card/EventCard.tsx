@@ -10,16 +10,23 @@ import {
   EventTags,
 } from "@/components";
 import { getTimeDifference, strDateTime } from "@/utils";
-import { EventCardDisplayType, EventDetailType, EventType } from "@/types";
+import {
+  EventCardDisplayType,
+  EventDetailCompactType,
+  EventType,
+  UserType,
+} from "@/types";
 
 export interface EventCardProps {
   className?: string;
+  identification: UserType;
   event: EventType;
   type?: EventCardDisplayType;
 }
 
 export function EventCard({
   className,
+  identification,
   event,
   type = "vertical",
 }: EventCardProps) {
@@ -42,8 +49,9 @@ export function EventCard({
   const eventLink = useMemo(() => "/event/ok", []);
 
   const details = useMemo(() => {
-    const array: EventDetailType[] = [
+    const array: EventDetailCompactType[] = [
       {
+        id: "startDate",
         icon: "calendar",
         name: "Start Date",
         value: strDateTime(startDate),
@@ -52,6 +60,7 @@ export function EventCard({
 
     if (endDate)
       array.push({
+        id: "endDate",
         icon: "calendar",
         name: "End Date",
         value: endDate.toLocaleString(),
@@ -128,11 +137,19 @@ export function EventCard({
           minWidth: "192px",
         }}
       >
-        <EventButtonFollow event={event} size="tiny" />
-        <EventButtonMore size="tiny" />
+        <EventButtonFollow
+          event={event}
+          identification={identification}
+          size="tiny"
+        />
+        <EventButtonMore
+          event={event}
+          identification={identification}
+          size="tiny"
+        />
       </div>
     ),
-    [event, type]
+    [event, identification, type]
   );
 
   const renderCardContents = useMemo(
