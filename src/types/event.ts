@@ -78,3 +78,8 @@ export interface EventSortDirectionType {
 }
 
 export type EventModeType = "create" | "edit" | "view";
+
+export type EventSearchType =
+  | "userFollowedEvents"
+  | "userCreatedEvents"
+  | "userFollowedTags";

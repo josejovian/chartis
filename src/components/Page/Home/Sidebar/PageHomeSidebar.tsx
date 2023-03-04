@@ -9,6 +9,7 @@ import { useIdentification, useScreen } from "@/hooks";
 export interface PageHomeSideBarProps {
   focusDate: Date;
   events: EventType[];
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   stateSideBar: StateObject<boolean>;
 }
 
@@ -16,6 +17,7 @@ export function PageHomeSideBar({
   focusDate,
   events,
   stateSideBar,
+  updateEvent,
 }: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
@@ -56,19 +58,17 @@ export function PageHomeSideBar({
   const renderEvents = useMemo(
     () => (
       <div className="flex flex-col gap-8">
-        {events.map((event, idx) => (
+        {events.map((event, _) => (
           <EventCard
             key={`EventCard_${event.id}`}
-            event={{
-              ...event,
-              id: `${idx}`,
-            }}
+            event={event}
             identification={identification}
+            updateEvent={updateEvent}
           />
         ))}
       </div>
     ),
-    [events, identification]
+    [events, identification, updateEvent]
   );
 
   const renderEmpty = useMemo(

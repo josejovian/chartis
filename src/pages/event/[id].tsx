@@ -7,7 +7,7 @@ import {
 } from "@/components";
 import { EVENT_DUMMY_1 } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useScreen } from "@/hooks";
+import { useScreen, useSearchEvent } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
 import { getDataFromPath } from "@/firebase";
 import {
@@ -24,6 +24,7 @@ export default function ViewEvent() {
   const router = useRouter();
   const { id } = router.query;
 
+  const { handleUpdateEvent } = useSearchEvent({});
   const stateMode = useState<EventModeType>("view");
   const stateActiveTab = useState(0);
   const { type } = useScreen();
@@ -80,9 +81,10 @@ export default function ViewEvent() {
         stateEvent={stateEvent}
         stateMode={stateMode}
         type={type}
+        updateEvent={handleUpdateEvent}
       />
     );
-  }, [error, loading, router, stateEvent, stateMode, type]);
+  }, [error, handleUpdateEvent, loading, router, stateEvent, stateMode, type]);
 
   return (
     <LayoutTemplateCard

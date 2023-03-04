@@ -31,6 +31,7 @@ export interface ModalViewEventProps {
   stateEvent: StateObject<EventType>;
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
+  updateEvent: (id: string, newEvt: Partial<EventType>) => void;
 }
 
 export function PageViewEventCard({
@@ -38,6 +39,7 @@ export function PageViewEventCard({
   stateEvent,
   stateMode,
   type,
+  updateEvent,
 }: ModalViewEventProps) {
   const [event, setEvent] = stateEvent;
   const router = useRouter();
@@ -176,6 +178,7 @@ export function PageViewEventCard({
           stateMode={stateMode}
           identification={identification}
           onDelete={handleDeleteEvent}
+          updateEvent={updateEvent}
         />
         <PageViewEventBody
           event={event}
@@ -200,6 +203,7 @@ export function PageViewEventCard({
       stateMode,
       identification,
       handleDeleteEvent,
+      updateEvent,
       mode,
       stateTags,
       stateSubmitting,

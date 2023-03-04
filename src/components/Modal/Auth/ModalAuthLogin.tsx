@@ -17,10 +17,6 @@ export function ModalAuthLogin() {
         onSuccess: () => {
           clearModal();
           router.replace(router.asPath);
-          console.log("Login Success!");
-        },
-        onFail: () => {
-          console.log("Login Fail!");
         },
       });
     },

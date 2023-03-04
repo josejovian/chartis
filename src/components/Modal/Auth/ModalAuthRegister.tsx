@@ -30,14 +30,7 @@ export function ModalAuthRegister() {
             .then(() => {
               clearModal();
               router.replace(router.asPath);
-            })
-            .catch((e) => {
-              console.log(e);
-              console.log("Login Fail!");
             });
-        },
-        onFail: () => {
-          console.log("Login Fail!");
         },
       });
     },
