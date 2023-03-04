@@ -12,7 +12,7 @@ import {
 } from "@/types";
 import { useMemo } from "react";
 import clsx from "clsx";
-import { useUser } from "@/hooks";
+import { useIdentification } from "@/hooks";
 import { validateEventQuery } from "@/utils";
 import { EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
 
@@ -24,6 +24,7 @@ export interface PageSearchEventCardProps {
   stateFilters: StateObject<Record<number, boolean>>;
   stateSortBy: StateObject<EventSortType>;
   stateSortDescending: StateObject<boolean>;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
 export function PageSearchEventCard({
@@ -34,11 +35,13 @@ export function PageSearchEventCard({
   stateFilters,
   stateSortBy,
   stateSortDescending,
+  updateEvent,
 }: PageSearchEventCardProps) {
   const query = stateQuery[0];
   const sortBy = stateSortBy[0];
   const sortDescending = stateSortDescending[0];
-  const identification = useUser();
+  const stateIdentification = useIdentification();
+  const identification = stateIdentification[0];
 
   const sortCaption = useMemo(
     () =>
@@ -63,12 +66,13 @@ export function PageSearchEventCard({
       events.map((event) => (
         <EventCard
           key={`PageSearchEventCard_${event.id}`}
-          type="vertical"
+          type={type === "mobile" ? "vertical" : "horizontal"}
           event={event}
           identification={identification}
+          updateEvent={updateEvent}
         />
       )),
-    [events, identification]
+    [events, identification, type, updateEvent]
   );
 
   const renderEmpty = useMemo(

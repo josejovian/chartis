@@ -21,6 +21,7 @@ export interface EventCardProps {
   className?: string;
   identification: IdentificationType;
   event: EventType;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   type?: EventCardDisplayType;
 }
 
@@ -28,6 +29,7 @@ export function EventCard({
   className,
   identification,
   event,
+  updateEvent,
   type = "vertical",
 }: EventCardProps) {
   const {
@@ -40,13 +42,14 @@ export function EventCard({
     tags,
     postDate,
   } = event;
+  const { users } = identification;
 
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
     () => (event.endDate ? new Date(event.endDate) : null),
     [event]
   );
-  const eventLink = useMemo(() => "/event/ok", []);
+  const eventLink = useMemo(() => `/event/${id}`, [id]);
 
   const details = useMemo(() => {
     const array: EventDetailCompactType[] = [
@@ -76,7 +79,7 @@ export function EventCard({
           (detail, idx) =>
             ((type === "horizontal" && idx === 0) || type === "vertical") && (
               <EventCardDetail
-                key={`EventExtraDetail_${id}_${detail.icon}`}
+                key={`EventExtraDetail_${id}_${detail.id}`}
                 {...detail}
               />
             )
@@ -90,13 +93,17 @@ export function EventCard({
     /** @todo Replace authorId with real username. */
     () => (
       <span className="text-12px text-secondary-4">
-        Posted by <b>{authorId}</b> {getTimeDifference(postDate)} ago
-        {organizer &&
-          `- Organized by
-				<b>${organizer}</b>`}
+        Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b>{" "}
+        {getTimeDifference(postDate)} ago
+        {organizer && (
+          <span>
+            - Organized by
+            <b>{organizer}</b>
+          </span>
+        )}
       </span>
     ),
-    [authorId, organizer, postDate]
+    [authorId, organizer, postDate, users]
   );
 
   const renderEventTags = useMemo(
@@ -129,16 +136,16 @@ export function EventCard({
     () => (
       <div
         className={clsx(
-          "flex flex-auto gap-4 z-10",
+          "flex flex-auto gap-4 z-10 w-48",
           type === "vertical" && "mt-2"
         )}
         style={{
-          width: "192px",
-          minWidth: "192px",
+          maxWidth: "192px",
         }}
       >
         <EventButtonFollow
           event={event}
+          updateEvent={updateEvent}
           identification={identification}
           size="tiny"
         />
@@ -149,7 +156,7 @@ export function EventCard({
         />
       </div>
     ),
-    [event, identification, type]
+    [event, identification, type, updateEvent]
   );
 
   const renderCardContents = useMemo(
@@ -175,7 +182,7 @@ export function EventCard({
               {renderEventCreators}
               {renderEventTitle}
             </div>
-            <div className="flex justify-between place-items-end">
+            <div className="flex justify-between place-items-end w-full">
               {renderEventExtraDetails}
               {renderEventActions}
             </div>
@@ -197,8 +204,8 @@ export function EventCard({
     <div
       className={className}
       style={{
-        width: type === "horizontal" ? "75%" : "100%",
-        height: type === "horizontal" ? "120px" : undefined,
+        width: "100%",
+        height: undefined,
       }}
     >
       {renderCardContents}

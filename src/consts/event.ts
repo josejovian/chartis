@@ -64,7 +64,7 @@ export const EVENT_TAGS: EventTagType[] = [
 
 export const EVENT_SORT_CRITERIA: EventSortType[] = [
   { id: "postDate", name: "Post Date" },
-  { id: "followCount", name: "Followers" },
+  { id: "subscriberCount", name: "Followers" },
 ];
 
 export const EVENT_SORT_TYPE: EventSortDirectionType[] = [

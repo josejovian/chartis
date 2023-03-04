@@ -5,16 +5,21 @@ import {
   LayoutTemplate,
   EventButtonFilter,
 } from "@/components";
-import { filterEventsFromTags, populateEvents } from "@/utils";
+import { useSearchEvent } from "@/hooks";
+import { filterEventsFromTags } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
-import { EventType } from "@/types";
 
 export default function Home() {
   const stateFocusDate = useState(new Date());
   const stateSideBar = useState(false);
   const focusDate = stateFocusDate[0];
 
-  const [events, setEvents] = useState<EventType[]>([]);
+  const { stateEvents, handleFetchEvents, handleUpdateEvent } = useSearchEvent(
+    {}
+  );
+
+  const [events, setEvents] = stateEvents;
+
   const stateFilters = useState<Record<number, boolean>>(
     EVENT_TAGS.map((_) => false)
   );
@@ -34,10 +39,6 @@ export default function Home() {
     () => (atLeastOneFilter ? filterEventsFromTags(events, filters) : events),
     [atLeastOneFilter, events, filters]
   );
-
-  const handlePopulateRandomEvents = useCallback(() => {
-    setEvents(populateEvents());
-  }, []);
 
   const renderCalendar = useMemo(
     () => (
@@ -61,14 +62,19 @@ export default function Home() {
           );
         })}
         stateSideBar={stateSideBar}
+        updateEvent={handleUpdateEvent}
       />
     ),
-    [displayedEvents, focusDate, stateSideBar]
+    [displayedEvents, focusDate, handleUpdateEvent, stateSideBar]
   );
 
+  const handlePopulateCalendar = useCallback(() => {
+    handleFetchEvents((result) => setEvents(result));
+  }, [handleFetchEvents, setEvents]);
+
   useEffect(() => {
-    handlePopulateRandomEvents();
-  }, [handlePopulateRandomEvents]);
+    handlePopulateCalendar();
+  }, [handlePopulateCalendar]);
 
   return (
     <LayoutTemplate

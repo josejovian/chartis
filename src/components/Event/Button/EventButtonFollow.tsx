@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getDatabase, increment, ref, update } from "firebase/database";
 import { db } from "@/firebase";
 import { Button, Label, SemanticSIZES } from "semantic-ui-react";
@@ -7,16 +7,19 @@ import { sleep } from "@/utils";
 
 export interface EventButtonFollowProps {
   event: EventType;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   identification: IdentificationType;
   size?: SemanticSIZES;
 }
 
 export function EventButtonFollow({
   event,
+  updateEvent,
   identification,
   size,
 }: EventButtonFollowProps) {
   const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
+
   const { permission, user, users } = identification;
 
   const isAuthor = useMemo(
@@ -29,6 +32,7 @@ export function EventButtonFollow({
   );
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const initialized = useRef(false);
 
   const handleUpdateSubscribeClientSide = useCallback(
     (previouslySubscribed: boolean) => {
@@ -47,13 +51,16 @@ export function EventButtonFollow({
 
       handleUpdateSubscribeClientSide(subscribed);
       setLoading(true);
-      await sleep(200);
 
       const dbRef = ref(getDatabase());
       const updates: Record<string, unknown> = {};
       updates[`events/${id}/guestSubscriberCount`] = increment(
         subscribed ? -1 : 1
       );
+      updates[`/events/${id}/subscriberCount`] =
+        subscriberIds.length +
+        (guestSubscriberCount ?? 0) +
+        (subscribed ? -1 : 1);
 
       const newSubscribe = subscribed
         ? (() => {
@@ -67,9 +74,16 @@ export function EventButtonFollow({
           };
 
       setSubscribed((prev) => !prev);
+      await sleep(200);
       await update(dbRef, updates)
         .then(() => {
           setLoading(false);
+          updateEvent(id, {
+            subscriberCount:
+              subscriberIds.length +
+              (guestSubscriberCount ?? 0) +
+              (subscribed ? -1 : 1),
+          });
           localStorage.setItem("subscribe", JSON.stringify(newSubscribe));
         })
         .catch(() => {
@@ -80,7 +94,6 @@ export function EventButtonFollow({
     } else if (user && user.uid && users[user.uid]) {
       handleUpdateSubscribeClientSide(subscribed);
       setLoading(true);
-      await sleep(200);
 
       // Event's subscribers
       const updatedSubscribedIds = subscribed
@@ -94,27 +107,42 @@ export function EventButtonFollow({
         : [...subscribedEvents.filter((eventId) => eventId !== id), id];
 
       setSubscribed((prev) => !prev);
+      await sleep(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updates: Record<string, any> = {};
       updates[`/events/${id}/subscriberIds`] = updatedSubscribedIds;
       updates[`/user/${user.uid}/subscribedEvents`] = updatedSubscribedEvents;
-      await update(ref(db), updates).catch(() => {
-        setSubscribed((prev) => !prev);
-      });
+      updates[`/events/${id}/subscriberCount`] =
+        updatedSubscribedIds.length + (guestSubscriberCount ?? 0);
+      await update(ref(db), updates)
+        .then(() => {
+          updateEvent(id, {
+            subscriberIds: updatedSubscribedIds,
+            subscriberCount:
+              updatedSubscribedIds.length + (guestSubscriberCount ?? 0),
+          });
+        })
+        .catch(() => {
+          setSubscribed((prev) => !prev);
+        });
       setLoading(false);
     }
   }, [
+    guestSubscriberCount,
     handleUpdateSubscribeClientSide,
     id,
     loading,
     permission,
     subscribed,
     subscriberIds,
+    updateEvent,
     user,
     users,
   ]);
 
   const handleInitializeSubscribeState = useCallback(() => {
+    if (initialized.current || typeof window === "undefined") return;
+
     let status = false;
     if (permission === "guest") {
       const subscribe = JSON.parse(
@@ -125,6 +153,7 @@ export function EventButtonFollow({
       status = subscriberIds.includes(user.uid);
     }
     setSubscribed(status);
+    initialized.current = true;
   }, [id, permission, subscriberIds, user, users]);
 
   useEffect(() => {

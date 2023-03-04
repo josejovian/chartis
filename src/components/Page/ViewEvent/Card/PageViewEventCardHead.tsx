@@ -23,6 +23,7 @@ export interface PageViewEventHeadProps {
   stateDeleting?: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
 export function PageViewEventHead({
@@ -32,6 +33,7 @@ export function PageViewEventHead({
   stateDeleting,
   stateMode,
   type,
+  updateEvent,
 }: PageViewEventHeadProps) {
   const stateActiveTab = useState(0);
   const activeTab = stateActiveTab[0];
@@ -87,6 +89,7 @@ export function PageViewEventHead({
           event={event}
           identification={identification}
           size={type === "mobile" ? "tiny" : undefined}
+          updateEvent={updateEvent}
         />
         <EventButtonMore
           event={event}
@@ -98,7 +101,15 @@ export function PageViewEventHead({
         />
       </div>
     ),
-    [event, identification, type, handleEdit, onDelete, stateDeleting]
+    [
+      event,
+      identification,
+      type,
+      updateEvent,
+      handleEdit,
+      onDelete,
+      stateDeleting,
+    ]
   );
 
   const renderViewTabs = useMemo(
