@@ -64,6 +64,7 @@ export function EventButtonMore({
     >
       {permission !== "guest" && (
         <Dropdown
+          icon={<></>}
           className={clsx("icon", open && "z-16 relative")}
           onOpen={() => setOpen(true)}
           onClose={() => setOpen(false)}

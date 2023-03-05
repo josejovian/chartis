@@ -44,6 +44,14 @@ export function EventCard({
   } = event;
   const { users } = identification;
 
+  const truncatedDescription = useMemo(
+    () =>
+      description.length < 100
+        ? description
+        : `${description.slice(0, 100)}...`,
+    [description]
+  );
+
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
     () => (event.endDate ? new Date(event.endDate) : null),
@@ -66,7 +74,7 @@ export function EventCard({
         id: "endDate",
         icon: "calendar",
         name: "End Date",
-        value: endDate.toLocaleString(),
+        value: strDateTime(endDate),
       });
 
     return array;
@@ -92,14 +100,17 @@ export function EventCard({
   const renderEventCreators = useMemo(
     /** @todo Replace authorId with real username. */
     () => (
-      <span className="text-12px text-secondary-4">
-        Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b>{" "}
+      <span className="text-12px text-secondary-4 tracking-wide">
+        Posted by{" "}
+        <span className="text-secondary-6 font-black">
+          {users[authorId] ? users[authorId].name : authorId}
+        </span>{" "}
         {getTimeDifference(postDate)}
         {organizer && (
-          <span>
-            - Organized by
-            <b>{organizer}</b>
-          </span>
+          <>
+            &nbsp;- Organized by&nbsp;
+            <span className="text-secondary-6 font-black">{organizer}</span>
+          </>
         )}
       </span>
     ),
@@ -125,19 +136,20 @@ export function EventCard({
 
   const renderEventDescription = useMemo(
     () => (
-      <Link href={eventLink}>
-        <p className="m-0 mt-1 mb-2">{description}</p>
+      <Link className="mt-1" href={eventLink}>
+        <p className="m-0 mb-2">{truncatedDescription}</p>
       </Link>
     ),
-    [description, eventLink]
+    [eventLink, truncatedDescription]
   );
 
   const renderEventActions = useMemo(
     () => (
       <div
         className={clsx(
-          "flex flex-auto justify-end gap-4  w-48 !relative",
-          type === "vertical" && "mt-2"
+          "flex flex-auto gap-4  w-48 !relative",
+          type === "vertical" && "mt-2",
+          type === "horizontal" && "justify-end"
         )}
         style={{
           maxWidth: "192px",
