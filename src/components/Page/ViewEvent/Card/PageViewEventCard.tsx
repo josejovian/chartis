@@ -82,14 +82,17 @@ export function PageViewEventCard({
 
       const { startDate, endDate } = values as EventType;
       const eventId = mode === "create" ? pushid() : event.id;
-      const postEditDates = {
+      const defaultValues = {
         postDate: new Date().getTime(),
         editDate: new Date().getTime(),
+        subscriberCount: 0,
+        guestSubscriberCount: 0,
+        subscriberIds: [],
       };
 
       const newEvent: EventType = {
-        ...postEditDates,
-        ...(event ?? postEditDates),
+        ...defaultValues,
+        ...(event ?? defaultValues),
         ...(values as EventType),
         id: eventId,
         authorId: user.uid,
@@ -101,7 +104,7 @@ export function PageViewEventCard({
       if (endDate) newEvent.endDate = new Date(endDate).getTime();
       else delete newEvent.endDate;
 
-      if (!newEvent.postDate) newEvent.postDate = postEditDates.postDate;
+      if (!newEvent.postDate) newEvent.postDate = defaultValues.postDate;
 
       await sleep(200);
 

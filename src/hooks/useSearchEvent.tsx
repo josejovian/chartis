@@ -69,8 +69,8 @@ export function useSearchEvent({ type }: useSearchEventProps) {
           return reg.test(name) && extraValidation;
         })
         .sort((a, b) => {
-          const left = a[sortBy.id];
-          const right = b[sortBy.id];
+          const left = a[sortBy.id] ?? 0;
+          const right = b[sortBy.id] ?? 0;
           if (typeof left === "number" && typeof right === "number")
             return (left - right) * (sortDescending ? -1 : 1);
           return 0;

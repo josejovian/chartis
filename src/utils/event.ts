@@ -26,6 +26,7 @@ export function populateEvents(count: number, authorId: string) {
     randomEventsId[seed] = true;
 
     const today = new Date();
+    today.setMonth(today.getMonth() - 2);
     today.setDate(seed % 27);
     today.setHours(seed % 24);
     today.setMinutes(seed % 59);
@@ -46,6 +47,9 @@ export function populateEvents(count: number, authorId: string) {
       .sort((a, b) => Math.random() - 0.5)
       .join("");
     delete newEvent.endDate;
+    newEvent.subscriberCount = 0;
+    newEvent.guestSubscriberCount = 0;
+    newEvent.subscriberIds = [];
     temp = [...temp, newEvent];
   }
 
