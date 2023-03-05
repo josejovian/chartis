@@ -6,10 +6,12 @@ import {
   get,
   equalTo,
   QueryConstraint,
+  startAt,
+  endAt,
 } from "firebase/database";
-import { db } from "@/firebase";
+import { db, getDataFromPath } from "@/firebase";
 import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
-import { EventSearchType, EventSortType, EventType } from "@/types";
+import { EventSearchType, EventSortType, EventType, UserType } from "@/types";
 import { filterEventsFromTags } from "@/utils";
 import _ from "lodash";
 import { useIdentification } from "@/hooks";
@@ -34,7 +36,7 @@ export function useSearchEvent({ type }: useSearchEventProps) {
   const stateUserQuery = useState("");
   const userQuery = stateUserQuery[0];
   const stateIdentification = useIdentification();
-  const identification = stateIdentification[0];
+  const [identification, setIdentification] = stateIdentification;
   const { user } = identification;
 
   const stateEvents = useState<EventType[]>([]);
@@ -100,11 +102,43 @@ export function useSearchEvent({ type }: useSearchEventProps) {
     [filterByMethod, orderByMethod]
   );
 
+  const handleFetchUserOfEvents = useCallback(
+    async (eventsArray: EventType[]) => {
+      const authorIdsOfEventsArray = Object.keys(
+        eventsArray.reduce(
+          (prev, curr) => ({
+            ...prev,
+            [curr.authorId]: 0,
+          }),
+          {}
+        )
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userIdObject: Record<string, UserType> = {};
+      for (const authorId of authorIdsOfEventsArray) {
+        const userData = (await getDataFromPath(
+          `/user/${authorId}`
+        )) as UserType;
+        userIdObject[authorId] = userData;
+      }
+
+      setIdentification((prev) => ({
+        ...prev,
+        users: {
+          ...prev.users,
+          ...userIdObject,
+        },
+      }));
+    },
+    [setIdentification]
+  );
+
   const handleFetchEvents = useCallback(
     async (onSuccess?: (result: EventType[]) => void) => {
       const eventsRef = query(ref(db, "events"), ...queryConstraints);
 
-      return await get(eventsRef)
+      const eventsArray = await get(eventsRef)
         .then((result) => {
           const arrayResult = Object.values(result.val()) as EventType[];
           if (!onSuccess) {
@@ -112,13 +146,56 @@ export function useSearchEvent({ type }: useSearchEventProps) {
           } else {
             onSuccess(arrayResult);
           }
-          return result.val() as unknown as EventType[];
+          return arrayResult;
+        })
+        .catch(() => {
+          return [] as EventType[];
+        });
+
+      await handleFetchUserOfEvents(eventsArray);
+
+      return eventsArray;
+    },
+    [handleFetchUserOfEvents, queryConstraints, setEvents]
+  );
+
+  const handleFetchEventsInOneMonthPage = useCallback(
+    async (firstDayOfTheMonth: number) => {
+      const baseDate = new Date(firstDayOfTheMonth);
+      baseDate.setDate(1);
+      baseDate.setSeconds(0);
+      baseDate.setMinutes(0);
+      baseDate.setHours(0);
+
+      const first = new Date(baseDate.getTime());
+
+      const last = new Date(baseDate.getTime());
+      first.setDate(0);
+      last.setMonth(last.getMonth() + 1);
+      last.setDate(2);
+
+      const eventsRef = query(
+        ref(db, "events"),
+        orderByChild("startDate"),
+        startAt(first.getTime()),
+        endAt(last.getTime())
+      );
+
+      const eventsArray = await get(eventsRef)
+        .then((result) => {
+          const arrayResult = Object.values(result.val()) as EventType[];
+          setEvents(arrayResult);
+          return arrayResult;
         })
         .catch(() => {
           return [];
         });
+
+      await handleFetchUserOfEvents(eventsArray);
+
+      return eventsArray;
     },
-    [queryConstraints, setEvents]
+    [handleFetchUserOfEvents, setEvents]
   );
 
   const handleUpdateEvent = useCallback(
@@ -144,6 +221,7 @@ export function useSearchEvent({ type }: useSearchEventProps) {
     () => ({
       filteredEvents,
       handleFetchEvents,
+      handleFetchEventsInOneMonthPage,
       handleUpdateEvent,
       stateQuery: stateUserQuery,
       stateEvents,
@@ -154,6 +232,7 @@ export function useSearchEvent({ type }: useSearchEventProps) {
     [
       filteredEvents,
       handleFetchEvents,
+      handleFetchEventsInOneMonthPage,
       handleUpdateEvent,
       stateEvents,
       stateFilters,

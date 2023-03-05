@@ -14,15 +14,15 @@ export default function Home() {
   const stateSideBar = useState(false);
   const focusDate = stateFocusDate[0];
 
-  const { stateEvents, handleFetchEvents, handleUpdateEvent } = useSearchEvent(
-    {}
-  );
+  const {
+    stateEvents,
+    stateFilters,
+    handleFetchEventsInOneMonthPage,
+    handleUpdateEvent,
+  } = useSearchEvent({});
 
-  const [events, setEvents] = stateEvents;
+  const events = stateEvents[0];
 
-  const stateFilters = useState<Record<number, boolean>>(
-    EVENT_TAGS.map((_) => false)
-  );
   const filters = stateFilters[0];
   const atLeastOneFilter = useMemo(
     () => Object.values(stateFilters[0]).some((f) => f),
@@ -69,12 +69,12 @@ export default function Home() {
   );
 
   const handlePopulateCalendar = useCallback(() => {
-    handleFetchEvents((result) => setEvents(result));
-  }, [handleFetchEvents, setEvents]);
+    handleFetchEventsInOneMonthPage(focusDate.getTime());
+  }, [focusDate, handleFetchEventsInOneMonthPage]);
 
   useEffect(() => {
     handlePopulateCalendar();
-  }, [handlePopulateCalendar]);
+  }, [focusDate, handlePopulateCalendar]);
 
   return (
     <LayoutTemplate
