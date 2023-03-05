@@ -33,7 +33,7 @@ export function EventButtonSort({ size, stateSortBy }: EventButtonSortProps) {
   );
   return (
     <Dropdown
-      className="icon z-10"
+      className="icon z-16"
       labeled
       direction="left"
       floating

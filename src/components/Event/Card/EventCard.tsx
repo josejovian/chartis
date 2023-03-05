@@ -94,7 +94,7 @@ export function EventCard({
     () => (
       <span className="text-12px text-secondary-4">
         Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b>{" "}
-        {getTimeDifference(postDate)} ago
+        {getTimeDifference(postDate)}
         {organizer && (
           <span>
             - Organized by
@@ -136,7 +136,7 @@ export function EventCard({
     () => (
       <div
         className={clsx(
-          "flex flex-auto gap-4 z-10 w-48",
+          "flex flex-auto justify-end gap-4  w-48 !relative",
           type === "vertical" && "mt-2"
         )}
         style={{
@@ -182,7 +182,7 @@ export function EventCard({
               {renderEventCreators}
               {renderEventTitle}
             </div>
-            <div className="flex justify-between place-items-end w-full">
+            <div className="flex justify-between place-items-end !w-full">
               {renderEventExtraDetails}
               {renderEventActions}
             </div>

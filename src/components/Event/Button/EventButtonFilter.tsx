@@ -76,7 +76,7 @@ export function EventButtonFilter({
   return (
     <Dropdown
       icon={asButton ? undefined : "filter"}
-      className="icon z-10"
+      className="icon z-16"
       labeled={asButton ? undefined : type !== "mobile"}
       floating
       direction="left"

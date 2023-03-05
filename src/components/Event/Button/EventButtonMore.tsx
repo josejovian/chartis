@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Button, Dropdown, Icon, SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventType, StateObject, IdentificationType } from "@/types";
@@ -23,6 +23,7 @@ export function EventButtonMore({
   onEdit,
   onReport,
 }: EventButtonMoreProps) {
+  const [open, setOpen] = useState(false);
   const { authorId } = event;
   const { permission, user } = identification;
 
@@ -58,24 +59,23 @@ export function EventButtonMore({
 
   return (
     <div
-      className={clsx(permission === "guest" && "hidden")}
-      style={{
-        zIndex: 15,
-      }}
+      className={clsx("!relative", permission === "guest" && "hidden")}
+      style={{}}
     >
       {permission !== "guest" && (
         <Dropdown
-          icon={<></>}
-          className="icon"
+          className={clsx("icon", open && "z-16 relative")}
+          onOpen={() => setOpen(true)}
+          onClose={() => setOpen(false)}
           direction="left"
           floating
           trigger={
-            <Button className="!m-0" icon size={size}>
+            <Button className="!m-0 !z-10 relative" icon size={size}>
               <Icon name="ellipsis vertical" />
             </Button>
           }
         >
-          <Dropdown.Menu>
+          <Dropdown.Menu className="!absolute">
             <Dropdown.Menu scrolling>{renderDropdownItems}</Dropdown.Menu>
           </Dropdown.Menu>
         </Dropdown>

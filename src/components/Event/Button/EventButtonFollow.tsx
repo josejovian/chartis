@@ -162,7 +162,7 @@ export function EventButtonFollow({
 
   return (
     <Button
-      className="!m-0 !w-full"
+      className="!m-0 !w-fit"
       as="div"
       labelPosition="right"
       size={size}
