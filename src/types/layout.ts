@@ -18,3 +18,5 @@ export interface LayoutHeadButtonType {
   icon: SemanticICONS;
   onClick: () => void;
 }
+
+export type LayoutNoticePresetType = "loader";

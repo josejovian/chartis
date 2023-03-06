@@ -1,4 +1,12 @@
 @layer base {
+  button,
+  input,
+  optgroup,
+  select,
+  textarea,
+  pre {
+    font-family: "Lato", sans-serif !important;
+  }
   html {
     font-size: 16px !important;
   }
@@ -8,14 +16,33 @@
   h4 {
     margin: 0 !important;
   }
-  *:not(:is(button, .item)) > i {
-    margin: 0 !important;
+  h1,
+  .h1 {
+    @apply text-3xl;
+  }
+
+  h2,
+  .h2 {
+    @apply text-2xl;
+  }
+
+  h3,
+  .h3 {
+    @apply text-xl;
+  }
+
+  h4,
+  .h4 {
+    @apply text-base;
   }
   a {
     color: unset !important;
   }
   button {
     @apply !m-0 !h-fit;
+  }
+  pre {
+    white-space: pre-wrap;
   }
 }
 @tailwind base;
@@ -50,6 +77,79 @@
   .InactiveFilter .ui.label.empty {
     background: transparent !important;
   }
+  .ui.yellow.button {
+    color: black !important;
+  }
+  input.search {
+    min-height: 0px !important;
+  }
+  i.dropdown.icon {
+    min-height: inherit !important;
+    height: inherit !important;
+  }
+  .visible.menu {
+    @apply !border-gray-300;
+  }
+  [role="combobox"] i.dropdown.icon {
+    height: 100% !important;
+    margin-top: -12px !important;
+  }
+  .EventDetailsTable .ui.transparent.input input {
+    @apply !px-3;
+  }
+  .EventInput:hover > :is(input, textarea),
+  .EventInput:hover {
+    @apply !bg-gray-200;
+  }
+
+  .EventInput > :is(input, textarea),
+  .EventInput {
+    @apply !bg-gray-100 !border-none;
+  }
+
+  .Segment.ui {
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  .Segment.ui > .dimmer {
+    background: transparent !important;
+  }
+  .z-16 {
+    z-index: 16;
+  }
+  :is(
+      .ui.dropdown > .visible.menu,
+      .ui.floating.dropdown > .visible.menu,
+      .ui.floating.dropdown > .visible.menu,
+      .ui.floating.dropdown .visible.menu
+    ) {
+    min-width: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .ui.dropdown > .visible.menu > .scrolling.menu {
+    min-width: 0 !important;
+    box-shadow: 0 2px 4px 0 rgba(34, 36, 38, 0.12),
+      0 2px 10px 0 rgba(34, 36, 38, 0.15) !important;
+    border: none !important;
+  }
+  .ui.dropdown .menu {
+    z-index: 16;
+  }
+
+  @media only screen and (max-width: 1024px) {
+    .ui.modal.ModifiedModal {
+      @apply !rounded-none !rounded-t-lg;
+      display: fixed;
+      width: 100% !important;
+      bottom: 0;
+    }
+    .ui.modal.ModifiedModal > .actions {
+      @apply !p-1;
+      padding: 1rem !important;
+    }
+  }
 }
 @tailwind components;
 @layer utilities {
@@ -67,6 +167,9 @@
   }
   .text-18px {
     font-size: 18px;
+  }
+  .text-20px {
+    font-size: 20px;
   }
 
   .bg-primary-1 {

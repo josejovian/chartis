@@ -32,8 +32,6 @@ export function LayoutTemplate({
   const stateNavBar = useNavBar();
   const { type } = useScreen();
 
-  console.log(inlineMain);
-
   const renderMain = useMemo(
     () => (
       <div className={clsx("flex flex-col w-full", "h-screen")}>
