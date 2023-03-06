@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "semantic-ui-react";
 import clsx from "clsx";
 import {
@@ -8,30 +8,42 @@ import {
 } from "@/components";
 import {
   EventModalTabType,
+  EventModeType,
   EventType,
   ScreenSizeCategoryType,
   StateObject,
+  IdentificationType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventHeadProps {
   event: EventType;
-  stateEdit: StateObject<boolean>;
+  identification: IdentificationType;
+  onDelete: () => void;
+  stateDeleting?: StateObject<boolean>;
+  stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
 export function PageViewEventHead({
   event,
-  stateEdit,
+  identification,
+  onDelete,
+  stateDeleting,
+  stateMode,
   type,
+  updateEvent,
 }: PageViewEventHeadProps) {
   const stateActiveTab = useState(0);
   const activeTab = stateActiveTab[0];
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const setEdit = stateEdit[1];
+  const [mode, setMode] = stateMode;
 
   const crumb = useMemo(
-    () => `Events / ${EVENT_TAGS[event.tags[0]].name} / ${event.name}`,
+    () =>
+      event.tags.length > 0 &&
+      `Events / ${EVENT_TAGS[event.tags[0]].name} / ${event.name}`,
     [event.name, event.tags]
   );
 
@@ -42,6 +54,83 @@ export function PageViewEventHead({
       },
     ],
     []
+  );
+
+  const handleEdit = useCallback(() => {
+    setMode("edit");
+  }, [setMode]);
+
+  const renderDetailTabs = useMemo(
+    () => (
+      <div className="flex gap-4 px-4">
+        {tabs.map(({ name, onClick }, idx) => (
+          <Button
+            key={`ModalViewEvent_Tab-${name}`}
+            className={clsx(
+              "!rounded-none !m-0 !rounded-t-md !h-fit",
+              activeTab === idx &&
+                "!bg-white hover:!bg-gray-100 active:!bg-gray-200 focus:!bg-gray-200"
+            )}
+            size={type === "mobile" ? "tiny" : undefined}
+            onClick={onClick}
+          >
+            {name}
+          </Button>
+        ))}
+      </div>
+    ),
+    [activeTab, tabs, type]
+  );
+
+  const renderActionTabs = useMemo(
+    () => (
+      <div className="flex items-between p-4 gap-4">
+        <EventButtonFollow
+          event={event}
+          identification={identification}
+          size={type === "mobile" ? "tiny" : undefined}
+          updateEvent={updateEvent}
+        />
+        <EventButtonMore
+          event={event}
+          identification={identification}
+          size={type === "mobile" ? "tiny" : undefined}
+          onEdit={handleEdit}
+          onDelete={onDelete}
+          stateDeleting={stateDeleting}
+        />
+      </div>
+    ),
+    [
+      event,
+      identification,
+      type,
+      updateEvent,
+      handleEdit,
+      onDelete,
+      stateDeleting,
+    ]
+  );
+
+  const renderViewTabs = useMemo(
+    () => (
+      <>
+        {renderDetailTabs}
+        {renderActionTabs}
+      </>
+    ),
+    [renderActionTabs, renderDetailTabs]
+  );
+
+  const renderEditTabs = useMemo(() => <></>, []);
+
+  const renderCrumb = useMemo(
+    () => (
+      <span className="p-4 text-16px font-bold text-white drop-shadow-md">
+        {crumb}
+      </span>
+    ),
+    [crumb]
   );
 
   return (
@@ -64,33 +153,9 @@ export function PageViewEventHead({
           "flex flex-col justify-between"
         )}
       >
-        <span className="p-4 text-16px font-bold text-white drop-shadow-md">
-          {crumb}
-        </span>
+        {mode === "view" && renderCrumb}
         <div className="flex items-end h-20 justify-between">
-          <div className="flex gap-4 px-4">
-            {tabs.map(({ name, onClick }, idx) => (
-              <Button
-                key={`ModalViewEvent_Tab-${name}`}
-                className={clsx(
-                  "!rounded-none !m-0 !rounded-t-md !h-fit",
-                  activeTab === idx &&
-                    "!bg-white hover:!bg-gray-100 active:!bg-gray-200 focus:!bg-gray-200"
-                )}
-                size={type === "mobile" ? "tiny" : undefined}
-                onClick={onClick}
-              >
-                {name}
-              </Button>
-            ))}
-          </div>
-          <div className="flex items-between p-4 gap-4">
-            <EventButtonFollow
-              event={event}
-              size={type === "mobile" ? "tiny" : undefined}
-            />
-            <EventButtonMore size={type === "mobile" ? "tiny" : undefined} />
-          </div>
+          {mode === "view" ? renderViewTabs : renderEditTabs}
         </div>
       </div>
     </div>

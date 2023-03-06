@@ -40,14 +40,7 @@ export function EventButtonFilter({
             <Dropdown.Item
               key={name}
               value={name}
-              label={{
-                color,
-                empty: true,
-                circular: true,
-              }}
-              className={clsx(
-                filters[idx] ? "ActiveFilter bg-secondary-3" : "InactiveFilter"
-              )}
+              className={clsx(filters[idx] ? "ActiveFilter" : "InactiveFilter")}
               onClick={() => {
                 setFilters((prev) => ({
                   ...prev,
@@ -83,7 +76,7 @@ export function EventButtonFilter({
   return (
     <Dropdown
       icon={asButton ? undefined : "filter"}
-      className="icon z-10"
+      className="icon z-16"
       labeled={asButton ? undefined : type !== "mobile"}
       floating
       direction="left"

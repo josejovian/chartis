@@ -4,11 +4,12 @@ import clsx from "clsx";
 import { EventCard, LayoutNotice } from "@/components";
 import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
 import { strDate } from "@/utils";
-import { useScreen } from "@/hooks";
+import { useIdentification, useScreen } from "@/hooks";
 
 export interface PageHomeSideBarProps {
   focusDate: Date;
   events: EventType[];
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   stateSideBar: StateObject<boolean>;
 }
 
@@ -16,9 +17,12 @@ export function PageHomeSideBar({
   focusDate,
   events,
   stateSideBar,
+  updateEvent,
 }: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
+  const stateIdentification = useIdentification();
+  const identification = stateIdentification[0];
 
   const renderTitle = useMemo(
     () => (
@@ -54,25 +58,24 @@ export function PageHomeSideBar({
   const renderEvents = useMemo(
     () => (
       <div className="flex flex-col gap-8">
-        {events.map((event, idx) => (
+        {events.map((event, _) => (
           <EventCard
             key={`EventCard_${event.id}`}
-            event={{
-              ...event,
-              id: `${idx}`,
-            }}
+            event={event}
+            identification={identification}
+            updateEvent={updateEvent}
           />
         ))}
       </div>
     ),
-    [events]
+    [events, identification, updateEvent]
   );
 
   const renderEmpty = useMemo(
     () => (
       <LayoutNotice
         title="It's Empty"
-        desc="There are no events on this date."
+        description="There are no events on this date."
       />
     ),
     []

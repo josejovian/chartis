@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { HTMLInputTypeAttribute, ReactNode } from "react";
 import { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
 
 export interface EventType {
@@ -8,21 +8,47 @@ export interface EventType {
   location?: string;
   authorId: string;
   postDate: number;
+  editDate?: number;
   organizer?: string;
   thumbnailSrc?: string;
   startDate: number;
   endDate?: number;
-  followCount?: number;
-  followerIds?: string[];
-  guestFollowerCount?: number;
+  subscriberCount?: number;
+  subscriberIds?: string[];
+  guestSubscriberCount?: number;
   tags: number[];
 }
 
-export interface EventDetailType {
+export interface EventDetailBaseType {
   icon: SemanticICONS;
+  id: string;
   name: string;
-  value: ReactNode;
+  placeholder?: string;
+  validate?: (value: unknown) => string | null;
 }
+
+export interface EventDetailSimpleTextType extends EventDetailBaseType {
+  rawValue: string | string[] | number | number[] | undefined;
+  moddedValue?: string | string[] | number | number[] | undefined;
+  inputType: HTMLInputTypeAttribute;
+}
+
+export interface EventDetailCompactType extends EventDetailBaseType {
+  value: string;
+}
+
+export interface EventDetailComponentType extends EventDetailBaseType {
+  viewElement: ReactNode;
+  editElement: ReactNode;
+}
+
+export type EventDetailType =
+  | EventDetailSimpleTextType
+  | EventDetailComponentType
+  | EventDetailCompactType;
+
+export type EventDetailUnionType = EventDetailSimpleTextType &
+  EventDetailComponentType;
 
 export interface EventTagType {
   name: string;
@@ -50,3 +76,10 @@ export interface EventSortDirectionType {
   value: boolean;
   name: string;
 }
+
+export type EventModeType = "create" | "edit" | "view";
+
+export type EventSearchType =
+  | "userFollowedEvents"
+  | "userCreatedEvents"
+  | "userFollowedTags";

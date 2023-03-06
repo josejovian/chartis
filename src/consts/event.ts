@@ -5,6 +5,18 @@ import {
   EventType,
 } from "@/types";
 
+export const EVENT_EMPTY: EventType = {
+  id: "unset",
+  authorId: "admin",
+  name: "",
+  description: "",
+  organizer: "",
+  location: "",
+  postDate: 0,
+  startDate: 0,
+  tags: [],
+};
+
 export const EVENT_DUMMY_1: EventType = {
   id: "0",
   authorId: "admin",
@@ -52,7 +64,7 @@ export const EVENT_TAGS: EventTagType[] = [
 
 export const EVENT_SORT_CRITERIA: EventSortType[] = [
   { id: "postDate", name: "Post Date" },
-  { id: "followCount", name: "Followers" },
+  { id: "subscriberCount", name: "Followers" },
 ];
 
 export const EVENT_SORT_TYPE: EventSortDirectionType[] = [

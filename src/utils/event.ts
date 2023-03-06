@@ -14,10 +14,11 @@ export function filterEventsFromTags(
   );
 }
 
-export function populateEvents() {
+export function populateEvents(count: number, authorId: string) {
   const randomEventsId: Record<number, boolean> = {};
   let temp: EventType[] = [];
-  for (let i = 0; i < 100; i++) {
+
+  for (let i = 0; i < Math.max(Math.min(50, count), 10); i++) {
     let seed = Math.floor(Math.random() * 100000 * i) % 5000;
     while (randomEventsId[seed]) {
       seed = Math.floor(Math.random() * 100000 * i) % 5000;
@@ -25,6 +26,7 @@ export function populateEvents() {
     randomEventsId[seed] = true;
 
     const today = new Date();
+    today.setMonth(today.getMonth() - 2);
     today.setDate(seed % 27);
     today.setHours(seed % 24);
     today.setMinutes(seed % 59);
@@ -33,12 +35,21 @@ export function populateEvents() {
     const newEvent = {
       ...EVENT_DUMMY_1,
     };
-    newEvent.id = `${Math.floor(seed)}`;
+    newEvent.id = `-Dummy${Math.floor(seed)}`;
+    newEvent.authorId = authorId;
     newEvent.startDate = today.getTime();
     newEvent.name = `Event #${seed}`;
     newEvent.endDate = undefined;
     newEvent.tags = [seed % 4];
     newEvent.postDate = today.getTime();
+    newEvent.description = "lorem ipsum consectetur adi piscing"
+      .split("")
+      .sort((a, b) => Math.random() - 0.5)
+      .join("");
+    delete newEvent.endDate;
+    newEvent.subscriberCount = 0;
+    newEvent.guestSubscriberCount = 0;
+    newEvent.subscriberIds = [];
     temp = [...temp, newEvent];
   }
 
