@@ -1,24 +1,52 @@
+import { useMemo } from "react";
 import Image from "next/image";
+import {
+  LayoutNoticeProps,
+  LayoutNoticeUnionProps,
+  LAYOUT_NOTICE_PRESETS,
+} from "@/components";
 
-export interface LayoutNoticeProps {
-  title: string;
-  desc: string;
-}
+export function LayoutNotice(rawProps: LayoutNoticeProps) {
+  const {
+    title,
+    description,
+    descriptionElement,
+    illustration = "/no-events.png",
+    illustrationElement,
+  } = useMemo(
+    () =>
+      (rawProps.preset
+        ? LAYOUT_NOTICE_PRESETS[rawProps.preset]
+        : rawProps) as unknown as LayoutNoticeUnionProps,
+    [rawProps]
+  );
 
-export function LayoutNotice({ title, desc }: LayoutNoticeProps) {
+  const renderIllustration = useMemo(() => {
+    return illustrationElement ? (
+      illustrationElement
+    ) : (
+      <Image src={illustration} width="290" height="180" alt="Calendar Image" />
+    );
+  }, [illustration, illustrationElement]);
+
+  const renderDescription = useMemo(
+    () =>
+      descriptionElement ? (
+        <div className="mt-4">{descriptionElement}</div>
+      ) : (
+        <span className="mt-1 text-16px text-slate-500">{description}</span>
+      ),
+    [description, descriptionElement]
+  );
+
   return (
     <div
       style={{ width: "75%" }}
       className="flex flex-col items-center justify-center mx-auto"
     >
-      <Image
-        src="/no-events.png"
-        width="290"
-        height="180"
-        alt="Calendar Image"
-      />
-      <span className="text-18px italic font-bold text-slate-500">{title}</span>
-      <span className="mt-1 text-16px italic text-slate-500">{desc}</span>
+      {renderIllustration}
+      <span className="text-20px font-bold text-slate-500">{title}</span>
+      {renderDescription}
     </div>
   );
 }

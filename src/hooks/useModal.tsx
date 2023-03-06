@@ -1,24 +1,28 @@
-import { ModalViewEvent } from "@/components";
+import { ModalAuthLogin, ModalAuthRegister } from "@/components";
 import { useCallback, useContext, useMemo } from "react";
 import { ModalContext } from "@/contexts";
-import { EventType } from "@/types";
 
 export function useModal() {
   const params = useContext(ModalContext);
   const setModal = params[1];
 
-  const showEvent = useCallback(
-    (event: EventType) => {
-      setModal(<ModalViewEvent event={event} />);
-    },
-    [setModal]
-  );
+  const showRegister = useCallback(() => {
+    setModal(<ModalAuthRegister />);
+  }, [setModal]);
+
+  const showLogin = useCallback(() => {
+    setModal(<ModalAuthLogin />);
+  }, [setModal]);
+
+  const clearModal = useCallback(() => setModal(null), [setModal]);
 
   return useMemo(
     () => ({
       params,
-      showEvent,
+      showRegister,
+      showLogin,
+      clearModal,
     }),
-    [params, showEvent]
+    [params, showRegister, showLogin, clearModal]
   );
 }

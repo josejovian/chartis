@@ -5,19 +5,24 @@ import {
   LayoutTemplate,
   EventButtonFilter,
 } from "@/components";
-import { filterEventsFromTags, populateEvents } from "@/utils";
+import { useSearchEvent } from "@/hooks";
+import { filterEventsFromTags } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
-import { EventType } from "@/types";
 
 export default function Home() {
   const stateFocusDate = useState(new Date());
   const stateSideBar = useState(false);
   const focusDate = stateFocusDate[0];
 
-  const [events, setEvents] = useState<EventType[]>([]);
-  const stateFilters = useState<Record<number, boolean>>(
-    EVENT_TAGS.map((_) => false)
-  );
+  const {
+    stateEvents,
+    stateFilters,
+    handleFetchEventsInOneMonthPage,
+    handleUpdateEvent,
+  } = useSearchEvent({});
+
+  const events = stateEvents[0];
+
   const filters = stateFilters[0];
   const atLeastOneFilter = useMemo(
     () => Object.values(stateFilters[0]).some((f) => f),
@@ -34,10 +39,6 @@ export default function Home() {
     () => (atLeastOneFilter ? filterEventsFromTags(events, filters) : events),
     [atLeastOneFilter, events, filters]
   );
-
-  const handlePopulateRandomEvents = useCallback(() => {
-    setEvents(populateEvents());
-  }, []);
 
   const renderCalendar = useMemo(
     () => (
@@ -61,14 +62,19 @@ export default function Home() {
           );
         })}
         stateSideBar={stateSideBar}
+        updateEvent={handleUpdateEvent}
       />
     ),
-    [displayedEvents, focusDate, stateSideBar]
+    [displayedEvents, focusDate, handleUpdateEvent, stateSideBar]
   );
 
+  const handlePopulateCalendar = useCallback(() => {
+    handleFetchEventsInOneMonthPage(focusDate.getTime());
+  }, [focusDate, handleFetchEventsInOneMonthPage]);
+
   useEffect(() => {
-    handlePopulateRandomEvents();
-  }, [handlePopulateRandomEvents]);
+    handlePopulateCalendar();
+  }, [focusDate, handlePopulateCalendar]);
 
   return (
     <LayoutTemplate
