@@ -29,15 +29,19 @@
 		"eslint": "8.32.0",
 		"eslint-config-next": "13.1.4",
 		"eslint-config-react-app": "^7.0.1",
+		"firebase": "^9.17.1",
+		"formik": "^2.2.9",
 		"lodash": "^4.17.21",
 		"next": "13.1.4",
 		"pre-commit": "^1.2.2",
+		"pushid": "^1.0.0",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"save": "^2.9.0",
 		"semantic-ui-css": "^2.5.0",
 		"semantic-ui-react": "^2.1.4",
-		"typescript": "4.9.4"
+		"typescript": "4.9.4",
+		"yup": "^1.0.1"
 	},
 	"devDependencies": {
 		"@types/lodash": "^4.14.191",

@@ -1,7 +1,7 @@
 import { Icon } from "semantic-ui-react";
-import { EventDetailType } from "@/types";
+import { EventDetailCompactType } from "@/types";
 
-export function EventCardDetail({ icon, value }: EventDetailType) {
+export function EventCardDetail({ icon, value }: EventDetailCompactType) {
   return (
     <li className="flex gap-1">
       <Icon name={icon} />

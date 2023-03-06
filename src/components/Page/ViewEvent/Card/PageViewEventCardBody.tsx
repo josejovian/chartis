@@ -1,17 +1,40 @@
-import { useMemo } from "react";
-import { Icon } from "semantic-ui-react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useCallback, useMemo } from "react";
+import { Field } from "formik";
+import { Dropdown, Input, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
-import { EventTags } from "@/components";
+import {
+  EventTags,
+  FormErrorMessage,
+  PageViewEventCardDetail,
+} from "@/components";
 import { strDateTime } from "@/utils";
-import { EventDetailType, EventType, ScreenSizeCategoryType } from "@/types";
+import { EVENT_TAGS } from "@/consts";
+import {
+  EventDetailType,
+  EventModeType,
+  EventType,
+  ScreenSizeCategoryType,
+  StateObject,
+} from "@/types";
 
 export interface PageViewEventBodyProps {
   event: EventType;
+  mode: EventModeType;
+  stateTags: StateObject<number[]>;
   type: ScreenSizeCategoryType;
+  validateForm?: () => void;
 }
 
-export function PageViewEventBody({ event, type }: PageViewEventBodyProps) {
-  const { location, authorId, organizer, startDate, endDate } = event;
+export function PageViewEventBody({
+  event,
+  mode,
+  stateTags,
+  validateForm,
+}: PageViewEventBodyProps) {
+  const { location, authorId, organizer, startDate, endDate, description } =
+    event;
+  const [tags, setTags] = stateTags;
 
   const renderEventTags = useMemo(
     () => (
@@ -24,131 +47,210 @@ export function PageViewEventBody({ event, type }: PageViewEventBodyProps) {
         />
       </div>
     ),
-    [event]
+    [event.id, event.tags]
+  );
+
+  const handleUpdateTagJSON = useCallback(
+    (values: string[]) => {
+      setTags(values ? values.map((value) => Number(value)) : []);
+      setTimeout(() => {
+        validateForm && validateForm();
+      }, 100);
+    },
+    [setTags, validateForm]
+  );
+
+  const renderEditEventTags = useMemo(
+    () => (
+      <>
+        <Dropdown
+          placeholder="Enter event tags"
+          className="!border-0 !min-h-0 !py-0"
+          fluid
+          search
+          selection
+          multiple
+          transparent
+          defaultValue={tags}
+          onChange={(_, { value }) => handleUpdateTagJSON(value as string[])}
+          onMouseDown={() => validateForm && validateForm()}
+          onBlur={() => validateForm && validateForm()}
+          options={EVENT_TAGS.map(({ name }, idx) => ({
+            key: `SelectTag_${name}`,
+            text: name,
+            value: idx,
+          }))}
+        />
+        <Field name="tags">
+          {({ field, meta }: any) => (
+            <div className="">
+              <Input
+                className="EventInput !hidden"
+                size="big"
+                transparent
+                {...field}
+              />
+              <FormErrorMessage meta={meta} className="!z-10" overlap />
+            </div>
+          )}
+        </Field>
+      </>
+    ),
+    [handleUpdateTagJSON, tags, validateForm]
   );
 
   const details = useMemo<EventDetailType[]>(
     () => [
       {
         icon: "tags",
+        id: "tags",
         name: "TAGS",
-        value: renderEventTags,
+        viewElement: renderEventTags,
+        editElement: renderEditEventTags,
       },
-      { icon: "group", name: "ORGANIZER", value: organizer },
-      { icon: "location arrow", name: "LOCATION", value: location },
+      {
+        icon: "group",
+        id: "organizer",
+        name: "ORGANIZER",
+        rawValue: organizer,
+        inputType: "text",
+        placeholder: "Enter event organizer",
+      },
+      {
+        icon: "location arrow",
+        id: "location",
+        name: "LOCATION",
+        rawValue: location,
+        inputType: "text",
+        placeholder: "Enter event location",
+      },
       {
         icon: "calendar",
+        id: "startDate",
         name: "START",
-        value: startDate && strDateTime(new Date(startDate)),
+        rawValue: startDate,
+        moddedValue: startDate && strDateTime(new Date(startDate)),
+        inputType: "datetime-local",
       },
       {
         icon: "calendar",
+        id: "endDate",
         name: "END",
-        value: endDate && strDateTime(new Date(endDate)),
+        rawValue: endDate,
+        moddedValue: endDate && strDateTime(new Date(endDate)),
+        inputType: "datetime-local",
       },
     ],
-    [endDate, location, organizer, renderEventTags, startDate]
+    [
+      endDate,
+      location,
+      organizer,
+      renderEditEventTags,
+      renderEventTags,
+      startDate,
+    ]
   );
 
   const renderEventCreators = useMemo(
     /** @todo Replace authorId with real username. */
-    () => (
-      <span className="text-14px text-secondary-4">
-        Posted by <b>{authorId}</b> a week ago{" "}
-        {organizer &&
-          `- Organized by
-				<b>${organizer}</b>`}
-      </span>
-    ),
-    [authorId, organizer]
+    () =>
+      mode === "view" && (
+        <span className="text-14px text-secondary-4">
+          Posted by <b>{authorId}</b> a week ago
+        </span>
+      ),
+    [authorId, mode]
   );
 
   const renderEventName = useMemo(
-    () => <h2 className="text-secondary-7">{event.name}</h2>,
-    [event.name]
+    () =>
+      mode === "view" ? (
+        <h2 className="h2 text-secondary-7">{event.name}</h2>
+      ) : (
+        <Field name="name">
+          {({ field, meta }: any) => (
+            <div className="mt-5">
+              <Input
+                className="EventInput w-full font-bold !text-red-100 !font-bold !h-8 !border-0"
+                style={{ fontSize: "1.5rem" }}
+                size="big"
+                placeholder="Enter event name"
+                transparent
+                {...field}
+              />
+              <FormErrorMessage meta={meta} className="mt-2" />
+            </div>
+          )}
+        </Field>
+      ),
+    [event.name, mode]
   );
 
   const renderEventDetails = useMemo(
-    () => (
-      <table className="border-collapse mt-4">
-        <tbody>
-          {details.map(({ icon, name, value }) => (
-            <tr key={`ModalViewEventBody_Detail-${name}`}>
-              <th className={clsx(DETAIL_CELL_BASE_STYLE, "w-fit")}>
-                <div className="!w-fit flex gap-1 text-slate-500">
-                  <Icon name={icon} />
-                  <span>{name}</span>
-                </div>
-              </th>
-              <td className={clsx(DETAIL_CELL_BASE_STYLE, "w-full")}>
-                {value ?? "-"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    ),
-    [details]
+    () => <PageViewEventCardDetail details={details} mode={mode} />,
+    [details, mode]
   );
 
   const renderEventDescription = useMemo(
+    () =>
+      mode === "view" ? (
+        <pre className="mt-8">{description}</pre>
+      ) : (
+        <Field name="description">
+          {({ field, meta }: any) => (
+            <div className="mt-8">
+              <TextArea
+                className="EventInput !p-0 !b-0 !text-14px"
+                transparent
+                style={{
+                  resize: "none",
+                  lineHeight: "1.25rem",
+                  minHeight: "4rem",
+                  border: "0!important",
+                }}
+                onInput={(e) => {
+                  e.currentTarget.style.height = "0";
+                  e.currentTarget.style.height =
+                    e.currentTarget.scrollHeight + "px";
+                }}
+                placeholder="Enter event description (8 - 256 characters long)."
+                {...field}
+              />
+              <FormErrorMessage meta={meta} className="mt-2" />
+            </div>
+          )}
+        </Field>
+      ),
+    [description, mode]
+  );
+
+  const renderEventCardContent = useMemo(
     () => (
-      <p className="mt-8">
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vel a
-        repudiandae debitis numquam, omnis deserunt reprehenderit aperiam nemo
-        similique voluptate accusantium ab vitae aliquid pariatur quis
-        distinctio expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-        adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-        reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-        aliquid pariatur quis distinctio expedita labore enim. Lorem ipsum dolor
-        sit, amet consectetur adipisicing elit. Vel a repudiandae debitis
-        numquam, omnis deserunt reprehenderit aperiam nemo similique voluptate
-        accusantium ab vitae aliquid pariatur quis distinctio expedita labore
-        enim. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vel a
-        repudiandae debitis numquam, omnis deserunt reprehenderit aperiam nemo
-        similique voluptate accusantium ab vitae aliquid pariatur quis
-        distinctio expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-        adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-        reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-        aliquid pariatur quis distinctio expedita labore enim. Lorem ipsum dolor
-        sit, amet consectetur adipisicing elit. Vel a repudiandae debitis
-        numquam, omnis deserunt reprehenderit aperiam nemo similique voluptate
-        accusantium ab vitae aliquid pariatur quis distinctio expedita labore
-        enim. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vel a
-        repudiandae debitis numquam, omnis deserunt reprehenderit aperiam nemo
-        similique voluptate accusantium ab vitae aliquid pariatur quis
-        distinctio expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-        adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-        reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-        aliquid pariatur quis distinctio expedita labore enim. Lorem ipsum dolor
-        sit, amet consectetur adipisicing elit. Vel a repudiandae debitis
-        numquam, omnis deserunt reprehenderit aperiam nemo similique voluptate
-        accusantium ab vitae aliquid pariatur quis distinctio expedita labore
-        enim. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vel a
-        repudiandae debitis numquam, omnis deserunt reprehenderit aperiam nemo
-        similique voluptate accusantium ab vitae aliquid pariatur quis
-        distinctio expedita labore enim. Lorem ipsum dolor sit, amet consectetur
-        adipisicing elit. Vel a repudiandae debitis numquam, omnis deserunt
-        reprehenderit aperiam nemo similique voluptate accusantium ab vitae
-        aliquid pariatur quis distinctio expedita labore enim. Lorem ipsum dolor
-        sit, amet consectetur adipisicing elit. Vel a repudiandae debitis
-        numquam, omnis deserunt reprehenderit aperiam nemo similique voluptate
-        accusantium ab vitae aliquid pariatur quis distinctio expedita labore
-        enim.
-      </p>
+      <>
+        {renderEventCreators}
+        {renderEventName}
+        {renderEventDetails}
+        {renderEventDescription}
+      </>
     ),
-    []
+    [
+      renderEventCreators,
+      renderEventDescription,
+      renderEventDetails,
+      renderEventName,
+    ]
   );
 
   return (
-    <div className={clsx("px-12 pt-4 pb-6 overflow-y-scroll")}>
-      {renderEventCreators}
-      {renderEventName}
-      {renderEventDetails}
-      {renderEventDescription}
+    <div
+      className={clsx(
+        EVENT_CARD_BODY_WRAPPER_STYLE,
+        mode !== "view" && "ui form div !h-full"
+      )}
+    >
+      {renderEventCardContent}
     </div>
   );
 }
 
-const DETAIL_CELL_BASE_STYLE =
-  "pl-3 pr-4 h-8 text-14px border border-secondary-3";
+const EVENT_CARD_BODY_WRAPPER_STYLE = "px-12 pt-4 pb-6 overflow-y-auto";
