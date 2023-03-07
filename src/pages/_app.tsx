@@ -144,8 +144,8 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <style jsx global>{`
-        html {
-          font-family: ${lato.style.fontFamily};
+        #__next > #App > * {
+          font-family: ${lato.style.fontFamily}!important;
         }
       `}</style>
       <ContextWrapper

@@ -1,7 +1,4 @@
 @layer base {
-  #__next > #App > * {
-    font-family: "Lato", sans-serif !important;
-  }
   html {
     font-size: 16px !important;
   }
