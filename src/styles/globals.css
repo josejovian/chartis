@@ -1,5 +1,5 @@
 @layer base {
-  pre {
+  #__next > #App > * {
     font-family: "Lato", sans-serif !important;
   }
   html {
