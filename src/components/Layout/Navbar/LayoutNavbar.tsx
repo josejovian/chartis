@@ -137,7 +137,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     >
       <div
         className={clsx(
-          "h-screen flex flex-col justify-between",
+          "h-full flex flex-col justify-between",
           "bg-slate-900 text-gray-50"
         )}
         style={

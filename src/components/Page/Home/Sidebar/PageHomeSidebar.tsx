@@ -94,7 +94,7 @@ export function PageHomeSideBar({
       )}
       style={{
         ...SIDEBAR_WRAPPER_RESPONSIVE_STYLE[type],
-        height: sideBar ? "calc(100vh - 64px)" : undefined,
+        height: sideBar ? "100%" : undefined,
       }}
     >
       <div>
