@@ -46,7 +46,7 @@ export function LayoutTemplate({
         />
         <div
           className={clsx(
-            "flex w-full h-full bg-sky-50 overflow-hidden",
+            "flex w-full  bg-sky-50 overflow-hidden h-full",
             classNameMain
           )}
           style={inlineMain}
@@ -72,7 +72,7 @@ export function LayoutTemplate({
   return (
     <div
       className={clsx(
-        "flex h-screen w-full h-full",
+        "flex h-screen w-full",
         type === "mobile" && "flex flex-col flex-auto overflow-hidden",
         classNameWrapper
       )}
