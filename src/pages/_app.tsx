@@ -158,7 +158,7 @@ export default function App({ Component, pageProps }: AppProps) {
           {renderShadeNavBar}
           {renderShadeModal}
           <LayoutNavbar stateNavBar={stateNavBar} />
-          <div className="flex flex-auto w-full h-full">
+          <div className="flex flex-auto w-full ">
             <Component {...pageProps} />
           </div>
         </div>

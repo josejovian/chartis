@@ -72,7 +72,7 @@ export function LayoutTemplate({
   return (
     <div
       className={clsx(
-        "flex h-screen w-full",
+        "flex h-full w-full",
         type === "mobile" && "flex flex-col flex-auto overflow-hidden",
         classNameWrapper
       )}
