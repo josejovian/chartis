@@ -1,5 +1,7 @@
 @layer base {
-  html {
+  html,
+  body {
+    height: 100%;
     font-size: 16px !important;
   }
   h1,
