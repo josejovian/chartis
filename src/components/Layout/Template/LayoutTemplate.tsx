@@ -34,7 +34,7 @@ export function LayoutTemplate({
 
   const renderMain = useMemo(
     () => (
-      <div className={clsx("flex flex-col w-full", "h-screen")}>
+      <div className={clsx("flex flex-col w-full", "h-full")}>
         <LayoutHead
           stateNavBar={stateNavBar}
           leftButton={leftButton}
@@ -72,7 +72,7 @@ export function LayoutTemplate({
   return (
     <div
       className={clsx(
-        "flex h-screen w-full",
+        "flex h-screen w-full h-full",
         type === "mobile" && "flex flex-col flex-auto overflow-hidden",
         classNameWrapper
       )}
