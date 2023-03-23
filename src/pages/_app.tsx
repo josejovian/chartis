@@ -154,7 +154,7 @@ export default function App({ Component, pageProps }: AppProps) {
         stateModal={stateModal}
         stateNavBar={stateNavBar}
       >
-        <div id="App" className={clsx("flex flex-row w-full")}>
+        <div id="App" className={clsx("flex flex-row w-full h-screen")}>
           {renderShadeNavBar}
           {renderShadeModal}
           <LayoutNavbar stateNavBar={stateNavBar} />
