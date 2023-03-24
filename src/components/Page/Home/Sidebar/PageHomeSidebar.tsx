@@ -113,11 +113,11 @@ const SIDEBAR_WRAPPER_STYLE = clsx(
 const SIDEBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
   desktop_lg: {
     height: "100vh",
-    minWidth: "504px",
+    maxWidth: "504px",
   },
   desktop_sm: {
     height: "100vh",
-    minWidth: "400px",
+    maxWidth: "400px",
   },
   mobile: {
     width: "100vw",
