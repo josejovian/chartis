@@ -90,11 +90,17 @@ export function PageHomeSideBar({
     <div
       className={clsx(
         SIDEBAR_WRAPPER_STYLE,
-        sideBar ? ["fixed left-0 bottom-0"] : [type === "mobile" && "h-full"]
+        sideBar && ["fixed left-0 bottom-0"]
       )}
       style={{
         ...SIDEBAR_WRAPPER_RESPONSIVE_STYLE[type],
-        height: sideBar ? "100%" : undefined,
+        zIndex: 8,
+        height:
+          sideBar && type !== "mobile"
+            ? "100%"
+            : type === "mobile"
+            ? "calc(100% - 64px)"
+            : undefined,
       }}
     >
       <div>
@@ -107,7 +113,7 @@ export function PageHomeSideBar({
 
 const SIDEBAR_WRAPPER_STYLE = clsx(
   "flex flex-col p-8",
-  "bg-slate-100 overflow-x-hidden overflow-y-scroll z-10"
+  "bg-slate-100 overflow-x-hidden overflow-y-scroll"
 );
 
 const SIDEBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
