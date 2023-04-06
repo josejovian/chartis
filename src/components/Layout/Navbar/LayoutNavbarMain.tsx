@@ -9,6 +9,8 @@ import { LayoutNavbarItem, LayoutNavbarItemProps } from "@/components";
 import { useRouter } from "next/router";
 import { LayoutNavbarButton } from "./LayoutNavbarButton";
 import { hasPermission } from "@/utils";
+import Image from "next/image";
+import Link from "next/link";
 
 export interface LayoutNavbarMainProps {
   links: Record<string, LayoutNavbarItemProps[]>;
@@ -39,24 +41,18 @@ export function LayoutNavbarMain({
     [navBar, setNavBar, type]
   );
 
-  const renderLogo = useMemo(
-    () => <div className="w-8 h-8 rounded-md bg-amber-500" />,
-    []
-  );
-
   const renderHead = useMemo(
     () => (
       <div className="p-4 flex items-center justify-between font-bold">
         <div className="flex items-center">
-          {renderLogo}
-          <div className="ml-4" style={{ fontSize: "16px" }}>
-            CHARTIS
-          </div>
+          <Link href="/">
+            <Image src="Logo.svg" alt="Chartis Logo" width={110} height={32} />
+          </Link>
         </div>
         {renderNavBarToggle}
       </div>
     ),
-    [renderLogo, renderNavBarToggle]
+    [renderNavBarToggle]
   );
 
   const renderSearch = useMemo(
