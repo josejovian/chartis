@@ -8,7 +8,7 @@ import {
   FormErrorMessage,
   PageViewEventCardDetail,
 } from "@/components";
-import { strDateTime } from "@/utils";
+import { getTimeDifference, strDateTime } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
 import {
   EventDetailType,
@@ -17,6 +17,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
+import { useIdentification } from "@/hooks";
 
 export interface PageViewEventBodyProps {
   event: EventType;
@@ -32,7 +33,8 @@ export function PageViewEventBody({
   stateTags,
   validateForm,
 }: PageViewEventBodyProps) {
-  const { location, authorId, organizer, startDate, endDate, description } =
+  const { users } = useIdentification()[0];
+  const { location, authorId, organizer, startDate, endDate, description, postDate } =
     event;
   const [tags, setTags] = stateTags;
 
@@ -156,10 +158,10 @@ export function PageViewEventBody({
     () =>
       mode === "view" && (
         <span className="text-14px text-secondary-4">
-          Posted by <b>{authorId}</b> a week ago
+          Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b> {getTimeDifference(postDate)}
         </span>
       ),
-    [authorId, mode]
+    [authorId, mode, postDate, users]
   );
 
   const renderEventName = useMemo(
