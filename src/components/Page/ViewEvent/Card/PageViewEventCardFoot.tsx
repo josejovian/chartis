@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Button } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventModeType, EventType, StateObject } from "@/types";
-import { ModalEventLeaveEditConfirmation } from "@/components/Modal";
+import { ModalConfirmation } from "@/components/Modal";
 
 export interface PageViewEventFootProps {
   event: EventType;
@@ -24,7 +24,13 @@ export function PageViewEventFoot({
   const renderEdit = useMemo(
     () => (
       <div className={FOOT_STYLE}>
-        <ModalEventLeaveEditConfirmation onLeaveEdit={onLeaveEdit} />
+        <ModalConfirmation
+          trigger={<Button>Cancel</Button>}
+          onConfirm={onLeaveEdit}
+          modalText="Are you sure you want to leave making changes? The changes will not be saved."
+          confirmText="Leave"
+          cancelText="Stay"
+        />
         <Button
           color="yellow"
           type="submit"
