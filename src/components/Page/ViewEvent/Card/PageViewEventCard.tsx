@@ -96,6 +96,7 @@ export function PageViewEventCard({
         ...(values as EventType),
         id: eventId,
         authorId: user.uid,
+        authorName: user.displayName as string,
         tags,
       };
 
