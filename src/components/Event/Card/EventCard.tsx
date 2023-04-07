@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "semantic-ui-react";
 import clsx from "clsx";
@@ -16,6 +16,8 @@ import {
   EventType,
   IdentificationType,
 } from "@/types";
+import { setDataToPath } from "@/firebase";
+import { useRouter } from "next/router";
 
 export interface EventCardProps {
   className?: string;
@@ -44,6 +46,10 @@ export function EventCard({
   } = event;
   const { users } = identification;
 
+  const stateDeleting = useState(false);
+  const setDeleting = stateDeleting[1];
+  const router = useRouter();
+
   const truncatedDescription = useMemo(
     () =>
       description.length < 100
@@ -51,6 +57,20 @@ export function EventCard({
         : `${description.slice(0, 100)}...`,
     [description]
   );
+
+  const handleDeleteEvent = useCallback(async () => {
+    if (!event.id) return;
+
+    setDeleting(true);
+
+    await setDataToPath(`/events/${event.id}/`, {})
+      .then(async () => {
+        router.push(`/`);
+      })
+      .catch((e) => {
+        setDeleting(false);
+      });
+  }, [event, router, setDeleting]);
 
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
@@ -165,10 +185,11 @@ export function EventCard({
           event={event}
           identification={identification}
           size="tiny"
+          onDelete={handleDeleteEvent}
         />
       </div>
     ),
-    [event, identification, type, updateEvent]
+    [event, identification, type, updateEvent, handleDeleteEvent]
   );
 
   const renderCardContents = useMemo(
