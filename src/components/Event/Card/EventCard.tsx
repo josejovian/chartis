@@ -65,7 +65,7 @@ export function EventCard({
 
     await setDataToPath(`/events/${event.id}/`, {})
       .then(async () => {
-        router.push(`/`);
+        router.reload();
       })
       .catch((e) => {
         setDeleting(false);
