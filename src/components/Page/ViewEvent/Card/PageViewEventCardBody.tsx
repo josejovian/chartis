@@ -34,8 +34,15 @@ export function PageViewEventBody({
   validateForm,
 }: PageViewEventBodyProps) {
   const { users } = useIdentification()[0];
-  const { location, authorId, organizer, startDate, endDate, description, postDate } =
-    event;
+  const {
+    location,
+    authorId,
+    organizer,
+    startDate,
+    endDate,
+    description,
+    postDate,
+  } = event;
   const [tags, setTags] = stateTags;
 
   const renderEventTags = useMemo(
@@ -158,7 +165,8 @@ export function PageViewEventBody({
     () =>
       mode === "view" && (
         <span className="text-14px text-secondary-4">
-          Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b> {getTimeDifference(postDate)}
+          Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b>{" "}
+          {getTimeDifference(postDate)}
         </span>
       ),
     [authorId, mode, postDate, users]

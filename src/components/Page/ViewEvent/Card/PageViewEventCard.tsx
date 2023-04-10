@@ -25,6 +25,13 @@ import { setDataToPath } from "@/firebase";
 import pushid from "pushid";
 import { useRouter } from "next/router";
 import { EVENT_EMPTY } from "@/consts";
+import {
+  getStorage,
+  uploadBytes,
+  ref as refStorage,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 
 export interface ModalViewEventProps {
   className?: string;
@@ -50,6 +57,7 @@ export function PageViewEventCard({
   const setSubmitting = stateSubmitting[1];
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
+  const storage = getStorage();
   const initialEventData = useMemo(() => {
     if (!event || mode === "create") return EVENT_EMPTY;
 
@@ -75,6 +83,7 @@ export function PageViewEventCard({
   const { user } = identification;
 
   const handleSubmitForm = useCallback(
+    // image url is in values
     async (values: unknown) => {
       if (!user) return;
 
@@ -90,7 +99,7 @@ export function PageViewEventCard({
         subscriberIds: [],
       };
 
-      const newEvent: EventType = {
+      let newEvent: EventType = {
         ...defaultValues,
         ...(event ?? defaultValues),
         ...(values as EventType),
@@ -100,6 +109,19 @@ export function PageViewEventCard({
       };
 
       newEvent.startDate = new Date(startDate).getTime();
+
+      if (newEvent.thumbnailSrc) {
+        const imageRef = refStorage(storage, newEvent.id);
+
+        await uploadBytes(imageRef, newEvent.thumbnailSrc as any);
+
+        const imageURL = await getDownloadURL(imageRef);
+
+        newEvent = {
+          ...newEvent,
+          thumbnailSrc: imageURL,
+        };
+      }
 
       if (endDate) newEvent.endDate = new Date(endDate).getTime();
       else delete newEvent.endDate;
@@ -124,7 +146,7 @@ export function PageViewEventCard({
           setSubmitting(false);
         });
     },
-    [event, mode, router, setEvent, setMode, setSubmitting, tags, user]
+    [event, mode, router, setEvent, setMode, setSubmitting, storage, tags, user]
   );
 
   const handleDeleteEvent = useCallback(async () => {
@@ -134,6 +156,8 @@ export function PageViewEventCard({
 
     await sleep(200);
 
+    await deleteObject(refStorage(storage, event.id));
+
     await setDataToPath(`/events/${event.id}/`, {})
       .then(async () => {
         await sleep(200);
@@ -142,7 +166,7 @@ export function PageViewEventCard({
       .catch((e) => {
         setDeleting(false);
       });
-  }, [event, router, setDeleting]);
+  }, [event.id, router, setDeleting, storage]);
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
