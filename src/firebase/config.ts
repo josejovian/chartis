@@ -7,6 +7,7 @@ const config = {
   authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
   databaseURL: process.env.NEXT_PUBLIC_DATABASE_URL,
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_IMAGE_SERVER,
 };
 
 export const app = initializeApp(config);

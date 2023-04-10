@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Button } from "semantic-ui-react";
+import { Button, Icon, Input } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventThumbnail,
@@ -15,6 +15,7 @@ import {
   IdentificationType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
+import { useFormikContext } from "formik";
 
 export interface PageViewEventHeadProps {
   event: EventType;
@@ -39,7 +40,9 @@ export function PageViewEventHead({
   const activeTab = stateActiveTab[0];
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mode, setMode] = stateMode;
-
+  const thumbnailURLState = useState(event.thumbnailSrc);
+  const [thumbnailURL, setThumbnailURL] = thumbnailURLState;
+  const { setFieldValue } = useFormikContext() ?? {};
   const crumb = useMemo(
     () =>
       event.tags.length > 0 &&
@@ -122,7 +125,44 @@ export function PageViewEventHead({
     [renderActionTabs, renderDetailTabs]
   );
 
-  const renderEditTabs = useMemo(() => <></>, []);
+  const renderEditTabs = useMemo(
+    () => (
+      <div className="flex items-between p-4 gap-4 ml-auto">
+        <Button htmlFor="file-input" style={{ padding: "0" }}>
+          <label
+            htmlFor="file-input"
+            style={{
+              display: "block",
+              height: "100%",
+              width: "100%",
+              padding: "0.8rem",
+            }}
+          >
+            <Icon
+              name="camera"
+              style={{
+                margin: "0",
+                padding: "0",
+              }}
+            ></Icon>
+          </label>
+        </Button>
+        <Input
+          id="file-input"
+          name="thumbnailSrc"
+          type="file"
+          accept="image/*"
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onChange={(event: any) => {
+            setFieldValue("thumbnailSrc", event.target.files[0]);
+            setThumbnailURL(URL.createObjectURL(event.target.files[0]));
+          }}
+          style={{ display: "none" }}
+        />
+      </div>
+    ),
+    [setFieldValue, setThumbnailURL]
+  );
 
   const renderCrumb = useMemo(
     () => (
@@ -138,7 +178,7 @@ export function PageViewEventHead({
       <EventThumbnail
         className="!absolute !left-0 !top-0"
         type="banner"
-        src="/placeholder.png"
+        src={thumbnailURL}
       />
       <div
         className={clsx(
@@ -154,7 +194,7 @@ export function PageViewEventHead({
         )}
       >
         {mode === "view" && renderCrumb}
-        <div className="flex items-end h-20 justify-between">
+        <div className="flex items-end w-full h-full justify-between">
           {mode === "view" ? renderViewTabs : renderEditTabs}
         </div>
       </div>
