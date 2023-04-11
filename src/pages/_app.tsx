@@ -144,7 +144,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <style jsx global>{`
-        #__next > #App *:not(.icon) {
+        body *:not(.icon) {
           font-family: ${lato.style.fontFamily}!important;
         }
       `}</style>
