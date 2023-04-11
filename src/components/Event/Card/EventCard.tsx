@@ -43,6 +43,7 @@ export function EventCard({
     thumbnailSrc,
     tags,
     postDate,
+    authorName,
   } = event;
   const { users } = identification;
 
@@ -123,7 +124,11 @@ export function EventCard({
       <span className="text-12px text-secondary-4 tracking-wide">
         Posted by{" "}
         <span className="text-secondary-6 font-black">
-          {users[authorId] ? users[authorId].name : authorId}
+          {authorName
+            ? authorName
+            : users[authorId]
+            ? users[authorId].name
+            : authorId}
         </span>{" "}
         {getTimeDifference(postDate)}
         {organizer && (
@@ -134,7 +139,7 @@ export function EventCard({
         )}
       </span>
     ),
-    [authorId, organizer, postDate, users]
+    [authorId, authorName, organizer, postDate, users]
   );
 
   const renderEventTags = useMemo(

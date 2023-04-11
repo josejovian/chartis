@@ -7,6 +7,7 @@ export interface EventType {
   description: string;
   location?: string;
   authorId: string;
+  authorName: string;
   postDate: number;
   editDate?: number;
   organizer?: string;

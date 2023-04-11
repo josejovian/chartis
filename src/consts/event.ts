@@ -8,6 +8,7 @@ import {
 export const EVENT_EMPTY: EventType = {
   id: "unset",
   authorId: "admin",
+  authorName: "admin",
   name: "",
   description: "",
   organizer: "",
@@ -20,6 +21,7 @@ export const EVENT_EMPTY: EventType = {
 export const EVENT_DUMMY_1: EventType = {
   id: "0",
   authorId: "admin",
+  authorName: "admin",
   name: "December Monthly Report Deadline",
   description: "Reminder pengumpulan laporan enrichment untuk bulan Desember.",
   postDate: 0,
@@ -31,6 +33,7 @@ export const EVENT_DUMMY_1: EventType = {
 export const EVENT_DUMMY_2: EventType = {
   id: "1",
   authorId: "admin",
+  authorName: "admin",
   name: "December Monthly Report Deadline",
   description: "Reminder pengumpulan laporan enrichment untuk bulan Desember.",
   postDate: 0,
