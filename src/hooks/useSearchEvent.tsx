@@ -1,17 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import {
-  ref,
-  query,
   orderByChild,
-  get,
   equalTo,
   QueryConstraint,
   startAt,
   endAt,
 } from "firebase/database";
-import { db, getDataFromPath } from "@/firebase";
+import { getEvents } from "@/firebase";
 import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
-import { EventSearchType, EventSortType, EventType, UserType } from "@/types";
+import { EventSearchType, EventSortType, EventType } from "@/types";
 import { filterEventsFromTags } from "@/utils";
 import _ from "lodash";
 import { useIdentification } from "@/hooks";
@@ -36,7 +33,7 @@ export function useSearchEvent({ type }: useSearchEventProps) {
   const stateUserQuery = useState("");
   const userQuery = stateUserQuery[0];
   const stateIdentification = useIdentification();
-  const [identification, setIdentification] = stateIdentification;
+  const [identification] = stateIdentification;
   const { user } = identification;
 
   const stateEvents = useState<EventType[]>([]);
@@ -102,62 +99,15 @@ export function useSearchEvent({ type }: useSearchEventProps) {
     [filterByMethod, orderByMethod]
   );
 
-  const handleFetchUserOfEvents = useCallback(
-    async (eventsArray: EventType[]) => {
-      const authorIdsOfEventsArray = Object.keys(
-        eventsArray.reduce(
-          (prev, curr) => ({
-            ...prev,
-            [curr.authorId]: 0,
-          }),
-          {}
-        )
-      );
+  const handleFetchEvents = useCallback(async () => {
+    let eventArray = [] as EventType[];
+    await getEvents("events", queryConstraints).then((data) => {
+      eventArray = data;
+      setEvents(data);
+    });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const userIdObject: Record<string, UserType> = {};
-      for (const authorId of authorIdsOfEventsArray) {
-        const userData = (await getDataFromPath(
-          `/user/${authorId}`
-        )) as UserType;
-        userIdObject[authorId] = userData;
-      }
-
-      setIdentification((prev) => ({
-        ...prev,
-        users: {
-          ...prev.users,
-          ...userIdObject,
-        },
-      }));
-    },
-    [setIdentification]
-  );
-
-  const handleFetchEvents = useCallback(
-    async (onSuccess?: (result: EventType[]) => void) => {
-      const eventsRef = query(ref(db, "events"), ...queryConstraints);
-
-      const eventsArray = await get(eventsRef)
-        .then((result) => {
-          const arrayResult = Object.values(result.val()) as EventType[];
-          if (!onSuccess) {
-            setEvents(arrayResult);
-          } else {
-            onSuccess(arrayResult);
-          }
-          return arrayResult;
-        })
-        .catch(() => {
-          return [] as EventType[];
-        });
-
-      await handleFetchUserOfEvents(eventsArray);
-
-      return eventsArray;
-    },
-    [handleFetchUserOfEvents, queryConstraints, setEvents]
-  );
+    return eventArray;
+  }, [queryConstraints, setEvents]);
 
   const handleFetchEventsInOneMonthPage = useCallback(
     async (firstDayOfTheMonth: number) => {
@@ -174,28 +124,20 @@ export function useSearchEvent({ type }: useSearchEventProps) {
       last.setMonth(last.getMonth() + 1);
       last.setDate(2);
 
-      const eventsRef = query(
-        ref(db, "events"),
+      let eventArray = [] as EventType[];
+
+      await getEvents("events", [
         orderByChild("startDate"),
         startAt(first.getTime()),
-        endAt(last.getTime())
-      );
+        endAt(last.getTime()),
+      ]).then((res) => {
+        eventArray = res;
+        setEvents(res);
+      });
 
-      const eventsArray = await get(eventsRef)
-        .then((result) => {
-          const arrayResult = Object.values(result.val()) as EventType[];
-          setEvents(arrayResult);
-          return arrayResult;
-        })
-        .catch(() => {
-          return [];
-        });
-
-      await handleFetchUserOfEvents(eventsArray);
-
-      return eventsArray;
+      return eventArray;
     },
-    [handleFetchUserOfEvents, setEvents]
+    [setEvents]
   );
 
   const handleUpdateEvent = useCallback(
