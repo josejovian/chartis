@@ -40,15 +40,16 @@ export function useSearchEvent({ type }: useSearchEventProps) {
   const [events, setEvents] = stateEvents;
 
   const validatedEvents = useMemo(() => {
-    if (type === "userFollowedEvents") {
-      return events;
-    } else if (userQuery === "") {
-      return [];
-    } else if (atLeastOneFilter) {
-      return filterEventsFromTags(events, filters);
-    } else {
+    if (type === "userFollowedEvents" || type === "userCreatedEvents") {
       return events;
     }
+    if (userQuery === "") {
+      return [];
+    }
+    if (atLeastOneFilter) {
+      return filterEventsFromTags(events, filters);
+    }
+    return events;
   }, [atLeastOneFilter, events, filters, type, userQuery]);
 
   const filteredEvents = useMemo(
