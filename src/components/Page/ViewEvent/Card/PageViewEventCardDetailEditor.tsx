@@ -26,6 +26,7 @@ export function PageViewEventCardDetailEditor({
             transparent
             {...props}
             {...field}
+            onClick={(event: any) => event.target.showPicker()}
           />
           <FormErrorMessage
             meta={meta}
