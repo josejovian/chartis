@@ -73,6 +73,18 @@ export function EventCard({
       });
   }, [event, router, setDeleting]);
 
+  const handleEditEvent = useCallback(async () => {
+    if (!event.id) return;
+
+    router.push(
+      {
+        pathname: `/event/${event.id}/`,
+        query: { mode: "edit" },
+      },
+      `/event/${event.id}/`
+    );
+  }, [event, router]);
+
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
     () => (event.endDate ? new Date(event.endDate) : null),
@@ -191,10 +203,18 @@ export function EventCard({
           identification={identification}
           size="tiny"
           onDelete={handleDeleteEvent}
+          onEdit={handleEditEvent}
         />
       </div>
     ),
-    [event, identification, type, updateEvent, handleDeleteEvent]
+    [
+      type,
+      event,
+      updateEvent,
+      identification,
+      handleDeleteEvent,
+      handleEditEvent,
+    ]
   );
 
   const renderCardContents = useMemo(

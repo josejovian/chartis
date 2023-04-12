@@ -7,7 +7,7 @@ import {
 } from "@/components";
 import { EVENT_DUMMY_1 } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useScreen, useSearchEvent } from "@/hooks";
+import { useIdentification, useScreen, useSearchEvent } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
 import { getDataFromPath } from "@/firebase";
 import {
@@ -26,6 +26,7 @@ export default function ViewEvent() {
 
   const { handleUpdateEvent } = useSearchEvent({});
   const stateMode = useState<EventModeType>("view");
+  const setMode = stateMode[1];
   const stateActiveTab = useState(0);
   const { type } = useScreen();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -36,6 +37,8 @@ export default function ViewEvent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const initialize = useRef(0);
+  const stateIdentification = useIdentification();
+  const { user } = stateIdentification[0];
 
   const handleGetEvent = useCallback(async () => {
     if (!id) return;
@@ -56,9 +59,24 @@ export default function ViewEvent() {
       });
   }, [id, setEvent]);
 
+  const handleInstantEdit = useCallback(() => {
+    if (
+      router.query.mode === "edit" &&
+      event &&
+      user &&
+      user.uid === event.authorId
+    ) {
+      setMode("edit");
+    }
+  }, [event, router.query.mode, setMode, user]);
+
   useEffect(() => {
     handleGetEvent();
   }, [handleGetEvent]);
+
+  useEffect(() => {
+    handleInstantEdit();
+  }, [handleInstantEdit]);
 
   const renderContent = useMemo(() => {
     if (loading) return <LayoutNotice preset="loader" />;
