@@ -177,7 +177,9 @@ export function LayoutCalendar({
                 color
               )}
             />
-            {text}
+            <span className={clsx(type === "mobile" ? "text-xs" : "text-base")}>
+              {type === "mobile" ? text : `${text} Events`}
+            </span>
           </>
         ))}
       </div>
@@ -260,14 +262,14 @@ export function LayoutCalendar({
 const CALENDAR_LEGEND_MARKER_STYLE = [
   {
     color: "bg-emerald-200",
-    text: "1-3 Events",
+    text: "1-3",
   },
   {
     color: "bg-emerald-500",
-    text: "4-6 Events",
+    text: "4-6",
   },
   {
     color: "bg-emerald-700",
-    text: ">6 Events",
+    text: ">6",
   },
 ];
