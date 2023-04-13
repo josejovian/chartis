@@ -164,17 +164,22 @@ export function LayoutCalendar({
           "flex items-center justify-center gap-2"
         )}
       >
-        <span>Less</span>
-        {CALENDAR_LEGEND_MARKER_STYLE.map((MARKER_STYLE, idx) => (
-          <div
-            key={`Legend_${idx}`}
-            className={clsx(
-              type === "mobile" ? "w-4 h-4 rounded-sm" : "w-8 h-8 rounded-lg",
-              MARKER_STYLE
-            )}
-          />
+        <span>
+          <b>EVENT COUNT</b>
+        </span>
+        <span></span>
+        {CALENDAR_LEGEND_MARKER_STYLE.map(({ color, text }, idx) => (
+          <>
+            <div
+              key={`Legend_${idx}`}
+              className={clsx(
+                type === "mobile" ? "w-4 h-4 rounded-sm" : "w-8 h-8 rounded-lg",
+                color
+              )}
+            />
+            {text}
+          </>
         ))}
-        <span>More</span>
       </div>
     ),
     [type]
@@ -253,8 +258,16 @@ export function LayoutCalendar({
 }
 
 const CALENDAR_LEGEND_MARKER_STYLE = [
-  "bg-emerald-100",
-  "bg-emerald-300",
-  "bg-emerald-500",
-  "bg-emerald-700",
+  {
+    color: "bg-emerald-200",
+    text: "1-3 Events",
+  },
+  {
+    color: "bg-emerald-500",
+    text: "4-6 Events",
+  },
+  {
+    color: "bg-emerald-700",
+    text: ">6 Events",
+  },
 ];
