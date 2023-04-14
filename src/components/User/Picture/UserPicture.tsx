@@ -18,7 +18,7 @@ export function UserPicture({ fullName, pictureUrl }: UserPictureProps) {
     <div
       className={clsx(
         "flex items-center justify-center w-8 h-8",
-        "rounded-full bg-red-700 overflow-hidden"
+        "rounded-full bg-red-700 overflow-hidden z-10"
       )}
     >
       {pictureUrl ? (
