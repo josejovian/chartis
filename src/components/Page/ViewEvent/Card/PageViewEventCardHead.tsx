@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Button } from "semantic-ui-react";
 import clsx from "clsx";
 import {
@@ -17,6 +17,7 @@ import {
 import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventHeadProps {
+  stateActiveTab: StateObject<number>;
   event: EventType;
   identification: IdentificationType;
   onDelete: () => void;
@@ -27,6 +28,7 @@ export interface PageViewEventHeadProps {
 }
 
 export function PageViewEventHead({
+  stateActiveTab,
   event,
   identification,
   onDelete,
@@ -35,8 +37,7 @@ export function PageViewEventHead({
   type,
   updateEvent,
 }: PageViewEventHeadProps) {
-  const stateActiveTab = useState(0);
-  const activeTab = stateActiveTab[0];
+  const [activeTab, setActiveTab] = stateActiveTab;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mode, setMode] = stateMode;
 
@@ -51,9 +52,18 @@ export function PageViewEventHead({
     () => [
       {
         name: "Details",
+        onClick: () => {
+          setActiveTab(0);
+        },
+      },
+      {
+        name: "Discussion",
+        onClick: () => {
+          setActiveTab(1);
+        },
       },
     ],
-    []
+    [setActiveTab]
   );
 
   const handleEdit = useCallback(() => {

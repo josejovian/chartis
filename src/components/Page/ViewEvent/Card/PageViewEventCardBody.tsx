@@ -1,12 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useMemo } from "react";
-import { Field } from "formik";
-import { Dropdown, Input, TextArea } from "semantic-ui-react";
+import { Field, Formik } from "formik";
+import {
+  Button,
+  Dropdown,
+  Form,
+  Icon,
+  Input,
+  TextArea,
+} from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventTags,
   FormErrorMessage,
   PageViewEventCardDetail,
+  UserPicture,
 } from "@/components";
 import { getTimeDifference, strDateTime } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
@@ -18,8 +26,12 @@ import {
   StateObject,
 } from "@/types";
 import { useIdentification } from "@/hooks";
+import * as Yup from "yup";
+import { auth, setDataToPath } from "@/firebase";
+import pushid from "pushid";
 
 export interface PageViewEventBodyProps {
+  stateActiveTab: StateObject<number>;
   event: EventType;
   mode: EventModeType;
   stateTags: StateObject<number[]>;
@@ -28,15 +40,25 @@ export interface PageViewEventBodyProps {
 }
 
 export function PageViewEventBody({
+  stateActiveTab,
   event,
   mode,
   stateTags,
   validateForm,
 }: PageViewEventBodyProps) {
   const { users } = useIdentification()[0];
-  const { location, authorId, organizer, startDate, endDate, description, postDate } =
-    event;
+  const {
+    id,
+    location,
+    authorId,
+    organizer,
+    startDate,
+    endDate,
+    description,
+    postDate,
+  } = event;
   const [tags, setTags] = stateTags;
+  const activeTab = stateActiveTab[0];
 
   const renderEventTags = useMemo(
     () => (
@@ -158,7 +180,8 @@ export function PageViewEventBody({
     () =>
       mode === "view" && (
         <span className="text-14px text-secondary-4">
-          Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b> {getTimeDifference(postDate)}
+          Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b>{" "}
+          {getTimeDifference(postDate)}
         </span>
       ),
     [authorId, mode, postDate, users]
@@ -226,22 +249,116 @@ export function PageViewEventBody({
     [description, mode]
   );
 
-  const renderEventCardContent = useMemo(
-    () => (
+  const handlePostComment = useCallback(
+    async (values: any) => {
+      const poster = auth.currentUser;
+      const commentId = pushid();
+      const newComment = {
+        postDate: new Date().getTime(),
+        comment: values.comment,
+        username: poster?.displayName,
+        authorId: poster?.uid,
+      };
+
+      await setDataToPath(`/comments/${id}/${commentId}`, newComment);
+    },
+    [id]
+  );
+
+  const renderEventCardContent = useMemo(() => {
+    if (activeTab === 1)
+      return (
+        <div className="flex flex-col gap-12">
+          <Formik
+            initialValues={{
+              comment: "",
+            }}
+            onSubmit={handlePostComment}
+            validationSchema={Yup.object().shape({
+              comment: Yup.string()
+                .min(2, "Too Short!")
+                .max(50, "Too Long!")
+                .required("Required"),
+            })}
+          >
+            {({ isSubmitting, submitForm, isValid, dirty, errors, values }) => (
+              <Form className="flex flex-col items-end gap-2">
+                <Field name="comment">
+                  {({ form: { touched, errors }, field, meta }: any) => (
+                    <TextArea
+                      name="comment"
+                      className="!text-14px"
+                      style={{
+                        resize: "none",
+                        lineHeight: "1.25rem",
+                        height: "5.9rem",
+                        border: "0!important",
+                      }}
+                      onInput={(e) => {
+                        e.currentTarget.style.height = "6rem";
+                        e.currentTarget.style.height =
+                          e.currentTarget.scrollHeight + "px";
+                      }}
+                      placeholder="Discuss about the event here"
+                      {...field}
+                    />
+                  )}
+                </Field>
+                <div className="flex justify-between w-full">
+                  <span className="-mt-5 ml-2 bg-white font-semibold text-red-500 text-12px">
+                    {errors.comment !== "Required" ? errors.comment : ""}
+                  </span>
+                  <Button
+                    className="ml-auto"
+                    icon
+                    type="submit"
+                    onClick={submitForm}
+                    color="yellow"
+                  >
+                    <Icon name="paper plane" className="pr-6" />
+                    Post
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4">
+              <div className="flex justify-center row-span-3 relative z-10 after:-z-2 after:absolute after:right-1/2 after:translate-x-1/2 after:content-[''] text-white after:bg-slate-400 after:h-full after:w-px after:top-0">
+                <UserPicture fullName={"?"} />
+              </div>
+              <div className="flex gap-2.5 items-center h-8">
+                <div className="font-semibold">USERNAME</div>
+                <div className="text-slate-400 text-sm flex self-end pb-[0.3rem]">
+                  Yesterday
+                </div>
+              </div>
+              <div className="flex items-center">
+                Will they also teach me how to install the IDE?
+              </div>
+              <div className="flex items-center text-slate-400 text-sm">
+                Report
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    return (
       <>
         {renderEventCreators}
         {renderEventName}
         {renderEventDetails}
         {renderEventDescription}
       </>
-    ),
-    [
-      renderEventCreators,
-      renderEventDescription,
-      renderEventDetails,
-      renderEventName,
-    ]
-  );
+    );
+  }, [
+    activeTab,
+    handlePostComment,
+    renderEventCreators,
+    renderEventDescription,
+    renderEventDetails,
+    renderEventName,
+  ]);
 
   return (
     <div

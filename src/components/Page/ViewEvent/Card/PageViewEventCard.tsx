@@ -41,6 +41,7 @@ export function PageViewEventCard({
   type,
   updateEvent,
 }: ModalViewEventProps) {
+  const stateActiveTab = useState(0);
   const [event, setEvent] = stateEvent;
   const router = useRouter();
   const [mode, setMode] = stateMode;
@@ -176,6 +177,7 @@ export function PageViewEventCard({
     }) => (
       <>
         <PageViewEventHead
+          stateActiveTab={stateActiveTab}
           event={event}
           type={type}
           stateDeleting={stateDeleting}
@@ -185,6 +187,7 @@ export function PageViewEventCard({
           updateEvent={updateEvent}
         />
         <PageViewEventBody
+          stateActiveTab={stateActiveTab}
           event={event}
           type={type}
           mode={mode}
@@ -201,6 +204,7 @@ export function PageViewEventCard({
       </>
     ),
     [
+      stateActiveTab,
       event,
       type,
       stateDeleting,
