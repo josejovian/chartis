@@ -91,7 +91,7 @@ export function PageHomeCalendarDate({
             : differentMonth
             ? CALENDAR_CELL_DIFFERENT_MONTH_STYLE
             : CALENDAR_CELL_CURRENT_MONTH_STYLE,
-          date,
+          focus && date,
           focus && CALENDAR_CELL_FOCUS_STYLE
         )}
         onClick={onClick}
@@ -160,7 +160,8 @@ const CALENDAR_CELL_BASE_STYLE = clsx(
   "border-2 border-white align-top",
   "cursor-pointer transition-colors"
 );
-const CALENDAR_CELL_FOCUS_STYLE = "border-solid border-4 border-rose-500";
+const CALENDAR_CELL_FOCUS_STYLE =
+  "outline outline-offset-[-1px] outline-rose-500 outline-5";
 
 const CALENDAR_CELL_CURRENT_MONTH_STYLE = "bg-gray-100 hover:bg-white";
 const CALENDAR_CELL_DIFFERENT_MONTH_STYLE = "bg-white hover:bg-gray-100";
