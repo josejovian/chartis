@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Field, Formik } from "formik";
 import {
   Button,
@@ -27,8 +27,9 @@ import {
 } from "@/types";
 import { useIdentification } from "@/hooks";
 import * as Yup from "yup";
-import { auth, setDataToPath } from "@/firebase";
+import { auth, getDataFromPath, setDataToPath } from "@/firebase";
 import pushid from "pushid";
+import { CommentType } from "@/types";
 
 export interface PageViewEventBodyProps {
   stateActiveTab: StateObject<number>;
@@ -59,6 +60,7 @@ export function PageViewEventBody({
   } = event;
   const [tags, setTags] = stateTags;
   const activeTab = stateActiveTab[0];
+  const [comments, setComments] = useState<CommentType[]>([]);
 
   const renderEventTags = useMemo(
     () => (
@@ -249,15 +251,27 @@ export function PageViewEventBody({
     [description, mode]
   );
 
+  const handleFetchComment = useCallback(async () => {
+    const rawData = await getDataFromPath(`/comments/${id}`);
+    const data = Object.entries(rawData ?? {})
+      .reduce((arr: CommentType[], [k, v]) => {
+        arr.push({ commentId: k, ...v });
+        return arr;
+      }, [])
+      .sort((a, b) => b.postDate - a.postDate);
+
+    setComments(data);
+  }, [id]);
+
   const handlePostComment = useCallback(
     async (values: any) => {
       const poster = auth.currentUser;
       const commentId = pushid();
       const newComment = {
-        postDate: new Date().getTime(),
-        comment: values.comment,
-        username: poster?.displayName,
         authorId: poster?.uid,
+        authorName: poster?.displayName,
+        postDate: new Date().getTime(),
+        text: values.comment,
       };
 
       await setDataToPath(`/comments/${id}/${commentId}`, newComment);
@@ -266,7 +280,9 @@ export function PageViewEventBody({
   );
 
   const renderEventCardContent = useMemo(() => {
-    if (activeTab === 1)
+    if (activeTab === 1) {
+      handleFetchComment();
+
       return (
         <div className="flex flex-col gap-12">
           <Formik
@@ -314,6 +330,7 @@ export function PageViewEventBody({
                     type="submit"
                     onClick={submitForm}
                     color="yellow"
+                    loading={isSubmitting}
                   >
                     <Icon name="paper plane" className="pr-6" />
                     Post
@@ -323,26 +340,33 @@ export function PageViewEventBody({
             )}
           </Formik>
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4">
-              <div className="flex justify-center row-span-3 relative z-10 after:-z-2 after:absolute after:right-1/2 after:translate-x-1/2 after:content-[''] text-white after:bg-slate-400 after:h-full after:w-px after:top-0">
-                <UserPicture fullName={"?"} />
-              </div>
-              <div className="flex gap-2.5 items-center h-8">
-                <div className="font-semibold">USERNAME</div>
-                <div className="text-slate-400 text-sm flex self-end pb-[0.3rem]">
-                  Yesterday
+            {comments &&
+              comments.map((comment) => (
+                <div
+                  className="grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4"
+                  key={comment.commentId}
+                >
+                  <div className="flex justify-center row-span-3 relative z-10 after:-z-2 after:absolute after:right-1/2 after:translate-x-1/2 after:content-[''] text-white after:bg-slate-400 after:h-full after:w-px after:top-0">
+                    <UserPicture fullName={comment.authorName} />
+                  </div>
+                  <div className="flex gap-2.5 items-center h-8">
+                    <div className="font-semibold text-xl">
+                      {comment.authorName}
+                    </div>
+                    <div className="text-slate-400 text-[0.7rem] flex self-end pb-[0.15rem]">
+                      {getTimeDifference(postDate)}
+                    </div>
+                  </div>
+                  <div className="flex items-center">{comment.text}</div>
+                  <div className="flex items-center text-slate-400 text-sm">
+                    Report
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center">
-                Will they also teach me how to install the IDE?
-              </div>
-              <div className="flex items-center text-slate-400 text-sm">
-                Report
-              </div>
-            </div>
+              ))}
           </div>
         </div>
       );
+    }
     return (
       <>
         {renderEventCreators}
@@ -353,7 +377,10 @@ export function PageViewEventBody({
     );
   }, [
     activeTab,
+    comments,
+    handleFetchComment,
     handlePostComment,
+    postDate,
     renderEventCreators,
     renderEventDescription,
     renderEventDetails,
