@@ -135,14 +135,16 @@ export function PageHomeCalendarDate({
             ? CALENDAR_CELL_DENSITY_COLORS[density]
             : differentMonth
             ? CALENDAR_CELL_DIFFERENT_MONTH_STYLE
-            : CALENDAR_CELL_CURRENT_MONTH_STYLE
+            : CALENDAR_CELL_CURRENT_MONTH_STYLE,
+          date,
+          focus && CALENDAR_CELL_FOCUS_STYLE
         )}
         onClick={onClick}
       >
         <div className="flex flex-col items-center h-full">{renderDate}</div>
       </td>
     ),
-    [count, density, differentMonth, onClick, renderDate, type]
+    [count, density, differentMonth, onClick, renderDate, type, date, focus]
   );
 
   const renderCell = useMemo(
