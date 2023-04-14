@@ -1,5 +1,10 @@
 import { useContext, useEffect, useMemo } from "react";
-import { Icon } from "semantic-ui-react";
+import {
+  Icon,
+  Message,
+  SemanticCOLORS,
+  SemanticICONS,
+} from "semantic-ui-react";
 import clsx from "clsx";
 import { ToastContext } from "@/contexts";
 import { ToastLiveType, ToastVariantType } from "@/types";
@@ -10,25 +15,21 @@ export function ToastWrapper() {
   const renderToasts = useMemo(
     () =>
       toasts.map(({ id, title, description, variant, time, preExpire }) => (
-        <article
+        <Message
           key={id}
           id={id}
           className={clsx(
             TOAST_BASE_STYLE,
-            TOAST_WRAPPER_VARIANT_STYLE[variant],
             preExpire ? "toast-out" : time > 0 && "toast"
           )}
+          color={TOAST_MESSAGE_COLOR_STYLE[variant]}
         >
-          <Icon
-            size="big"
-            className={clsx("align-self-center place-self-center")}
-            name={variant === "danger" ? "remove circle" : "check circle"}
-          />
+          <Icon size="large" name={TOAST_MESSAGE_ICON[variant]} />
           <div className="">
             <h3 className={clsx("leading-6 text-18px")}>{title}</h3>
-            <p className="text-18px">{description}</p>
+            <p className="!mt-2 text-18px">{description}</p>
           </div>
-        </article>
+        </Message>
       )),
     [toasts]
   );
@@ -76,11 +77,16 @@ export function ToastWrapper() {
 
 const TOAST_BASE_STYLE = clsx(
   "flex flex-row",
-  "relative w-full py-4 px-8 gap-2",
+  "relative w-full py-4 px-4 gap-2 !my-0",
   "shadow-lg border rounded-md transition-all duration-600"
 );
 
-const TOAST_WRAPPER_VARIANT_STYLE: Record<ToastVariantType, string> = {
-  danger: "bg-red-100 border-red-600 text-red-600",
-  success: "bg-green-100 border-green-600 text-green-600",
+const TOAST_MESSAGE_COLOR_STYLE: Record<ToastVariantType, SemanticCOLORS> = {
+  danger: "red",
+  success: "green",
+};
+
+const TOAST_MESSAGE_ICON: Record<ToastVariantType, SemanticICONS> = {
+  danger: "remove circle",
+  success: "check circle",
 };
