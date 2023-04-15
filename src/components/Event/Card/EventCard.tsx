@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import { Card } from "semantic-ui-react";
 import clsx from "clsx";
@@ -46,11 +47,11 @@ export function EventCard({
   } = event;
   const { users } = identification;
   const { deleteEvent } = useSearchEvent({});
-
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
   const stateModalDelete = useState(false);
   const setModalDelete = stateModalDelete[1];
+  const router = useRouter();
 
   const truncatedDescription = useMemo(
     () =>
@@ -75,6 +76,18 @@ export function EventCard({
       },
     });
   }, [deleteEvent, event.id, id, setDeleting, setModalDelete]);
+
+  const handleEditEvent = useCallback(() => {
+    if (!event.id) return;
+
+    router.push(
+      {
+        pathname: `/event/${event.id}/`,
+        query: { mode: "edit" },
+      },
+      `/event/${event.id}/`
+    );
+  }, [event, router]);
 
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
@@ -195,6 +208,7 @@ export function EventCard({
           size="tiny"
           onDelete={handleDeleteEvent}
           stateModalDelete={stateModalDelete}
+          onEdit={handleEditEvent}
         />
       </div>
     ),
@@ -205,6 +219,7 @@ export function EventCard({
       identification,
       handleDeleteEvent,
       stateModalDelete,
+      handleEditEvent,
     ]
   );
 
