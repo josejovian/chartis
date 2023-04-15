@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Dropdown,
@@ -26,6 +26,7 @@ export function EventButtonFilter({
 }: EventButtonFilterProps) {
   const [filters, setFilters] = stateFilters;
   const { type } = useScreen();
+  const [open, setOpen] = useState(false);
 
   const renderDropdownItems = useMemo(
     () =>
@@ -73,8 +74,32 @@ export function EventButtonFilter({
     [filters, setFilters]
   );
 
+  const handleMaintainDropdownState = useCallback((e: MouseEvent) => {
+    const dropdownElement = document.getElementById("FilterDropdown");
+
+    if (dropdownElement && dropdownElement.contains(e.target as Node)) {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  }, []);
+
+  const handleImplementListeners = useCallback(() => {
+    window.removeEventListener("click", handleMaintainDropdownState, {
+      capture: true,
+    });
+    window.addEventListener("click", handleMaintainDropdownState, {
+      capture: true,
+    });
+  }, [handleMaintainDropdownState]);
+
+  useEffect(() => {
+    handleImplementListeners();
+  }, [handleImplementListeners]);
+
   return (
     <Dropdown
+      id="FilterDropdown"
       icon={asButton ? undefined : "filter"}
       className="icon z-16"
       labeled={asButton ? undefined : type !== "mobile"}
@@ -82,12 +107,13 @@ export function EventButtonFilter({
       direction="left"
       trigger={
         asButton ? (
-          <Button className="w-fit" size={size}>
+          <Button className="w-fit" size={size} onClick={() => setOpen(true)}>
             <Icon name="filter" />
             Filter
           </Button>
         ) : undefined
       }
+      open={open}
     >
       <Dropdown.Menu>
         <Dropdown.Menu scrolling>
