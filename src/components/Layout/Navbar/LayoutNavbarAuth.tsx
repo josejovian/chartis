@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Button, SemanticICONS } from "semantic-ui-react";
 import clsx from "clsx";
 import { auth, logout } from "@/firebase";
 import { LayoutNavbarButton, UserPicture } from "@/components";
-import { useModal } from "@/hooks";
+import { useModal, useToast } from "@/hooks";
 
 export interface LayoutNavbarAuthProps {
   name: string;
@@ -16,6 +16,25 @@ export interface LayoutNavbarAuthProps {
 export function LayoutNavbarAuth() {
   const user = auth.currentUser;
   const { showRegister, showLogin } = useModal();
+  const { addToast } = useToast();
+
+  const handleLogout = useCallback(async () => {
+    await logout()
+      .then(() => {
+        addToast({
+          title: "Logout Success",
+          description: "See you!",
+          variant: "success",
+        });
+      })
+      .catch(() => {
+        addToast({
+          title: "Logout Failed",
+          description: "Please try again later.",
+          variant: "danger",
+        });
+      });
+  }, [addToast]);
 
   const renderUser = useMemo(
     () => (
@@ -27,13 +46,11 @@ export function LayoutNavbarAuth() {
         <LayoutNavbarButton
           icon="log out"
           className="text-red-200 hover:text-red-300 active:text-red-300 focus:text-red-300"
-          onClick={() => {
-            logout();
-          }}
+          onClick={handleLogout}
         />
       </>
     ),
-    [user?.displayName]
+    [handleLogout, user?.displayName]
   );
 
   const renderGuest = useMemo(

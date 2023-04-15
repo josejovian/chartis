@@ -6,12 +6,12 @@ import {
   startAt,
   endAt,
 } from "firebase/database";
-import { getEvents } from "@/firebase";
+import _ from "lodash";
+import { getEvents, setDataToPath } from "@/firebase";
 import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
 import { EventSearchType, EventSortType, EventType } from "@/types";
-import { filterEventsFromTags } from "@/utils";
-import _ from "lodash";
-import { useIdentification } from "@/hooks";
+import { filterEventsFromTags, sleep } from "@/utils";
+import { useIdentification, useToast } from "@/hooks";
 
 export interface useSearchEventProps {
   type?: EventSearchType;
@@ -38,6 +38,8 @@ export function useSearchEvent({ type }: useSearchEventProps) {
 
   const stateEvents = useState<EventType[]>([]);
   const [events, setEvents] = stateEvents;
+  const stateModalDelete = useState(false);
+  const setModalDelete = stateModalDelete[1];
 
   const validatedEvents = useMemo(() => {
     if (type === "userFollowedEvents" || type === "userCreatedEvents") {
@@ -161,25 +163,61 @@ export function useSearchEvent({ type }: useSearchEventProps) {
     [setEvents]
   );
 
+  const { addToast, addToastPreset } = useToast();
+
+  const handleDeleteEvent = useCallback(
+    async ({
+      eventId,
+      onSuccess,
+      onFail,
+    }: {
+      eventId: string;
+      onSuccess?: () => void;
+      onFail?: () => void;
+    }) => {
+      await setDataToPath(`/events/${eventId}/`, {})
+        .then(async () => {
+          onSuccess && onSuccess();
+          setModalDelete(false);
+          addToast({
+            title: "Event Deleted",
+            description: "",
+            variant: "success",
+          });
+          await sleep(200);
+          window.location.reload();
+        })
+        .catch(() => {
+          onFail && onFail();
+          addToastPreset("post-fail");
+        });
+    },
+    [addToast, addToastPreset, setModalDelete]
+  );
+
   return useMemo(
     () => ({
       filteredEvents,
       handleFetchEvents,
       handleFetchEventsInOneMonthPage,
       handleUpdateEvent,
+      deleteEvent: handleDeleteEvent,
       stateQuery: stateUserQuery,
       stateEvents,
       stateFilters,
       stateSortBy,
       stateSortDescending,
+      stateModalDelete,
     }),
     [
       filteredEvents,
+      handleDeleteEvent,
       handleFetchEvents,
       handleFetchEventsInOneMonthPage,
       handleUpdateEvent,
       stateEvents,
       stateFilters,
+      stateModalDelete,
       stateSortBy,
       stateSortDescending,
       stateUserQuery,
