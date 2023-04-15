@@ -1,10 +1,5 @@
 import { useContext, useEffect, useMemo } from "react";
-import {
-  Icon,
-  Message,
-  SemanticCOLORS,
-  SemanticICONS,
-} from "semantic-ui-react";
+import { Icon, Message, SemanticICONS } from "semantic-ui-react";
 import clsx from "clsx";
 import { ToastContext } from "@/contexts";
 import { ToastLiveType, ToastVariantType } from "@/types";
@@ -22,12 +17,15 @@ export function ToastWrapper() {
             TOAST_BASE_STYLE,
             preExpire ? "toast-out" : time > 0 && "toast"
           )}
-          color={TOAST_MESSAGE_COLOR_STYLE[variant]}
+          positive={variant === "success"}
+          negative={variant === "danger"}
         >
           <Icon size="large" name={TOAST_MESSAGE_ICON[variant]} />
           <div className="">
             <h3 className={clsx("leading-6 text-18px")}>{title}</h3>
-            <p className="!mt-2 text-18px">{description}</p>
+            {description !== "" && (
+              <p className="!mt-2 text-18px">{description}</p>
+            )}
           </div>
         </Message>
       )),
@@ -80,11 +78,6 @@ const TOAST_BASE_STYLE = clsx(
   "relative w-full py-4 px-4 gap-2 !my-0",
   "shadow-lg border rounded-md transition-all duration-600"
 );
-
-const TOAST_MESSAGE_COLOR_STYLE: Record<ToastVariantType, SemanticCOLORS> = {
-  danger: "red",
-  success: "green",
-};
 
 const TOAST_MESSAGE_ICON: Record<ToastVariantType, SemanticICONS> = {
   danger: "remove circle",

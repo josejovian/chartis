@@ -8,6 +8,7 @@ export interface EventButtonMoreProps {
   event: EventType;
   identification: IdentificationType;
   size?: SemanticSIZES;
+  stateModalDelete: StateObject<boolean>;
   stateDeleting?: StateObject<boolean>;
   onDelete?: () => void;
   onEdit?: () => void;
@@ -18,6 +19,7 @@ export function EventButtonMore({
   event,
   identification,
   size,
+  stateModalDelete,
   stateDeleting,
   onDelete,
   onEdit,
@@ -39,12 +41,13 @@ export function EventButtonMore({
           <Dropdown.Item className="!text-red-400">Delete</Dropdown.Item>
         }
         onConfirm={onDelete}
+        stateOpen={stateModalDelete}
         stateLoading={stateDeleting}
         modalText="Are you sure you want to delete this event? This cannot be undone later."
         confirmText="Delete"
       />
     ),
-    [onDelete, stateDeleting]
+    [onDelete, stateDeleting, stateModalDelete]
   );
 
   const renderDropdownItems = useMemo(() => {
