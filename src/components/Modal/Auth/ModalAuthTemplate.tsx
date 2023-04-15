@@ -15,6 +15,7 @@ export interface ModalAuthTemplateProps {
   overrideInitialValues?: Record<string, string>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: (values: Record<string, any>) => void;
+  loading: boolean;
 }
 
 export function ModalAuthTemplate({
@@ -24,6 +25,7 @@ export function ModalAuthTemplate({
   formSchema,
   overrideInitialValues,
   onSubmit,
+  loading,
 }: ModalAuthTemplateProps) {
   const { type } = useScreen();
 
@@ -58,13 +60,18 @@ export function ModalAuthTemplate({
           {formFields.map((field) => (
             <ModalAuthInput key={`Field_${field.id}`} props={field} />
           ))}
-          <Button className="mt-2" type="submit" color="yellow">
+          <Button
+            className="mt-2"
+            type="submit"
+            color="yellow"
+            loading={loading}
+          >
             {formName}
           </Button>
         </Form>
       </Formik>
     ),
-    [formFields, formName, formSchema, initialValues, onSubmit, type]
+    [formFields, formName, formSchema, initialValues, loading, onSubmit, type]
   );
 
   return (

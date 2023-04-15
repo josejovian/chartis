@@ -4,6 +4,7 @@ import { db } from "@/firebase";
 import { Button, Label, SemanticSIZES } from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
 import { sleep } from "@/utils";
+import { useToast } from "@/hooks";
 
 export interface EventButtonFollowProps {
   event: EventType;
@@ -18,6 +19,8 @@ export function EventButtonFollow({
   identification,
   size,
 }: EventButtonFollowProps) {
+  const { addToastPreset } = useToast();
+
   const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
 
   const { permission, user, users } = identification;
@@ -77,7 +80,6 @@ export function EventButtonFollow({
       await sleep(200);
       await update(dbRef, updates)
         .then(() => {
-          setLoading(false);
           updateEvent(id, {
             subscriberCount:
               subscriberIds.length +
@@ -87,10 +89,12 @@ export function EventButtonFollow({
           localStorage.setItem("subscribe", JSON.stringify(newSubscribe));
         })
         .catch(() => {
+          addToastPreset("post-fail");
           setLoading(false);
           setSubscribed((prev) => !prev);
           handleUpdateSubscribeClientSide(subscribe[id]);
         });
+      setLoading(false);
     } else if (user && user.uid && users[user.uid]) {
       handleUpdateSubscribeClientSide(subscribed);
       setLoading(true);
@@ -116,6 +120,7 @@ export function EventButtonFollow({
         updatedSubscribedIds.length + (guestSubscriberCount ?? 0);
       await update(ref(db), updates)
         .then(() => {
+          addToastPreset(subscribed ? "unfollow" : "follow");
           updateEvent(id, {
             subscriberIds: updatedSubscribedIds,
             subscriberCount:
@@ -123,11 +128,13 @@ export function EventButtonFollow({
           });
         })
         .catch(() => {
+          addToastPreset("post-fail");
           setSubscribed((prev) => !prev);
         });
       setLoading(false);
     }
   }, [
+    addToastPreset,
     guestSubscriberCount,
     handleUpdateSubscribeClientSide,
     id,

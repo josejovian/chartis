@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { setDataToPath } from "@/firebase";
+import { useRouter } from "next/router";
 import { Formik } from "formik";
+import pushid from "pushid";
 import {
   LayoutCard,
   PageViewEventBody,
   PageViewEventFoot,
   PageViewEventHead,
 } from "@/components";
-import { useIdentification } from "@/hooks";
+import { useIdentification, useSearchEvent, useToast } from "@/hooks";
 import {
   SchemaEvent,
   sleep,
@@ -21,9 +24,6 @@ import {
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
-import { setDataToPath } from "@/firebase";
-import pushid from "pushid";
-import { useRouter } from "next/router";
 import { EVENT_EMPTY } from "@/consts";
 
 export interface ModalViewEventProps {
@@ -69,6 +69,8 @@ export function PageViewEventCard({
 
     return object;
   }, [event, mode]);
+  const { addToast, addToastPreset } = useToast();
+  const { stateModalDelete, deleteEvent } = useSearchEvent({});
 
   const stateIdentification = useIdentification();
   const identification = stateIdentification[0];
@@ -109,23 +111,43 @@ export function PageViewEventCard({
 
       await sleep(200);
 
-      setSubmitting(false);
-
       await setDataToPath(`/events/${eventId}/`, newEvent)
         .then(async () => {
           await sleep(200);
           if (mode === "create") {
+            addToast({
+              title: "Event Created",
+              description: "",
+              variant: "success",
+            });
             router.push(`/event/${eventId}`);
           } else {
+            addToast({
+              title: "Event Updated",
+              description: "",
+              variant: "success",
+            });
             setMode("view");
             setEvent(newEvent);
           }
         })
         .catch((e) => {
+          addToastPreset("post-fail");
           setSubmitting(false);
         });
     },
-    [event, mode, router, setEvent, setMode, setSubmitting, tags, user]
+    [
+      addToast,
+      addToastPreset,
+      event,
+      mode,
+      router,
+      setEvent,
+      setMode,
+      setSubmitting,
+      tags,
+      user,
+    ]
   );
 
   const handleDeleteEvent = useCallback(async () => {
@@ -135,15 +157,13 @@ export function PageViewEventCard({
 
     await sleep(200);
 
-    await setDataToPath(`/events/${event.id}/`, {})
-      .then(async () => {
-        await sleep(200);
-        router.push(`/`);
-      })
-      .catch((e) => {
+    await deleteEvent({
+      eventId: event.id,
+      onFail: () => {
         setDeleting(false);
-      });
-  }, [event, router, setDeleting]);
+      },
+    });
+  }, [deleteEvent, event.id, setDeleting]);
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
@@ -179,6 +199,7 @@ export function PageViewEventCard({
           event={event}
           type={type}
           stateDeleting={stateDeleting}
+          stateModalDelete={stateModalDelete}
           stateMode={stateMode}
           identification={identification}
           onDelete={handleDeleteEvent}
@@ -204,6 +225,7 @@ export function PageViewEventCard({
       event,
       type,
       stateDeleting,
+      stateModalDelete,
       stateMode,
       identification,
       handleDeleteEvent,

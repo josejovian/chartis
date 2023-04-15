@@ -139,6 +139,44 @@
     z-index: 16;
   }
 
+  .toast-hidden {
+    right: -8rem;
+    opacity: 0;
+  }
+
+  .toast-out {
+    animation-name: toast-fade-out;
+    animation-duration: 0.8s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+
+  .toast {
+    right: 0;
+    animation-name: toast-fade-in;
+    animation-duration: 0.8s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes toast-fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 100;
+    }
+  }
+
+  @keyframes toast-fade-out {
+    0% {
+      opacity: 100;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
   @media only screen and (max-width: 1024px) {
     .ui.modal.ModifiedModal {
       @apply !rounded-none !rounded-t-lg;
