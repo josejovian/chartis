@@ -21,6 +21,7 @@ export interface PageViewEventHeadProps {
   identification: IdentificationType;
   onDelete: () => void;
   stateDeleting?: StateObject<boolean>;
+  stateModalDelete: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
@@ -31,6 +32,7 @@ export function PageViewEventHead({
   identification,
   onDelete,
   stateDeleting,
+  stateModalDelete,
   stateMode,
   type,
   updateEvent,
@@ -98,6 +100,7 @@ export function PageViewEventHead({
           onEdit={handleEdit}
           onDelete={onDelete}
           stateDeleting={stateDeleting}
+          stateModalDelete={stateModalDelete}
         />
       </div>
     ),
@@ -109,6 +112,7 @@ export function PageViewEventHead({
       handleEdit,
       onDelete,
       stateDeleting,
+      stateModalDelete,
     ]
   );
 

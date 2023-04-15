@@ -1,10 +1,11 @@
-import { StateObject } from "@/types";
 import { ReactNode, useState } from "react";
 import { Button, Modal } from "semantic-ui-react";
+import { StateObject } from "@/types";
 
 export interface ConfirmationModalProps {
   trigger: ReactNode;
   onConfirm?: () => void;
+  stateOpen?: StateObject<boolean>;
   stateLoading?: StateObject<boolean>;
   modalHeader?: string;
   modalText?: string;
@@ -15,13 +16,15 @@ export interface ConfirmationModalProps {
 export function ModalConfirmation({
   trigger,
   onConfirm,
+  stateOpen,
   stateLoading,
   modalHeader = "Are you sure?",
   modalText = "Are you sure?",
   confirmText = "Confirm",
   cancelText = "Cancel",
 }: ConfirmationModalProps) {
-  const [open, setOpen] = useState(false);
+  const stateSelf = useState(false);
+  const [open, setOpen] = stateOpen ?? stateSelf;
   const loading = stateLoading && stateLoading[0];
 
   return (
