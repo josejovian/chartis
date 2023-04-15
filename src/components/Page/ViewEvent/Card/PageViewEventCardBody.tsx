@@ -27,9 +27,10 @@ import {
 } from "@/types";
 import { useIdentification } from "@/hooks";
 import * as Yup from "yup";
-import { auth, getDataFromPath, setDataToPath } from "@/firebase";
+import { auth, db, getDataFromPath, setDataToPath } from "@/firebase";
 import pushid from "pushid";
 import { CommentType } from "@/types";
+import { increment, ref, update } from "firebase/database";
 
 export interface PageViewEventBodyProps {
   stateActiveTab: StateObject<number>;
@@ -57,10 +58,12 @@ export function PageViewEventBody({
     endDate,
     description,
     postDate,
+    // commentCount,
   } = event;
   const [tags, setTags] = stateTags;
   const activeTab = stateActiveTab[0];
   const [comments, setComments] = useState<CommentType[]>([]);
+  // const { handleUpdateEvent } = useSearchEvent({});
 
   const renderEventTags = useMemo(
     () => (
@@ -274,95 +277,115 @@ export function PageViewEventBody({
         text: values.comment,
       };
 
-      await setDataToPath(`/comments/${id}/${commentId}`, newComment);
+      const updates: Record<string, unknown> = {};
+
+      updates[`/events/${id}/commentCount`] = increment(1);
+
+      await update(ref(db), updates);
+      await setDataToPath(`/comments/${id}/${commentId}`, newComment).catch(
+        (e) => {
+          updates[`/events/${id}/commentCount`] = increment(-1);
+        }
+      );
     },
     [id]
   );
 
+  const renderCommentCard = useCallback(
+    (comment: CommentType) => (
+      <div
+        className="grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4"
+        key={comment.commentId}
+      >
+        <div
+          className={clsx(
+            "z-10 relative flex justify-center row-span-3 after:-z-2 text-white",
+            "after:content-[''] after:absolute after:top-0 after:right-1/2",
+            "after:h-full after:w-px after:translate-x-1/2 after:bg-slate-400"
+          )}
+        >
+          <UserPicture fullName={comment.authorName} />
+        </div>
+        <div className="flex gap-2.5 items-center h-8">
+          <div className="font-semibold text-xl">{comment.authorName}</div>
+          <div className="text-slate-400 text-[0.7rem] flex self-end pb-[0.15rem]">
+            {getTimeDifference(comment.postDate)}
+          </div>
+        </div>
+        <div className="flex items-center">{comment.text}</div>
+        <div className="flex items-center text-slate-400 text-sm">Report</div>
+      </div>
+    ),
+    []
+  );
+
+  const renderCommentInput = useMemo(
+    () => (
+      <Formik
+        initialValues={{
+          comment: "",
+        }}
+        onSubmit={handlePostComment}
+        validationSchema={Yup.object().shape({
+          comment: Yup.string().max(500, "Too Long!").required("Required"),
+        })}
+      >
+        {({ isSubmitting, submitForm, isValid, dirty, errors, values }) => (
+          <Form className="flex flex-col items-end gap-2">
+            <Field name="comment">
+              {({ form: { touched, errors }, field, meta }: any) => (
+                <TextArea
+                  name="comment"
+                  className="!text-14px"
+                  style={{
+                    resize: "none",
+                    lineHeight: "1.25rem",
+                    height: "5.9rem",
+                    border: "0!important",
+                  }}
+                  onInput={(e) => {
+                    e.currentTarget.style.height = "6rem";
+                    e.currentTarget.style.height =
+                      e.currentTarget.scrollHeight + "px";
+                  }}
+                  placeholder="Discuss about the event here"
+                  {...field}
+                />
+              )}
+            </Field>
+            <div className="flex justify-between w-full">
+              <span className="-mt-5 ml-2 bg-white font-semibold text-red-500 text-12px">
+                {errors.comment !== "Required" ? errors.comment : ""}
+              </span>
+              <Button
+                className="ml-auto"
+                icon
+                type="submit"
+                onClick={submitForm}
+                color="yellow"
+                loading={isSubmitting}
+              >
+                <Icon name="paper plane" className="pr-6" />
+                Post
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    ),
+    [handlePostComment]
+  );
+
   const renderEventCardContent = useMemo(() => {
+    const isLoggedIn = auth.currentUser;
     if (activeTab === 1) {
       handleFetchComment();
 
       return (
-        <div className="flex flex-col gap-12">
-          <Formik
-            initialValues={{
-              comment: "",
-            }}
-            onSubmit={handlePostComment}
-            validationSchema={Yup.object().shape({
-              comment: Yup.string()
-                .min(2, "Too Short!")
-                .max(50, "Too Long!")
-                .required("Required"),
-            })}
-          >
-            {({ isSubmitting, submitForm, isValid, dirty, errors, values }) => (
-              <Form className="flex flex-col items-end gap-2">
-                <Field name="comment">
-                  {({ form: { touched, errors }, field, meta }: any) => (
-                    <TextArea
-                      name="comment"
-                      className="!text-14px"
-                      style={{
-                        resize: "none",
-                        lineHeight: "1.25rem",
-                        height: "5.9rem",
-                        border: "0!important",
-                      }}
-                      onInput={(e) => {
-                        e.currentTarget.style.height = "6rem";
-                        e.currentTarget.style.height =
-                          e.currentTarget.scrollHeight + "px";
-                      }}
-                      placeholder="Discuss about the event here"
-                      {...field}
-                    />
-                  )}
-                </Field>
-                <div className="flex justify-between w-full">
-                  <span className="-mt-5 ml-2 bg-white font-semibold text-red-500 text-12px">
-                    {errors.comment !== "Required" ? errors.comment : ""}
-                  </span>
-                  <Button
-                    className="ml-auto"
-                    icon
-                    type="submit"
-                    onClick={submitForm}
-                    color="yellow"
-                    loading={isSubmitting}
-                  >
-                    <Icon name="paper plane" className="pr-6" />
-                    Post
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+        <div className="flex flex-col gap-8 pt-6">
+          {isLoggedIn && renderCommentInput}
           <div className="flex flex-col gap-4">
-            {comments &&
-              comments.map((comment) => (
-                <div
-                  className="grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4"
-                  key={comment.commentId}
-                >
-                  <div className="flex justify-center row-span-3 relative z-10 after:-z-2 after:absolute after:right-1/2 after:translate-x-1/2 after:content-[''] text-white after:bg-slate-400 after:h-full after:w-px after:top-0">
-                    <UserPicture fullName={comment.authorName} />
-                  </div>
-                  <div className="flex gap-2.5 items-center h-8">
-                    <div className="font-semibold text-xl">
-                      {comment.authorName}
-                    </div>
-                    <div className="text-slate-400 text-[0.7rem] flex self-end pb-[0.15rem]">
-                      {getTimeDifference(postDate)}
-                    </div>
-                  </div>
-                  <div className="flex items-center">{comment.text}</div>
-                  <div className="flex items-center text-slate-400 text-sm">
-                    Report
-                  </div>
-                </div>
-              ))}
+            {comments && comments.map(renderCommentCard)}
           </div>
         </div>
       );
@@ -379,8 +402,8 @@ export function PageViewEventBody({
     activeTab,
     comments,
     handleFetchComment,
-    handlePostComment,
-    postDate,
+    renderCommentCard,
+    renderCommentInput,
     renderEventCreators,
     renderEventDescription,
     renderEventDetails,
