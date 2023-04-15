@@ -61,9 +61,10 @@ export function PageViewEventHead({
         onClick: () => {
           setActiveTab(1);
         },
+        count: event.commentCount,
       },
     ],
-    [setActiveTab]
+    [event.commentCount, setActiveTab]
   );
 
   const handleEdit = useCallback(() => {
@@ -73,7 +74,7 @@ export function PageViewEventHead({
   const renderDetailTabs = useMemo(
     () => (
       <div className="flex gap-4 px-4">
-        {tabs.map(({ name, onClick }, idx) => (
+        {tabs.map(({ name, onClick, count }, idx) => (
           <Button
             key={`ModalViewEvent_Tab-${name}`}
             className={clsx(
@@ -85,6 +86,11 @@ export function PageViewEventHead({
             onClick={onClick}
           >
             {name}
+            {count && (
+              <span className="ml-2 bg-zinc-600 py-[2px] px-2 rounded min-w-2 text-white">
+                {count}
+              </span>
+            )}
           </Button>
         ))}
       </div>
