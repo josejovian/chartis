@@ -80,7 +80,6 @@ export function EventButtonFollow({
       await sleep(200);
       await update(dbRef, updates)
         .then(() => {
-          addToastPreset(subscribed ? "unfollow" : "follow");
           updateEvent(id, {
             subscriberCount:
               subscriberIds.length +
