@@ -13,6 +13,7 @@ import { EVENT_TAGS } from "@/consts";
 import {
   EventDetailType,
   EventModeType,
+  EventTagNameType,
   EventType,
   ScreenSizeCategoryType,
   StateObject,
@@ -22,7 +23,7 @@ import { useIdentification } from "@/hooks";
 export interface PageViewEventBodyProps {
   event: EventType;
   mode: EventModeType;
-  stateTags: StateObject<number[]>;
+  stateTags: StateObject<EventTagNameType[]>;
   type: ScreenSizeCategoryType;
   validateForm?: () => void;
 }
@@ -34,8 +35,15 @@ export function PageViewEventBody({
   validateForm,
 }: PageViewEventBodyProps) {
   const { users } = useIdentification()[0];
-  const { location, authorId, organizer, startDate, endDate, description, postDate } =
-    event;
+  const {
+    location,
+    authorId,
+    organizer,
+    startDate,
+    endDate,
+    description,
+    postDate,
+  } = event;
   const [tags, setTags] = stateTags;
 
   const renderEventTags = useMemo(
@@ -53,8 +61,8 @@ export function PageViewEventBody({
   );
 
   const handleUpdateTagJSON = useCallback(
-    (values: string[]) => {
-      setTags(values ? values.map((value) => Number(value)) : []);
+    (values: EventTagNameType[]) => {
+      setTags(values);
       setTimeout(() => {
         validateForm && validateForm();
       }, 100);
@@ -74,13 +82,15 @@ export function PageViewEventBody({
           multiple
           transparent
           defaultValue={tags}
-          onChange={(_, { value }) => handleUpdateTagJSON(value as string[])}
+          onChange={(_, { value }) =>
+            handleUpdateTagJSON(value as EventTagNameType[])
+          }
           onMouseDown={() => validateForm && validateForm()}
           onBlur={() => validateForm && validateForm()}
-          options={EVENT_TAGS.map(({ name }, idx) => ({
-            key: `SelectTag_${name}`,
+          options={Object.entries(EVENT_TAGS).map(([id, { name }]) => ({
+            key: `SelectTag_${id}`,
             text: name,
-            value: idx,
+            value: id,
           }))}
         />
         <Field name="tags">
@@ -158,7 +168,8 @@ export function PageViewEventBody({
     () =>
       mode === "view" && (
         <span className="text-14px text-secondary-4">
-          Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b> {getTimeDifference(postDate)}
+          Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b>{" "}
+          {getTimeDifference(postDate)}
         </span>
       ),
     [authorId, mode, postDate, users]

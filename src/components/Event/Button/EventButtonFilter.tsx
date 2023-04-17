@@ -4,23 +4,21 @@ import {
   Dropdown,
   Icon,
   Label,
-  SemanticSIZES,
+  type SemanticSIZES,
 } from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_TAGS } from "@/consts";
-import { StateObject } from "@/types";
+import { EventTagNameType, EventTagType, StateObject } from "@/types";
 import { useScreen } from "@/hooks";
 
 export interface EventButtonFilterProps {
-  stateFilters: StateObject<Record<number, boolean>>;
-  visibleFilters?: Record<number, boolean>;
+  stateFilters: StateObject<EventTagNameType[]>;
   asButton?: boolean;
   size?: SemanticSIZES;
 }
 
 export function EventButtonFilter({
   stateFilters,
-  visibleFilters,
   asButton,
   size,
 }: EventButtonFilterProps) {
@@ -30,31 +28,30 @@ export function EventButtonFilter({
 
   const renderDropdownItems = useMemo(
     () =>
-      EVENT_TAGS.map((tag, idx) => ({
-        ...tag,
-        idx,
-      }))
-        .filter((tag) => !visibleFilters || visibleFilters[tag.idx])
-        .map((tag) => {
-          const { color, name, idx } = tag;
+      (Object.entries(EVENT_TAGS) as [EventTagNameType, EventTagType][]).map(
+        ([id, { name, color }]) => {
           return (
             <Dropdown.Item
               key={name}
               value={name}
-              className={clsx(filters[idx] ? "ActiveFilter" : "InactiveFilter")}
+              className={clsx(
+                filters.includes(id) ? "ActiveFilter" : "InactiveFilter"
+              )}
               onClick={() => {
-                setFilters((prev) => ({
-                  ...prev,
-                  [idx]: !prev[idx],
-                }));
+                setFilters((prev) =>
+                  prev.includes(id)
+                    ? prev.filter((tag) => tag !== id)
+                    : [...prev, id]
+                );
               }}
             >
               <Label color={color} circular empty />
               <span>{name}</span>
             </Dropdown.Item>
           );
-        }),
-    [filters, setFilters, visibleFilters]
+        }
+      ),
+    [filters, setFilters]
   );
 
   const renderClearFilter = useMemo(
@@ -64,7 +61,7 @@ export function EventButtonFilter({
         value="_all"
         disabled={Object.values(filters).filter((x) => x).length === 0}
         onClick={() => {
-          setFilters(EVENT_TAGS.map((_) => false));
+          setFilters([]);
         }}
       >
         <Icon name="close" />

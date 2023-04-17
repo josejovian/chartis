@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Field } from "formik";
-import { Input, InputProps } from "semantic-ui-react";
+import { Input, type InputProps } from "semantic-ui-react";
 import clsx from "clsx";
 import { FormErrorMessage } from "@/components";
 

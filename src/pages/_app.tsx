@@ -26,7 +26,7 @@ import {
   MOBILE_SCREEN_THRESHOLD,
 } from "@/consts";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, getDataFromPath } from "@/firebase";
+import { auth, readData } from "@/firebase";
 import { ToastWrapper } from "@/components/Toast/Toast";
 import { TOAST_PRESETS } from "@/consts/toast";
 
@@ -74,7 +74,9 @@ export default function App({ Component, pageProps }: AppProps) {
       let newUsers = {};
 
       if (user) {
-        userData = await getDataFromPath(`/user/${user.uid}`).catch(() => null);
+        userData = await readData("user", {
+          id: user.uid,
+        }).catch(() => null);
 
         if (userData) {
           newUsers = {

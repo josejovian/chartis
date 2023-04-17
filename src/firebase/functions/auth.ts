@@ -2,7 +2,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  UserCredential,
+  type UserCredential,
 } from "firebase/auth";
 import { auth } from "../config";
 

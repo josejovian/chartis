@@ -2,7 +2,7 @@
 import { FormCustomFieldProps } from "@/types/form";
 import clsx from "clsx";
 import { Field } from "formik";
-import { Icon, Input, InputProps } from "semantic-ui-react";
+import { Icon, Input, type InputProps } from "semantic-ui-react";
 
 export interface ModalAuthInputProps extends InputProps {
   className?: string;

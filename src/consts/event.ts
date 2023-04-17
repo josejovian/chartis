@@ -1,6 +1,7 @@
 import {
   EventSortDirectionType,
   EventSortType,
+  EventTagNameType,
   EventTagType,
   EventType,
 } from "@/types";
@@ -27,7 +28,7 @@ export const EVENT_DUMMY_1: EventType = {
   postDate: 0,
   startDate: 0,
   endDate: 10,
-  tags: [3],
+  tags: ["reminder"],
 };
 
 export const EVENT_DUMMY_2: EventType = {
@@ -39,31 +40,31 @@ export const EVENT_DUMMY_2: EventType = {
   postDate: 0,
   startDate: 0,
   endDate: 10,
-  tags: [3],
+  tags: ["reminder"],
 };
 
-export const EVENT_TAGS: EventTagType[] = [
-  {
+export const EVENT_TAGS: Record<EventTagNameType, EventTagType> = {
+  seminar: {
     name: "Seminar",
     color: "blue",
   },
-  {
+  workshop: {
     name: "Workshop",
     color: "yellow",
   },
-  {
+  briefing: {
     name: "Briefing",
     color: "red",
   },
-  {
+  reminder: {
     name: "Reminder",
     color: "purple",
   },
-  {
+  competition: {
     name: "Competition",
     color: "green",
   },
-];
+};
 
 export const EVENT_SORT_CRITERIA: EventSortType[] = [
   { id: "postDate", name: "Post Date" },
