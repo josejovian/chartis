@@ -1,3 +1,4 @@
+import { EventTagNameType } from "@/types";
 import * as Yup from "yup";
 
 export const RuleName = Yup.string()
@@ -31,7 +32,7 @@ export function validateEndDate(start?: number, end?: number) {
   return undefined;
 }
 
-export function validateTags(tags: number[]) {
+export function validateTags(tags: EventTagNameType[]) {
   if (tags.length === 0) return "Event should have one tag.";
   return undefined;
 }

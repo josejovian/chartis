@@ -1,16 +1,12 @@
 import { EVENT_DUMMY_1, EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
-import { EventType } from "@/types";
+import { EventTagNameType, EventType } from "@/types";
 
 export function filterEventsFromTags(
   events: EventType[],
-  filters: Record<number, boolean>
+  filters: EventTagNameType[]
 ) {
   return events.filter((event) =>
-    event.tags.some((tag) =>
-      Object.entries(filters).some(
-        ([key, value]) => value && Number(key) === tag
-      )
-    )
+    event.tags.some((tag) => filters.some((filter) => filter === tag))
   );
 }
 
@@ -26,7 +22,7 @@ export function populateEvents(count: number, authorId: string) {
     randomEventsId[seed] = true;
 
     const today = new Date();
-    today.setMonth(today.getMonth() - 2);
+    today.setMonth(today.getMonth());
     today.setDate(seed % 27);
     today.setHours(seed % 24);
     today.setMinutes(seed % 59);
@@ -40,7 +36,7 @@ export function populateEvents(count: number, authorId: string) {
     newEvent.startDate = today.getTime();
     newEvent.name = `Event #${seed}`;
     newEvent.endDate = undefined;
-    newEvent.tags = [seed % 4];
+    newEvent.tags = ["briefing"];
     newEvent.postDate = today.getTime();
     newEvent.description = "lorem ipsum consectetur adi piscing"
       .split("")

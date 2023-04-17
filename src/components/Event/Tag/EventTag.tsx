@@ -1,4 +1,4 @@
-import { Label, SemanticSIZES } from "semantic-ui-react";
+import { Label, type SemanticSIZES } from "semantic-ui-react";
 import { EventTagType } from "@/types";
 
 export interface EventTagProps extends EventTagType {

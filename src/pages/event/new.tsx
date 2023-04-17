@@ -2,13 +2,13 @@ import { useRouter } from "next/router";
 import { LayoutTemplateCard, PageViewEventCard } from "@/components";
 import { EVENT_EMPTY } from "@/consts";
 import { useState } from "react";
-import { useScreen, useSearchEvent } from "@/hooks";
+import { useScreen, useEvent } from "@/hooks";
 import { EventModeType, ResponsiveStyleType } from "@/types";
 
 export default function CreateEvent() {
   const router = useRouter();
 
-  const { handleUpdateEvent } = useSearchEvent({});
+  const { handleUpdateEvent } = useEvent({});
   const stateMode = useState<EventModeType>("create");
   const stateActiveTab = useState(0);
   const { type } = useScreen();

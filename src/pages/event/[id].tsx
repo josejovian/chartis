@@ -7,9 +7,8 @@ import {
 } from "@/components";
 import { EVENT_DUMMY_1 } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useIdentification, useScreen, useSearchEvent } from "@/hooks";
+import { useIdentification, useScreen, useEvent } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
-import { getDataFromPath } from "@/firebase";
 import {
   Button,
   Dimmer,
@@ -19,12 +18,13 @@ import {
   Segment,
 } from "semantic-ui-react";
 import { sleep } from "@/utils";
+import { readData } from "@/firebase";
 
 export default function ViewEvent() {
   const router = useRouter();
   const { id } = router.query;
 
-  const { handleUpdateEvent } = useSearchEvent({});
+  const { handleUpdateEvent } = useEvent({});
   const stateMode = useState<EventModeType>("view");
   const setMode = stateMode[1];
   const stateActiveTab = useState(0);
@@ -43,7 +43,9 @@ export default function ViewEvent() {
   const handleGetEvent = useCallback(async () => {
     if (!id) return;
 
-    await getDataFromPath(`/events/${id}`)
+    await readData("event", {
+      id: id as string,
+    })
       .then((result) => {
         setLoading(false);
         if (result) {

@@ -1,10 +1,11 @@
-import { SemanticSIZES } from "semantic-ui-react";
+import { type SemanticSIZES } from "semantic-ui-react";
 import { EventTag } from "@/components";
 import { EVENT_TAGS } from "@/consts";
+import { EventTagNameType } from "@/types";
 
 export interface EventTagsProps {
   id: string;
-  tags: number[];
+  tags: EventTagNameType[];
   type?: "ModalViewEvent" | "EventCardDetail";
   size?: SemanticSIZES;
 }

@@ -5,12 +5,11 @@ import {
   LayoutTemplate,
   EventButtonFilter,
 } from "@/components";
-import { useSearchEvent } from "@/hooks";
-import { filterEventsFromTags } from "@/utils";
-import { EVENT_TAGS } from "@/consts";
+import { useEvent } from "@/hooks";
+import { filterEventsFromTags, getDateMonthYear } from "@/utils";
 
 export default function Home() {
-  const stateFocusDate = useState(new Date());
+  const stateFocusDate = useState(getDateMonthYear(new Date()));
   const stateSideBar = useState(false);
   const focusDate = stateFocusDate[0];
 
@@ -19,22 +18,13 @@ export default function Home() {
     stateFilters,
     handleFetchEventsInOneMonthPage,
     handleUpdateEvent,
-  } = useSearchEvent({});
+  } = useEvent({});
 
   const events = stateEvents[0];
 
   const filters = stateFilters[0];
-  const atLeastOneFilter = useMemo(
-    () => Object.values(stateFilters[0]).some((f) => f),
-    [stateFilters]
-  );
-  const visibleFilters = useMemo(
-    () =>
-      EVENT_TAGS.map(
-        (_, idx) => filterEventsFromTags(events, { [idx]: true }).length > 0
-      ),
-    [events]
-  );
+  const atLeastOneFilter = useMemo(() => filters.length > 0, [filters.length]);
+
   const displayedEvents = useMemo(
     () => (atLeastOneFilter ? filterEventsFromTags(events, filters) : events),
     [atLeastOneFilter, events, filters]
@@ -57,8 +47,8 @@ export default function Home() {
         events={displayedEvents.filter((event) => {
           const date = new Date(event.startDate);
           return (
-            date.getDate() === focusDate.getDate() &&
-            date.getMonth() === focusDate.getMonth()
+            date.getDate() === focusDate.day &&
+            date.getMonth() === focusDate.month
           );
         })}
         stateSideBar={stateSideBar}
@@ -69,22 +59,17 @@ export default function Home() {
   );
 
   const handlePopulateCalendar = useCallback(() => {
-    handleFetchEventsInOneMonthPage(focusDate.getTime());
-  }, [focusDate, handleFetchEventsInOneMonthPage]);
+    handleFetchEventsInOneMonthPage(focusDate.month, focusDate.year);
+  }, [focusDate.month, focusDate.year, handleFetchEventsInOneMonthPage]);
 
   useEffect(() => {
     handlePopulateCalendar();
-  }, [focusDate, handlePopulateCalendar]);
+  }, [handlePopulateCalendar]);
 
   return (
     <LayoutTemplate
       title="Home"
-      rightElement={
-        <EventButtonFilter
-          stateFilters={stateFilters}
-          visibleFilters={visibleFilters}
-        />
-      }
+      rightElement={<EventButtonFilter stateFilters={stateFilters} />}
       side={renderSidebar}
       classNameMain="!bg-white"
     >

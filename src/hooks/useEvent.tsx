@@ -1,31 +1,25 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  orderByChild,
-  equalTo,
-  QueryConstraint,
-  startAt,
-  endAt,
-} from "firebase/database";
 import _ from "lodash";
-import { getEvents, setDataToPath } from "@/firebase";
-import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
-import { EventSearchType, EventSortType, EventType } from "@/types";
-import { filterEventsFromTags, sleep } from "@/utils";
+import { deleteData, readData } from "@/firebase";
+import { EVENT_SORT_CRITERIA } from "@/consts";
+import {
+  EventSearchType,
+  EventSortType,
+  EventTagNameType,
+  EventType,
+} from "@/types";
+import { sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
+import { QueryConstraint, orderBy, where } from "firebase/firestore";
 
 export interface useSearchEventProps {
   type?: EventSearchType;
 }
 
-export function useSearchEvent({ type }: useSearchEventProps) {
-  const stateFilters = useState<Record<number, boolean>>(
-    EVENT_TAGS.map((_) => false)
-  );
+export function useEvent({ type }: useSearchEventProps) {
+  const stateFilters = useState<EventTagNameType[]>([]);
   const filters = stateFilters[0];
-  const atLeastOneFilter = useMemo(
-    () => Object.values(stateFilters[0]).some((f) => f),
-    [stateFilters]
-  );
+  const atLeastOneFilter = useMemo(() => filters.length > 0, [filters.length]);
   const stateSortBy = useState<EventSortType>(EVENT_SORT_CRITERIA[0]);
   const sortBy = stateSortBy[0];
   const stateSortDescending = useState(false);
@@ -40,19 +34,14 @@ export function useSearchEvent({ type }: useSearchEventProps) {
   const [events, setEvents] = stateEvents;
   const stateModalDelete = useState(false);
   const setModalDelete = stateModalDelete[1];
+  const { addToast, addToastPreset } = useToast();
 
   const validatedEvents = useMemo(() => {
-    if (type === "userFollowedEvents" || type === "userCreatedEvents") {
+    if (userQuery !== "" || atLeastOneFilter) {
       return events;
     }
-    if (userQuery === "") {
-      return [];
-    }
-    if (atLeastOneFilter) {
-      return filterEventsFromTags(events, filters);
-    }
-    return events;
-  }, [atLeastOneFilter, events, filters, type, userQuery]);
+    return [];
+  }, [atLeastOneFilter, events, userQuery]);
 
   const filteredEvents = useMemo(
     () =>
@@ -83,39 +72,46 @@ export function useSearchEvent({ type }: useSearchEventProps) {
   );
 
   const orderByMethod = useMemo(
-    () =>
-      type === "userCreatedEvents"
-        ? orderByChild("authorId")
-        : orderByChild(sortBy.id),
-    [sortBy.id, type]
+    () => orderBy(sortBy.id, sortDescending ? "desc" : "asc"),
+    [sortBy.id, sortDescending]
   );
 
   const filterByMethod = useMemo(
-    () =>
-      type === "userCreatedEvents" && user ? equalTo(user.uid) : undefined,
-    [type, user]
+    () => [
+      type === "userCreatedEvents" && user && where("authorId", "==", user.uid),
+      ...filters.map((tag) => where("tags", "array-contains", tag)),
+    ],
+    [filters, type, user]
   );
 
   const queryConstraints = useMemo(
-    () =>
-      [orderByMethod, filterByMethod].filter(
+    () => [
+      orderByMethod,
+      ...(filterByMethod.filter(
         (constraint) => constraint
-      ) as QueryConstraint[],
+      ) as QueryConstraint[]),
+    ],
     [filterByMethod, orderByMethod]
   );
 
   const handleFetchEvents = useCallback(async () => {
     let eventArray = [] as EventType[];
-    await getEvents("events", queryConstraints).then((data) => {
-      eventArray = data;
-      setEvents(data);
+    await readData("events", {
+      constraints: queryConstraints,
+    }).then((result) => {
+      if (result) {
+        eventArray = result;
+        setEvents(result);
+      }
     });
     return eventArray;
   }, [queryConstraints, setEvents]);
 
   const handleFetchEventsInOneMonthPage = useCallback(
-    async (firstDayOfTheMonth: number) => {
-      const baseDate = new Date(firstDayOfTheMonth);
+    async (month: number, year: number) => {
+      const baseDate = new Date();
+      baseDate.setMonth(month);
+      baseDate.setFullYear(year);
       baseDate.setDate(1);
       baseDate.setSeconds(0);
       baseDate.setMinutes(0);
@@ -130,18 +126,34 @@ export function useSearchEvent({ type }: useSearchEventProps) {
 
       let eventArray = [] as EventType[];
 
-      await getEvents("events", [
-        orderByChild("startDate"),
-        startAt(first.getTime()),
-        endAt(last.getTime()),
-      ]).then((res) => {
-        eventArray = res;
-        setEvents(res);
-      });
+      // await getEvents("events", [
+      //   orderByChild("startDate"),
+      //   startAt(first.getTime()),
+      //   endAt(last.getTime()),
+      // ]).then((res) => {
+      //   eventArray = res;
+      //   setEvents(res);
+      // });
+
+      await readData("events", {
+        constraints: [
+          where("startDate", ">=", first.getTime()),
+          where("startDate", "<", last.getTime()),
+        ],
+      })
+        .then((result) => {
+          if (result) {
+            eventArray = result;
+            setEvents(result);
+          }
+        })
+        .catch(() => {
+          addToastPreset("get-fail");
+        });
 
       return eventArray;
     },
-    [setEvents]
+    [addToastPreset, setEvents]
   );
 
   const handleUpdateEvent = useCallback(
@@ -163,8 +175,6 @@ export function useSearchEvent({ type }: useSearchEventProps) {
     [setEvents]
   );
 
-  const { addToast, addToastPreset } = useToast();
-
   const handleDeleteEvent = useCallback(
     async ({
       eventId,
@@ -175,7 +185,9 @@ export function useSearchEvent({ type }: useSearchEventProps) {
       onSuccess?: () => void;
       onFail?: () => void;
     }) => {
-      await setDataToPath(`/events/${eventId}/`, {})
+      await deleteData("event", {
+        id: eventId,
+      })
         .then(async () => {
           onSuccess && onSuccess();
           setModalDelete(false);
@@ -211,8 +223,8 @@ export function useSearchEvent({ type }: useSearchEventProps) {
     }),
     [
       filteredEvents,
-      handleDeleteEvent,
       handleFetchEvents,
+      handleDeleteEvent,
       handleFetchEventsInOneMonthPage,
       handleUpdateEvent,
       stateEvents,

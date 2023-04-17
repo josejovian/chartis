@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, Dropdown, Icon, SemanticSIZES } from "semantic-ui-react";
+import { Button, Dropdown, Icon, type SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventType, StateObject, IdentificationType } from "@/types";
 import { ModalConfirmation } from "@/components/Modal";

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Button, SemanticICONS } from "semantic-ui-react";
+import { Button, type SemanticICONS } from "semantic-ui-react";
 import clsx from "clsx";
 import { auth, logout } from "@/firebase";
 import { LayoutNavbarButton, UserPicture } from "@/components";
