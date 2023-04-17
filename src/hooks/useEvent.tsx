@@ -10,7 +10,7 @@ import {
 } from "@/types";
 import { sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
-import { QueryConstraint, orderBy, where } from "firebase/firestore";
+import { QueryConstraint, where } from "firebase/firestore";
 
 export interface useSearchEventProps {
   type?: EventSearchType;
@@ -71,27 +71,21 @@ export function useEvent({ type }: useSearchEventProps) {
     [validatedEvents, type, user, userQuery, sortBy.id, sortDescending]
   );
 
-  const orderByMethod = useMemo(
-    () => orderBy(sortBy.id, sortDescending ? "desc" : "asc"),
-    [sortBy.id, sortDescending]
-  );
-
   const filterByMethod = useMemo(
     () => [
       type === "userCreatedEvents" && user && where("authorId", "==", user.uid),
-      ...filters.map((tag) => where("tags", "array-contains", tag)),
+      ...filters.map((tag) => where(`tags.${tag}`, "==", true)),
     ],
     [filters, type, user]
   );
 
   const queryConstraints = useMemo(
     () => [
-      orderByMethod,
       ...(filterByMethod.filter(
         (constraint) => constraint
       ) as QueryConstraint[]),
     ],
-    [filterByMethod, orderByMethod]
+    [filterByMethod]
   );
 
   const handleFetchEvents = useCallback(async () => {
@@ -138,7 +132,7 @@ export function useEvent({ type }: useSearchEventProps) {
       await readData("events", {
         constraints: [
           where("startDate", ">=", first.getTime()),
-          where("startDate", "<", last.getTime()),
+          where("startDate", "<=", last.getTime()),
         ],
       })
         .then((result) => {

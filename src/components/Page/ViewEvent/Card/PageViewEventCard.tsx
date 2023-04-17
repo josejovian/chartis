@@ -111,7 +111,7 @@ export function PageViewEventCard({
 
       await sleep(200);
 
-      await createDataDirect("event", newEvent, newEvent.id)
+      await createDataDirect("events", newEvent, newEvent.id)
         .then(async () => {
           await sleep(200);
           if (mode === "create") {

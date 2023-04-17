@@ -17,7 +17,7 @@ export interface EventType {
   subscriberCount?: number;
   subscriberIds?: string[];
   guestSubscriberCount?: number;
-  tags: EventTagNameType[];
+  tags: EventTagObjectType;
 }
 
 export interface EventDetailBaseType {
@@ -62,6 +62,8 @@ export interface EventTagType {
   name: string;
   color: SemanticCOLORS;
 }
+
+export type EventTagObjectType = Partial<Record<EventTagNameType, boolean>>;
 
 export type EventCardDisplayType = "horizontal" | "vertical";
 

@@ -73,7 +73,7 @@ export function TemplateSearchEvent({
   }, [setFilters, setQuery, setSortBy, setSortDescending, viewTypeString]);
 
   useEffect(() => {
-    handleUpdatePathQueries();
+    // handleUpdatePathQueries();
   }, [handleUpdatePathQueries]);
 
   useEffect(() => {
@@ -81,7 +81,7 @@ export function TemplateSearchEvent({
   }, [handleFetchEvents]);
 
   useEffect(() => {
-    handleGetPathQuery();
+    // handleGetPathQuery();
   }, [handleGetPathQuery]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

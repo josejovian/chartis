@@ -1,4 +1,8 @@
-import { EVENT_DUMMY_1, EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
+import {
+  EVENT_DUMMY_1,
+  EVENT_QUERY_LENGTH_CONSTRAINTS,
+  EVENT_TAGS,
+} from "@/consts";
 import { EventTagNameType, EventType } from "@/types";
 
 export function filterEventsFromTags(
@@ -6,7 +10,9 @@ export function filterEventsFromTags(
   filters: EventTagNameType[]
 ) {
   return events.filter((event) =>
-    event.tags.some((tag) => filters.some((filter) => filter === tag))
+    Object.keys(event.tags).some((tag) =>
+      filters.some((filter) => filter === tag)
+    )
   );
 }
 
@@ -36,15 +42,27 @@ export function populateEvents(count: number, authorId: string) {
     newEvent.startDate = today.getTime();
     newEvent.name = `Event #${seed}`;
     newEvent.endDate = undefined;
-    newEvent.tags = ["briefing"];
+    newEvent.tags = {
+      [Object.keys(EVENT_TAGS)[seed % Object.keys(EVENT_TAGS).length]]: true,
+    };
+
+    if (seed % 3 === 0) {
+      newEvent.tags = {
+        ...newEvent.tags,
+        [Object.keys(EVENT_TAGS)[(seed + 1) % Object.keys(EVENT_TAGS).length]]:
+          true,
+      };
+    }
+
     newEvent.postDate = today.getTime();
-    newEvent.description = "lorem ipsum consectetur adi piscing"
-      .split("")
-      .sort((a, b) => Math.random() - 0.5)
-      .join("");
+    newEvent.description =
+      "lorem ipsum consectetur adi piscing ipsum consectetur adi piscing"
+        .split("")
+        .sort((a, b) => Math.random() - 0.5)
+        .join("");
     delete newEvent.endDate;
-    newEvent.subscriberCount = 0;
-    newEvent.guestSubscriberCount = 0;
+    newEvent.subscriberCount = seed % 1000;
+    newEvent.guestSubscriberCount = seed % 1000;
     newEvent.subscriberIds = [];
     temp = [...temp, newEvent];
   }

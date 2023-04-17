@@ -14,6 +14,7 @@ import {
   EventDetailType,
   EventModeType,
   EventTagNameType,
+  EventTagObjectType,
   EventType,
   ScreenSizeCategoryType,
   StateObject,
@@ -23,7 +24,7 @@ import { useIdentification } from "@/hooks";
 export interface PageViewEventBodyProps {
   event: EventType;
   mode: EventModeType;
-  stateTags: StateObject<EventTagNameType[]>;
+  stateTags: StateObject<EventTagObjectType>;
   type: ScreenSizeCategoryType;
   validateForm?: () => void;
 }
@@ -62,7 +63,15 @@ export function PageViewEventBody({
 
   const handleUpdateTagJSON = useCallback(
     (values: EventTagNameType[]) => {
-      setTags(values);
+      setTags(
+        values.reduce(
+          (prev, curr) => ({
+            ...prev,
+            [curr]: true,
+          }),
+          {}
+        ) as Record<EventTagNameType, boolean>
+      );
       setTimeout(() => {
         validateForm && validateForm();
       }, 100);
@@ -81,7 +90,7 @@ export function PageViewEventBody({
           selection
           multiple
           transparent
-          defaultValue={tags}
+          defaultValue={Object.keys(tags)}
           onChange={(_, { value }) =>
             handleUpdateTagJSON(value as EventTagNameType[])
           }
