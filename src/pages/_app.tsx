@@ -12,7 +12,7 @@ import "semantic-ui-css/semantic.min.css";
 import { Lato } from "@next/font/google";
 import clsx from "clsx";
 import { LayoutNavbar, Modal } from "@/components";
-import { SCREEN_CONTEXT_DEFAULT, ContextWrapper } from "@/contexts";
+import { ContextWrapper } from "@/contexts";
 import {
   ScreenSizeCategoryType,
   ScreenSizeType,
@@ -43,7 +43,10 @@ export default function App({ Component, pageProps }: AppProps) {
     permission: "guest",
   });
   const setIdentification = stateIdentification[1];
-  const [screen, setScreen] = useState<ScreenSizeType>(SCREEN_CONTEXT_DEFAULT);
+  const [screen, setScreen] = useState<ScreenSizeType>({
+    width: 0,
+    type: "mobile",
+  });
   const initialize = useRef(false);
   const [toasts, setToasts] = useState<ToastLiveType[]>([]);
   const toastCount = useRef(0);
