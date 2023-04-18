@@ -1,15 +1,9 @@
-import {
-  UpdateMapPathToParams,
-  DeleteMapPathToParams,
-  UserType,
-  EventType,
-} from "@/types";
+import { UserType, EventType } from "@/types";
 import { fs } from "../config";
+
 import {
-  FIREBASE_COLLECTION_EVENTS,
-  FIREBASE_COLLECTION_USERS,
-} from "@/consts";
-import {
+  // eslint-disable-next-line import/named
+  DocumentData,
   QueryConstraint,
   collection,
   deleteDoc,
@@ -33,23 +27,27 @@ type FIREBASE_COLLECTIONS = {
 export async function createData<
   COLLECTION_NAME extends keyof FIREBASE_COLLECTIONS
 >(
-  collection: COLLECTION_NAME,
+  group: COLLECTION_NAME,
   data: FIREBASE_COLLECTIONS[COLLECTION_NAME],
   id?: string
-) {
+): Promise<void> {
   const autoId = pushid();
 
-  return setDoc(doc(fs, collection, id ?? autoId), data);
+  return setDoc(doc(fs, group, id ?? autoId), data);
 }
 
-export async function readData<K extends keyof FIREBASE_COLLECTIONS>(
-  group: K,
+export async function readData<
+  COLLECTION_NAME extends keyof FIREBASE_COLLECTIONS
+>(
+  group: COLLECTION_NAME,
   constraints: string
-): Promise<FIREBASE_COLLECTIONS[K] | undefined>;
-export async function readData<K extends keyof FIREBASE_COLLECTIONS>(
-  group: K,
+): Promise<FIREBASE_COLLECTIONS[COLLECTION_NAME] | undefined>;
+export async function readData<
+  COLLECTION_NAME extends keyof FIREBASE_COLLECTIONS
+>(
+  group: COLLECTION_NAME,
   constraints: QueryConstraint[]
-): Promise<FIREBASE_COLLECTIONS[K][] | []>;
+): Promise<FIREBASE_COLLECTIONS[COLLECTION_NAME][] | []>;
 export async function readData<
   COLLECTION_NAME extends keyof FIREBASE_COLLECTIONS
 >(group: COLLECTION_NAME, constraints: string | QueryConstraint[]) {
@@ -72,103 +70,18 @@ export async function readData<
   }
 }
 
-export async function updateDataDirect(
-  group: string,
+export async function updateData<
+  COLLECTION_NAME extends keyof FIREBASE_COLLECTIONS
+>(
+  group: COLLECTION_NAME,
   id: string,
-  data: object
-) {
-  return updateDoc(doc(fs, group, id), data);
+  data: Partial<FIREBASE_COLLECTIONS[COLLECTION_NAME]>
+): Promise<void> {
+  return updateDoc(doc(fs, group, id), data as DocumentData);
 }
 
-export async function updateData<K extends UpdatePathType>(
-  path: K,
-  params: UpdateMapPathToParams[K]
-) {
-  const { collection } = UPDATE_PATHS_PROPERTIES[path];
-
-  return updateDataDirect(collection, params.id, params.data);
-}
-
-export async function deleteDataDirect(group: string, id: string) {
+export async function deleteData<
+  COLLECTION_NAME extends keyof FIREBASE_COLLECTIONS
+>(group: COLLECTION_NAME, id: string): Promise<void> {
   return deleteDoc(doc(fs, group, id));
 }
-
-export async function deleteData<K extends DeletePathType>(
-  path: K,
-  params: DeleteMapPathToParams[K]
-) {
-  const { collection } = DELETE_PATHS_PROPERTIES[path];
-
-  return deleteDataDirect(collection, params.id);
-}
-
-export interface CrudPathPropertyType {
-  type: OperationType;
-  collection: string;
-  subcollection?: string;
-  group?: boolean;
-}
-
-export type ReadPathType = "event" | "events" | "user";
-export type UpdatePathType = "event" | "user";
-export type DeletePathType = "event";
-
-export interface CreatePathPropertyType {
-  collection: string;
-}
-
-export interface ReadPathPropertyType {
-  collection: string;
-  multiple?: boolean;
-}
-
-export interface UpdatePathPropertyType {
-  collection: string;
-}
-
-export interface DeletePathPropertyType {
-  collection: string;
-}
-
-export interface CrudPathsType {
-  read: ReadPathType;
-  update: UpdatePathType;
-  delete: DeletePathType;
-}
-
-export type OperationType = keyof CrudPathsType;
-
-export const READ_PATHS_PROPERTIES: Record<ReadPathType, ReadPathPropertyType> =
-  {
-    event: {
-      collection: FIREBASE_COLLECTION_EVENTS,
-    },
-    events: {
-      collection: FIREBASE_COLLECTION_EVENTS,
-      multiple: true,
-    },
-    user: {
-      collection: FIREBASE_COLLECTION_USERS,
-    },
-  };
-
-export const UPDATE_PATHS_PROPERTIES: Record<
-  UpdatePathType,
-  UpdatePathPropertyType
-> = {
-  event: {
-    collection: FIREBASE_COLLECTION_EVENTS,
-  },
-  user: {
-    collection: FIREBASE_COLLECTION_USERS,
-  },
-};
-
-export const DELETE_PATHS_PROPERTIES: Record<
-  DeletePathType,
-  DeletePathPropertyType
-> = {
-  event: {
-    collection: FIREBASE_COLLECTION_EVENTS,
-  },
-};
