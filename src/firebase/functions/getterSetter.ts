@@ -1,6 +1,5 @@
 import { UserType, EventType } from "@/types";
 import { fs } from "../config";
-
 import {
   // eslint-disable-next-line import/named
   DocumentData,
@@ -16,12 +15,9 @@ import {
 } from "firebase/firestore";
 import pushid from "pushid";
 
-type CommentType = [];
-
 type FIREBASE_COLLECTIONS = {
   users: UserType;
   events: EventType;
-  comment: CommentType;
 };
 
 export async function createData<
