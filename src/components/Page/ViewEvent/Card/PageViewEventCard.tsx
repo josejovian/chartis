@@ -24,7 +24,7 @@ import {
   StateObject,
 } from "@/types";
 import { EVENT_EMPTY } from "@/consts";
-import { createDataDirect } from "@/firebase";
+import { createData } from "@/firebase";
 
 export interface ModalViewEventProps {
   className?: string;
@@ -111,7 +111,7 @@ export function PageViewEventCard({
 
       await sleep(200);
 
-      await createDataDirect("events", newEvent, newEvent.id)
+      await createData("events", newEvent, newEvent.id)
         .then(async () => {
           await sleep(200);
           if (mode === "create") {

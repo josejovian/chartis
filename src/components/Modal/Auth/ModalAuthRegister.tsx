@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { type UserCredential, updateProfile } from "firebase/auth";
-import { auth, createDataDirect, register } from "@/firebase";
+import { auth, createData, register } from "@/firebase";
 import { ModalAuthTemplate } from "@/components";
 import { useModal, useToast } from "@/hooks";
 import { FormRegister, SchemaRegister } from "@/utils";
@@ -16,7 +16,7 @@ export function ModalAuthRegister() {
 
   const handleStoreUserData = useCallback(
     async (data: FormRegisterProps, cred: UserCredential) => {
-      await createDataDirect(
+      await createData(
         FIREBASE_COLLECTION_USERS,
         {
           name: data.name,
