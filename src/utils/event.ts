@@ -16,6 +16,7 @@ export function filterEventsFromTags(
   );
 }
 
+// FOR DELETION: function to populate the database with dummy events
 export function populateEvents(count: number, authorId: string) {
   const randomEventsId: Record<number, boolean> = {};
   let temp: EventType[] = [];
