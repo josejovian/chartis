@@ -112,7 +112,7 @@ export function PageViewEventCard({
       await sleep(200);
 
       await createData("events", newEvent, newEvent.id)
-        .then(async () => {
+        .then(async (value) => {
           await sleep(200);
           if (mode === "create") {
             addToast({

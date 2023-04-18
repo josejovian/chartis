@@ -175,9 +175,7 @@ export function useEvent({ type }: useEventProps) {
       onSuccess?: () => void;
       onFail?: () => void;
     }) => {
-      await deleteData("event", {
-        id: eventId,
-      })
+      await deleteData("events", eventId)
         .then(async () => {
           onSuccess && onSuccess();
           setModalDelete(false);
