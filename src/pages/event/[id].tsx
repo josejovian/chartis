@@ -43,9 +43,7 @@ export default function ViewEvent() {
   const handleGetEvent = useCallback(async () => {
     if (!id) return;
 
-    await readData("event", {
-      id: id as string,
-    })
+    await readData("events", id as string)
       .then((result) => {
         setLoading(false);
         if (result) {

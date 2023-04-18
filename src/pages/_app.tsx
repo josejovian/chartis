@@ -77,9 +77,7 @@ export default function App({ Component, pageProps }: AppProps) {
       let newUsers = {};
 
       if (user) {
-        userData = await readData("user", {
-          id: user.uid,
-        }).catch(() => null);
+        userData = await readData("users", user.uid).catch(() => null);
 
         if (userData) {
           newUsers = {

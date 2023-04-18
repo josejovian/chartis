@@ -12,11 +12,11 @@ import { sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
 import { QueryConstraint, where } from "firebase/firestore";
 
-export interface useSearchEventProps {
+interface useEventProps {
   type?: EventSearchType;
 }
 
-export function useEvent({ type }: useSearchEventProps) {
+export function useEvent({ type }: useEventProps) {
   const stateFilters = useState<EventTagNameType[]>([]);
   const filters = stateFilters[0];
   const atLeastOneFilter = useMemo(() => filters.length > 0, [filters.length]);
@@ -90,9 +90,7 @@ export function useEvent({ type }: useSearchEventProps) {
 
   const handleFetchEvents = useCallback(async () => {
     let eventArray = [] as EventType[];
-    await readData("events", {
-      constraints: queryConstraints,
-    }).then((result) => {
+    await readData("events", queryConstraints).then((result) => {
       if (result) {
         eventArray = result;
         setEvents(result);
@@ -129,12 +127,10 @@ export function useEvent({ type }: useSearchEventProps) {
       //   setEvents(res);
       // });
 
-      await readData("events", {
-        constraints: [
-          where("startDate", ">=", first.getTime()),
-          where("startDate", "<=", last.getTime()),
-        ],
-      })
+      await readData("events", [
+        where("startDate", ">=", first.getTime()),
+        where("startDate", "<=", last.getTime()),
+      ])
         .then((result) => {
           if (result) {
             eventArray = result;
