@@ -118,15 +118,6 @@ export function useEvent({ type }: useEventProps) {
 
       let eventArray = [] as EventType[];
 
-      // await getEvents("events", [
-      //   orderByChild("startDate"),
-      //   startAt(first.getTime()),
-      //   endAt(last.getTime()),
-      // ]).then((res) => {
-      //   eventArray = res;
-      //   setEvents(res);
-      // });
-
       await readData("events", [
         where("startDate", ">=", first.getTime()),
         where("startDate", "<=", last.getTime()),
