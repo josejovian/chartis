@@ -4,7 +4,7 @@ import {
   signOut,
   type UserCredential,
 } from "firebase/auth";
-import { auth } from "../config";
+import { auth } from "./config";
 
 export interface loginParams {
   email: string;
