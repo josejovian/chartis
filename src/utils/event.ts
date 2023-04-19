@@ -1,19 +1,22 @@
-import { EVENT_DUMMY_1, EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
-import { EventType } from "@/types";
+import {
+  EVENT_DUMMY_1,
+  EVENT_QUERY_LENGTH_CONSTRAINTS,
+  EVENT_TAGS,
+} from "@/consts";
+import { EventTagNameType, EventType } from "@/types";
 
 export function filterEventsFromTags(
   events: EventType[],
-  filters: Record<number, boolean>
+  filters: EventTagNameType[]
 ) {
   return events.filter((event) =>
-    event.tags.some((tag) =>
-      Object.entries(filters).some(
-        ([key, value]) => value && Number(key) === tag
-      )
+    Object.keys(event.tags).some((tag) =>
+      filters.some((filter) => filter === tag)
     )
   );
 }
 
+// FOR DELETION: function to populate the database with dummy events
 export function populateEvents(count: number, authorId: string) {
   const randomEventsId: Record<number, boolean> = {};
   let temp: EventType[] = [];
@@ -26,7 +29,7 @@ export function populateEvents(count: number, authorId: string) {
     randomEventsId[seed] = true;
 
     const today = new Date();
-    today.setMonth(today.getMonth() - 2);
+    today.setMonth(today.getMonth());
     today.setDate(seed % 27);
     today.setHours(seed % 24);
     today.setMinutes(seed % 59);
@@ -40,15 +43,27 @@ export function populateEvents(count: number, authorId: string) {
     newEvent.startDate = today.getTime();
     newEvent.name = `Event #${seed}`;
     newEvent.endDate = undefined;
-    newEvent.tags = [seed % 4];
+    newEvent.tags = {
+      [Object.keys(EVENT_TAGS)[seed % Object.keys(EVENT_TAGS).length]]: true,
+    };
+
+    if (seed % 3 === 0) {
+      newEvent.tags = {
+        ...newEvent.tags,
+        [Object.keys(EVENT_TAGS)[(seed + 1) % Object.keys(EVENT_TAGS).length]]:
+          true,
+      };
+    }
+
     newEvent.postDate = today.getTime();
-    newEvent.description = "lorem ipsum consectetur adi piscing"
-      .split("")
-      .sort((a, b) => Math.random() - 0.5)
-      .join("");
+    newEvent.description =
+      "lorem ipsum consectetur adi piscing ipsum consectetur adi piscing"
+        .split("")
+        .sort((a, b) => Math.random() - 0.5)
+        .join("");
     delete newEvent.endDate;
-    newEvent.subscriberCount = 0;
-    newEvent.guestSubscriberCount = 0;
+    newEvent.subscriberCount = seed % 1000;
+    newEvent.guestSubscriberCount = seed % 1000;
     newEvent.subscriberIds = [];
     temp = [...temp, newEvent];
   }

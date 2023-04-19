@@ -1,40 +1,66 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { updateProfile } from "firebase/auth";
-import { auth, register, setDataToPath } from "@/firebase";
+import { type UserCredential, updateProfile } from "firebase/auth";
+import { auth, createData, register } from "@/firebase";
 import { ModalAuthTemplate } from "@/components";
-import { useModal } from "@/hooks";
+import { useModal, useToast } from "@/hooks";
 import { FormRegister, SchemaRegister } from "@/utils";
 import { FormRegisterProps } from "@/types";
+import { FIREBASE_COLLECTION_USERS } from "@/consts";
 
 export function ModalAuthRegister() {
+  const [loading, setLoading] = useState(false);
   const { clearModal, showLogin } = useModal();
+  const { addToast, addToastPreset } = useToast();
   const router = useRouter();
+
+  const handleStoreUserData = useCallback(
+    async (data: FormRegisterProps, cred: UserCredential) => {
+      await createData(
+        FIREBASE_COLLECTION_USERS,
+        {
+          name: data.name,
+        },
+        cred.user.uid
+      )
+        .then(async () => {
+          setLoading(false);
+          if (auth.currentUser) {
+            await updateProfile(auth.currentUser, {
+              displayName: data.name,
+            });
+          } else throw Error("Auth somehow doesn't have currentUser.");
+        })
+        .then(() => {
+          addToast({
+            title: "Register Success",
+            description: "Welcome!",
+            variant: "success",
+          });
+          setLoading(false);
+          clearModal();
+          router.replace(router.asPath);
+        })
+        .catch(() => {
+          addToastPreset("generic-fail");
+        });
+    },
+    [addToast, addToastPreset, clearModal, router]
+  );
 
   const handleRegister = useCallback(
     async (values: unknown) => {
+      setLoading(true);
       const data = values as FormRegisterProps;
       await register({
         ...data,
-        onSuccess: async (cred) => {
-          await setDataToPath(`/user/${cred.user.uid}`, {
-            name: data.name,
-          })
-            .then(async () => {
-              if (auth.currentUser)
-                await updateProfile(auth.currentUser, {
-                  displayName: data.name,
-                });
-              else throw Error("Auth somehow doesn't have currentUser.");
-            })
-            .then(() => {
-              clearModal();
-              router.replace(router.asPath);
-            });
+        onSuccess: (cred) => handleStoreUserData(data, cred),
+        onFail: () => {
+          addToastPreset("generic-fail");
         },
       });
     },
-    [clearModal, router]
+    [addToastPreset, handleStoreUserData]
   );
 
   const renderFormHead = useMemo(
@@ -60,6 +86,7 @@ export function ModalAuthRegister() {
       formName="Register"
       formSchema={SchemaRegister}
       onSubmit={handleRegister}
+      loading={loading}
     />
   );
 }

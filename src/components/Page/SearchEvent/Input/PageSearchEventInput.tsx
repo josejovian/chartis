@@ -8,7 +8,7 @@ export interface SearchEventInputProps {
 }
 
 export function PageSearchEventInput({ stateQuery }: SearchEventInputProps) {
-  const setQuery = stateQuery[1];
+  const [query, setQuery] = stateQuery;
 
   const timeoutRef = useRef<NodeJS.Timeout>();
   const inputRef = createRef<Input>();
@@ -50,6 +50,7 @@ export function PageSearchEventInput({ stateQuery }: SearchEventInputProps) {
       ref={inputRef}
       className="grow"
       placeholder="Search events..."
+      defaultValue={query}
       onChange={(e) => handleUpdateQuery(e.target.value)}
     />
   );

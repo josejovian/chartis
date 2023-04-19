@@ -1,4 +1,21 @@
 import { DAYS, MONTHS } from "@/consts";
+import { FocusDateType } from "@/types";
+
+export function getDateMonthYear(date: Date): FocusDateType {
+  return {
+    day: date.getDate(),
+    month: date.getMonth(),
+    year: date.getFullYear(),
+  };
+}
+
+export function parseFromDateMonthYear(date: FocusDateType): Date {
+  const now = new Date();
+  now.setDate(date.day);
+  now.setMonth(date.month);
+  now.setFullYear(date.year);
+  return now;
+}
 
 export function strMonth(idx: number, length?: number) {
   return MONTHS[idx].slice(0, length);

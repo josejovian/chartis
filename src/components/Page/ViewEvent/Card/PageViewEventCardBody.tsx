@@ -21,22 +21,25 @@ import { EVENT_TAGS } from "@/consts";
 import {
   EventDetailType,
   EventModeType,
+  EventTagNameType,
+  EventTagObjectType,
   EventType,
   ScreenSizeCategoryType,
   StateObject,
+  CommentType,
 } from "@/types";
 import { useIdentification } from "@/hooks";
 import * as Yup from "yup";
-import { auth, db, getDataFromPath, setDataToPath } from "@/firebase";
-import pushid from "pushid";
-import { CommentType } from "@/types";
-import { increment, ref, update } from "firebase/database";
+import { auth } from "@/firebase";
+// , db, readData, createData }
+// import pushid from "pushid";
+// import { increment, ref, update } from "firebase/database";
 
 export interface PageViewEventBodyProps {
   stateActiveTab: StateObject<number>;
   event: EventType;
   mode: EventModeType;
-  stateTags: StateObject<number[]>;
+  stateTags: StateObject<EventTagObjectType>;
   type: ScreenSizeCategoryType;
   validateForm?: () => void;
 }
@@ -50,7 +53,7 @@ export function PageViewEventBody({
 }: PageViewEventBodyProps) {
   const { users } = useIdentification()[0];
   const {
-    id,
+    // id,
     location,
     authorId,
     organizer,
@@ -62,7 +65,7 @@ export function PageViewEventBody({
   } = event;
   const [tags, setTags] = stateTags;
   const activeTab = stateActiveTab[0];
-  const [comments, setComments] = useState<CommentType[]>([]);
+  const [comments] = useState<CommentType[]>([]);
   // const { handleUpdateEvent } = useSearchEvent({});
 
   const renderEventTags = useMemo(
@@ -80,8 +83,16 @@ export function PageViewEventBody({
   );
 
   const handleUpdateTagJSON = useCallback(
-    (values: string[]) => {
-      setTags(values ? values.map((value) => Number(value)) : []);
+    (values: EventTagNameType[]) => {
+      setTags(
+        values.reduce(
+          (prev, curr) => ({
+            ...prev,
+            [curr]: true,
+          }),
+          {}
+        ) as Record<EventTagNameType, boolean>
+      );
       setTimeout(() => {
         validateForm && validateForm();
       }, 100);
@@ -100,14 +111,16 @@ export function PageViewEventBody({
           selection
           multiple
           transparent
-          defaultValue={tags}
-          onChange={(_, { value }) => handleUpdateTagJSON(value as string[])}
+          defaultValue={Object.keys(tags)}
+          onChange={(_, { value }) =>
+            handleUpdateTagJSON(value as EventTagNameType[])
+          }
           onMouseDown={() => validateForm && validateForm()}
           onBlur={() => validateForm && validateForm()}
-          options={EVENT_TAGS.map(({ name }, idx) => ({
-            key: `SelectTag_${name}`,
+          options={Object.entries(EVENT_TAGS).map(([id, { name }]) => ({
+            key: `SelectTag_${id}`,
             text: name,
-            value: idx,
+            value: id,
           }))}
         />
         <Field name="tags">
@@ -254,42 +267,42 @@ export function PageViewEventBody({
     [description, mode]
   );
 
-  const handleFetchComment = useCallback(async () => {
-    const rawData = await getDataFromPath(`/comments/${id}`);
-    const data = Object.entries(rawData ?? {})
-      .reduce((arr: CommentType[], [k, v]) => {
-        arr.push({ commentId: k, ...v });
-        return arr;
-      }, [])
-      .sort((a, b) => b.postDate - a.postDate);
+  // const handleFetchComment = useCallback(async () => {
+  //   const rawData = await readData("comments",[]);
+  //   const data = Object.entries(rawData ?? {})
+  //     .reduce((arr: CommentType[], [k, v]: any) => {
+  //       arr.push({ commentId: k, ...v });
+  //       return arr;
+  //     }, [])
+  //     .sort((a, b) => b.postDate - a.postDate);
 
-    setComments(data);
-  }, [id]);
+  //   setComments(data);
+  // }, [id]);
 
-  const handlePostComment = useCallback(
-    async (values: any) => {
-      const poster = auth.currentUser;
-      const commentId = pushid();
-      const newComment = {
-        authorId: poster?.uid,
-        authorName: poster?.displayName,
-        postDate: new Date().getTime(),
-        text: values.comment,
-      };
+  // const handlePostComment = useCallback(
+  //   async (values: any) => {
+  //     const poster = auth.currentUser;
+  //     const commentId = pushid();
+  //     const newComment = {
+  //       authorId: poster?.uid,
+  //       authorName: poster?.displayName,
+  //       postDate: new Date().getTime(),
+  //       text: values.comment,
+  //     };
 
-      const updates: Record<string, unknown> = {};
+  //     const updates: Record<string, unknown> = {};
 
-      updates[`/events/${id}/commentCount`] = increment(1);
+  //     updates[`/events/${id}/commentCount`] = increment(1);
 
-      await update(ref(db), updates);
-      await setDataToPath(`/comments/${id}/${commentId}`, newComment).catch(
-        (e) => {
-          updates[`/events/${id}/commentCount`] = increment(-1);
-        }
-      );
-    },
-    [id]
-  );
+  //     await update(ref(db), updates);
+  //     await setDataToPath(`/comments/${id}/${commentId}`, newComment).catch(
+  //       () => {
+  //         updates[`/events/${id}/commentCount`] = increment(-1);
+  //       }
+  //     );
+  //   },
+  //   [id]
+  // );
 
   const renderCommentCard = useCallback(
     (comment: CommentType) => (
@@ -325,7 +338,9 @@ export function PageViewEventBody({
         initialValues={{
           comment: "",
         }}
-        onSubmit={handlePostComment}
+        onSubmit={() => {
+          return undefined;
+        }}
         validationSchema={Yup.object().shape({
           comment: Yup.string().max(500, "Too Long!").required("Required"),
         })}
@@ -373,13 +388,13 @@ export function PageViewEventBody({
         )}
       </Formik>
     ),
-    [handlePostComment]
+    []
   );
 
   const renderEventCardContent = useMemo(() => {
     const isLoggedIn = auth.currentUser;
     if (activeTab === 1) {
-      handleFetchComment();
+      // handleFetchComment();
 
       return (
         <div className="flex flex-col gap-8 pt-6">
@@ -401,7 +416,6 @@ export function PageViewEventBody({
   }, [
     activeTab,
     comments,
-    handleFetchComment,
     renderCommentCard,
     renderCommentInput,
     renderEventCreators,
