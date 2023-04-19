@@ -1,5 +1,5 @@
 import { HTMLInputTypeAttribute, ReactNode } from "react";
-import { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
+import type { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
 
 export interface EventType {
   id: string;
@@ -17,7 +17,7 @@ export interface EventType {
   subscriberCount?: number;
   subscriberIds?: string[];
   guestSubscriberCount?: number;
-  tags: number[];
+  tags: EventTagObjectType;
 }
 
 export interface EventDetailBaseType {
@@ -51,10 +51,19 @@ export type EventDetailType =
 export type EventDetailUnionType = EventDetailSimpleTextType &
   EventDetailComponentType;
 
+export type EventTagNameType =
+  | "seminar"
+  | "workshop"
+  | "briefing"
+  | "competition"
+  | "reminder";
+
 export interface EventTagType {
   name: string;
   color: SemanticCOLORS;
 }
+
+export type EventTagObjectType = Partial<Record<EventTagNameType, boolean>>;
 
 export type EventCardDisplayType = "horizontal" | "vertical";
 

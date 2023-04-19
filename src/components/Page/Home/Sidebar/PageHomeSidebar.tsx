@@ -2,12 +2,17 @@ import { useMemo } from "react";
 import { Icon } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventCard, LayoutNotice } from "@/components";
-import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
-import { strDate } from "@/utils";
+import {
+  EventType,
+  FocusDateType,
+  ResponsiveInlineStyleType,
+  StateObject,
+} from "@/types";
+import { parseFromDateMonthYear, strDate } from "@/utils";
 import { useIdentification, useScreen } from "@/hooks";
 
 export interface PageHomeSideBarProps {
-  focusDate: Date;
+  focusDate: FocusDateType;
   events: EventType[];
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   stateSideBar: StateObject<boolean>;
@@ -28,7 +33,8 @@ export function PageHomeSideBar({
     () => (
       <div className="flex items-center justify-between mb-8">
         <span className="text-16px text-secondary-6 italic">
-          Showing {events.length} events on {strDate(focusDate)}
+          Showing {events.length} events on{" "}
+          {strDate(parseFromDateMonthYear(focusDate))}
         </span>
         {type === "mobile" && (
           <div

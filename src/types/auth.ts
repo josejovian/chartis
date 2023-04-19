@@ -1,9 +1,9 @@
-import { User } from "firebase/auth";
+import { type User } from "firebase/auth";
 import { USER_TYPES } from "@/consts";
 
 export interface UserType {
   name: string;
-  subscribedEvents: string[];
+  subscribedEvents?: string[];
 }
 
 export type UserObjectType = User | null;

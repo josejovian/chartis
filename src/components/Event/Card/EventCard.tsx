@@ -17,7 +17,7 @@ import {
   EventType,
   IdentificationType,
 } from "@/types";
-import { useSearchEvent } from "@/hooks";
+import { useEvent } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
@@ -46,7 +46,7 @@ export function EventCard({
     authorName,
   } = event;
   const { users } = identification;
-  const { deleteEvent } = useSearchEvent({});
+  const { deleteEvent } = useEvent({});
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
   const stateModalDelete = useState(false);
