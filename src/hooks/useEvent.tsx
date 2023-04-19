@@ -186,6 +186,29 @@ export function useEvent({ type }: useEventProps) {
     []
   );
 
+  const filterEvents = useCallback(
+    async (
+      events: EventType[] | undefined = undefined,
+      filterCriteria: EventTagNameType[]
+    ): Promise<EventType[]> => {
+      let eventArray = [] as EventType[];
+      if (events) {
+        eventArray = events.filter((event) =>
+          filterCriteria.every((criterion) =>
+            Object.keys(event.tags).includes(criterion)
+          )
+        );
+      } else {
+        eventArray = await readData("events", [
+          ...filterCriteria.map((tag) => where(`tags.${tag}`, "==", true)),
+        ]);
+      }
+
+      return eventArray;
+    },
+    []
+  );
+
   const handleUpdateEvent = useCallback(
     (id: string, newEvt: Partial<EventType>) => {
       setEvents((prev) => {
@@ -244,6 +267,7 @@ export function useEvent({ type }: useEventProps) {
       handleUpdateEvent,
       deleteEvent: handleDeleteEvent,
       sortEvents,
+      filterEvents,
       stateQuery: stateUserQuery,
       stateEvents,
       stateFilters,
@@ -259,6 +283,7 @@ export function useEvent({ type }: useEventProps) {
       handleUpdateEvent,
       handleDeleteEvent,
       sortEvents,
+      filterEvents,
       stateUserQuery,
       stateEvents,
       stateFilters,
