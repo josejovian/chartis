@@ -1,5 +1,5 @@
 import { UserType, EventType } from "@/types";
-import { fs } from "../config";
+import { fs } from "./config";
 import {
   // eslint-disable-next-line import/named
   DocumentData,
