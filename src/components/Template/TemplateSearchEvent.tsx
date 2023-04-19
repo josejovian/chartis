@@ -19,7 +19,7 @@ export function TemplateSearchEvent({
 }: TemplateSearchEventProps) {
   const {
     filteredEvents,
-    handleFetchEvents,
+    getEvents,
     handleUpdateEvent,
     stateFilters,
     stateQuery,
@@ -77,8 +77,8 @@ export function TemplateSearchEvent({
   }, [handleUpdatePathQueries]);
 
   useEffect(() => {
-    handleFetchEvents();
-  }, [handleFetchEvents]);
+    getEvents();
+  }, [getEvents]);
 
   useEffect(() => {
     // handleGetPathQuery();

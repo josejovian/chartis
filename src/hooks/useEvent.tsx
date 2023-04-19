@@ -37,11 +37,16 @@ export function useEvent({ type }: useEventProps) {
   const { addToast, addToastPreset } = useToast();
 
   const validatedEvents = useMemo(() => {
-    if (userQuery !== "" || atLeastOneFilter) {
+    if (
+      userQuery !== "" ||
+      atLeastOneFilter ||
+      type === "userFollowedEvents" ||
+      type === "userCreatedEvents"
+    ) {
       return events;
     }
     return [];
-  }, [atLeastOneFilter, events, userQuery]);
+  }, [atLeastOneFilter, events, type, userQuery]);
 
   const filteredEvents = useMemo(
     () =>
@@ -88,7 +93,7 @@ export function useEvent({ type }: useEventProps) {
     [filterByMethod]
   );
 
-  const handleFetchEvents = useCallback(async () => {
+  const getEvents = useCallback(async () => {
     let eventArray = [] as EventType[];
     await readData("events", queryConstraints).then((result) => {
       if (result) {
@@ -99,28 +104,16 @@ export function useEvent({ type }: useEventProps) {
     return eventArray;
   }, [queryConstraints, setEvents]);
 
-  const handleFetchEventsInOneMonthPage = useCallback(
+  const getEventsMonthly = useCallback(
     async (month: number, year: number) => {
-      const baseDate = new Date();
-      baseDate.setMonth(month);
-      baseDate.setFullYear(year);
-      baseDate.setDate(1);
-      baseDate.setSeconds(0);
-      baseDate.setMinutes(0);
-      baseDate.setHours(0);
-
-      const first = new Date(baseDate.getTime());
-
-      const last = new Date(baseDate.getTime());
-      first.setDate(0);
-      last.setMonth(last.getMonth() + 1);
-      last.setDate(2);
+      const firstDayOfTheMonth = new Date(year, month, 1, 0, 0, 0);
+      const lastDayOfTheMonth = new Date(year, month + 1, 1, 0, 0, 0);
 
       let eventArray = [] as EventType[];
 
       await readData("events", [
-        where("startDate", ">=", first.getTime()),
-        where("startDate", "<=", last.getTime()),
+        where("startDate", ">=", firstDayOfTheMonth.getTime()),
+        where("startDate", "<", lastDayOfTheMonth.getTime()),
       ])
         .then((result) => {
           if (result) {
@@ -189,8 +182,8 @@ export function useEvent({ type }: useEventProps) {
   return useMemo(
     () => ({
       filteredEvents,
-      handleFetchEvents,
-      handleFetchEventsInOneMonthPage,
+      getEvents,
+      getEventsMonthly,
       handleUpdateEvent,
       deleteEvent: handleDeleteEvent,
       stateQuery: stateUserQuery,
@@ -202,9 +195,9 @@ export function useEvent({ type }: useEventProps) {
     }),
     [
       filteredEvents,
-      handleFetchEvents,
+      getEvents,
       handleDeleteEvent,
-      handleFetchEventsInOneMonthPage,
+      getEventsMonthly,
       handleUpdateEvent,
       stateEvents,
       stateFilters,

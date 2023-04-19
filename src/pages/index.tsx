@@ -13,12 +13,8 @@ export default function Home() {
   const stateSideBar = useState(false);
   const focusDate = stateFocusDate[0];
 
-  const {
-    stateEvents,
-    stateFilters,
-    handleFetchEventsInOneMonthPage,
-    handleUpdateEvent,
-  } = useEvent({});
+  const { stateEvents, stateFilters, getEventsMonthly, handleUpdateEvent } =
+    useEvent({});
 
   const events = stateEvents[0];
 
@@ -59,8 +55,8 @@ export default function Home() {
   );
 
   const handlePopulateCalendar = useCallback(() => {
-    handleFetchEventsInOneMonthPage(focusDate.month, focusDate.year);
-  }, [focusDate.month, focusDate.year, handleFetchEventsInOneMonthPage]);
+    getEventsMonthly(focusDate.month, focusDate.year);
+  }, [focusDate.month, focusDate.year, getEventsMonthly]);
 
   useEffect(() => {
     handlePopulateCalendar();
