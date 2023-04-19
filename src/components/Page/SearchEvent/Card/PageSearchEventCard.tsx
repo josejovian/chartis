@@ -6,6 +6,7 @@ import {
 } from "@/components";
 import {
   EventSortType,
+  EventTagNameType,
   EventType,
   ScreenSizeCategoryType,
   StateObject,
@@ -21,7 +22,7 @@ export interface PageSearchEventCardProps {
   events: EventType[];
   type: ScreenSizeCategoryType;
   stateQuery: StateObject<string>;
-  stateFilters: StateObject<Record<number, boolean>>;
+  stateFilters: StateObject<EventTagNameType[]>;
   stateSortBy: StateObject<EventSortType>;
   stateSortDescending: StateObject<boolean>;
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;

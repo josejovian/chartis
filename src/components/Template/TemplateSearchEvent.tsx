@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import { LayoutTemplateCard, PageSearchEventCard } from "@/components";
 import { populateEvents } from "@/utils";
-import { useIdentification, useScreen, useSearchEvent } from "@/hooks";
+import { useIdentification, useScreen, useEvent } from "@/hooks";
 import { EventSearchType, ResponsiveStyleType } from "@/types";
-import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
+import { EVENT_SORT_CRITERIA } from "@/consts";
 import { db } from "@/firebase";
 import { ref, update } from "firebase/database";
 
@@ -19,13 +19,13 @@ export function TemplateSearchEvent({
 }: TemplateSearchEventProps) {
   const {
     filteredEvents,
-    handleFetchEvents,
+    getEvents,
     handleUpdateEvent,
     stateFilters,
     stateQuery,
     stateSortBy,
     stateSortDescending,
-  } = useSearchEvent({ type: viewType });
+  } = useEvent({ type: viewType });
   const [filters, setFilters] = stateFilters;
   const [query, setQuery] = stateQuery;
   const [sortBy, setSortBy] = stateSortBy;
@@ -45,9 +45,7 @@ export function TemplateSearchEvent({
     localStorage.setItem(
       viewTypeString,
       JSON.stringify({
-        filters: Object.entries(filters)
-          .filter(([_, value]) => value)
-          .map(([key, _]) => EVENT_TAGS[key as unknown as number].name),
+        filters,
         query,
         sortBy: sortBy.id,
         sortDescending,
@@ -61,17 +59,7 @@ export function TemplateSearchEvent({
     if (rawQuery && queried.current <= 1) {
       const parsedQuery = JSON.parse(rawQuery);
 
-      const parsedFilters = EVENT_TAGS.map(({ name }, idx) => ({
-        idx,
-        name,
-        active: parsedQuery.filters.includes(name),
-      })).reduce(
-        (prev, { idx, active }) => ({
-          ...prev,
-          [idx]: active,
-        }),
-        {}
-      );
+      const parsedFilters = JSON.parse(parsedQuery.filters);
 
       setFilters(parsedFilters);
       setQuery(parsedQuery.query);
@@ -85,15 +73,15 @@ export function TemplateSearchEvent({
   }, [setFilters, setQuery, setSortBy, setSortDescending, viewTypeString]);
 
   useEffect(() => {
-    handleUpdatePathQueries();
+    // handleUpdatePathQueries();
   }, [handleUpdatePathQueries]);
 
   useEffect(() => {
-    handleFetchEvents();
-  }, [handleFetchEvents]);
+    getEvents();
+  }, [getEvents]);
 
   useEffect(() => {
-    handleGetPathQuery();
+    // handleGetPathQuery();
   }, [handleGetPathQuery]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

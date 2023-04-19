@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Button, Dropdown, Icon, SemanticSIZES } from "semantic-ui-react";
+import { Button, Dropdown, Icon, type SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_SORT_TYPE } from "@/consts";
 import { StateObject } from "@/types";

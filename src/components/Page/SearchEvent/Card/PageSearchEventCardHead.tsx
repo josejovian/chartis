@@ -5,11 +5,16 @@ import {
   EventButtonSortType,
   PageSearchEventInput,
 } from "@/components";
-import { EventSortType, ScreenSizeCategoryType, StateObject } from "@/types";
+import {
+  EventSortType,
+  EventTagNameType,
+  ScreenSizeCategoryType,
+  StateObject,
+} from "@/types";
 
 export interface PageSearchEventHeadProps {
   stateQuery: StateObject<string>;
-  stateFilters: StateObject<Record<number, boolean>>;
+  stateFilters: StateObject<EventTagNameType[]>;
   stateSortBy: StateObject<EventSortType>;
   stateSortDescending: StateObject<boolean>;
   type?: ScreenSizeCategoryType;

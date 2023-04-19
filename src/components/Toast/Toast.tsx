@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo } from "react";
-import { Icon, Message, SemanticICONS } from "semantic-ui-react";
+import { Icon, Message, type SemanticICONS } from "semantic-ui-react";
 import clsx from "clsx";
 import { ToastContext } from "@/contexts";
 import { ToastLiveType, ToastVariantType } from "@/types";

@@ -13,6 +13,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
   IdentificationType,
+  EventTagNameType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
 
@@ -44,8 +45,10 @@ export function PageViewEventHead({
 
   const crumb = useMemo(
     () =>
-      event.tags.length > 0 &&
-      `Events / ${EVENT_TAGS[event.tags[0]].name} / ${event.name}`,
+      Object.keys(event.tags).length > 0 &&
+      `Events / ${
+        EVENT_TAGS[Object.keys(event.tags)[0] as EventTagNameType].name
+      } / ${event.name}`,
     [event.name, event.tags]
   );
 

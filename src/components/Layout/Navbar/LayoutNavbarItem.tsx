@@ -2,7 +2,7 @@ import { UserPermissionType } from "@/types";
 import clsx from "clsx";
 import Link from "next/link";
 import { useMemo } from "react";
-import { Icon, SemanticICONS } from "semantic-ui-react";
+import { Icon, type SemanticICONS } from "semantic-ui-react";
 
 export interface LayoutNavbarItemProps {
   name: string;

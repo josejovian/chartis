@@ -1,4 +1,4 @@
-import { Icon, SemanticICONS } from "semantic-ui-react";
+import { Icon, type SemanticICONS } from "semantic-ui-react";
 import clsx from "clsx";
 import { useScreen } from "@/hooks";
 import {

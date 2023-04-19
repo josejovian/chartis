@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { setDataToPath } from "@/firebase";
 import { useRouter } from "next/router";
 import { Formik } from "formik";
 import pushid from "pushid";
@@ -10,7 +9,7 @@ import {
   PageViewEventFoot,
   PageViewEventHead,
 } from "@/components";
-import { useIdentification, useSearchEvent, useToast } from "@/hooks";
+import { useIdentification, useEvent, useToast } from "@/hooks";
 import {
   SchemaEvent,
   sleep,
@@ -25,6 +24,7 @@ import {
   StateObject,
 } from "@/types";
 import { EVENT_EMPTY } from "@/consts";
+import { createData } from "@/firebase";
 
 export interface ModalViewEventProps {
   className?: string;
@@ -70,7 +70,7 @@ export function PageViewEventCard({
     return object;
   }, [event, mode]);
   const { addToast, addToastPreset } = useToast();
-  const { stateModalDelete, deleteEvent } = useSearchEvent({});
+  const { stateModalDelete, deleteEvent } = useEvent({});
 
   const stateIdentification = useIdentification();
   const identification = stateIdentification[0];
@@ -111,8 +111,8 @@ export function PageViewEventCard({
 
       await sleep(200);
 
-      await setDataToPath(`/events/${eventId}/`, newEvent)
-        .then(async () => {
+      await createData("events", newEvent, newEvent.id)
+        .then(async (value) => {
           await sleep(200);
           if (mode === "create") {
             addToast({

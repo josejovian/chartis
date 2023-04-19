@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getDatabase, increment, ref, update } from "firebase/database";
-import { db } from "@/firebase";
-import { Button, Label, SemanticSIZES } from "semantic-ui-react";
+import { fs } from "@/firebase";
+import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
 import { sleep } from "@/utils";
 import { useToast } from "@/hooks";
+import { doc, increment, updateDoc } from "firebase/firestore";
 
 export interface EventButtonFollowProps {
   event: EventType;
@@ -55,15 +55,9 @@ export function EventButtonFollow({
       handleUpdateSubscribeClientSide(subscribed);
       setLoading(true);
 
-      const dbRef = ref(getDatabase());
-      const updates: Record<string, unknown> = {};
-      updates[`events/${id}/guestSubscriberCount`] = increment(
-        subscribed ? -1 : 1
-      );
-      updates[`/events/${id}/subscriberCount`] =
-        subscriberIds.length +
-        (guestSubscriberCount ?? 0) +
-        (subscribed ? -1 : 1);
+      const dbRef = doc(fs, "events", id);
+
+      // Atomically increment the population of the city by 50.
 
       const newSubscribe = subscribed
         ? (() => {
@@ -78,7 +72,14 @@ export function EventButtonFollow({
 
       setSubscribed((prev) => !prev);
       await sleep(200);
-      await update(dbRef, updates)
+
+      await updateDoc(dbRef, {
+        guestSubscriberCount: increment(subscribed ? -1 : 1),
+        subscriberCount:
+          subscriberIds.length +
+          (guestSubscriberCount ?? 0) +
+          (subscribed ? -1 : 1),
+      })
         .then(() => {
           updateEvent(id, {
             subscriberCount:
@@ -112,13 +113,14 @@ export function EventButtonFollow({
 
       setSubscribed((prev) => !prev);
       await sleep(200);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updates: Record<string, any> = {};
-      updates[`/events/${id}/subscriberIds`] = updatedSubscribedIds;
-      updates[`/user/${user.uid}/subscribedEvents`] = updatedSubscribedEvents;
-      updates[`/events/${id}/subscriberCount`] =
-        updatedSubscribedIds.length + (guestSubscriberCount ?? 0);
-      await update(ref(db), updates)
+
+      const dbRef = doc(fs, "events", id);
+      await updateDoc(dbRef, {
+        subscriberIds: updatedSubscribedIds,
+        subscribedEvents: updatedSubscribedEvents,
+        subscriberCount:
+          updatedSubscribedIds.length + (guestSubscriberCount ?? 0),
+      })
         .then(() => {
           addToastPreset(subscribed ? "unfollow" : "follow");
           updateEvent(id, {
