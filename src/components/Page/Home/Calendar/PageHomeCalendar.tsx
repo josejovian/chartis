@@ -2,13 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon } from "semantic-ui-react";
 import clsx from "clsx";
 import { PageHomeCalendarDate } from "@/components";
-import { CalendarDateType, EventType, StateObject } from "@/types";
-import { strDay, strMonth } from "@/utils";
+import {
+  CalendarDateType,
+  EventType,
+  FocusDateType,
+  StateObject,
+} from "@/types";
+import { getDateMonthYear, strDay, strMonth } from "@/utils";
 import { DAYS } from "@/consts";
 import { useScreen } from "@/hooks";
 
 export interface LayoutCalendarProps {
-  stateFocusDate: StateObject<Date>;
+  stateFocusDate: StateObject<FocusDateType>;
   events: EventType[];
 }
 
@@ -24,22 +29,24 @@ export function LayoutCalendar({
   const handleChangeTime = useCallback(
     (direction: number) => {
       setFocusDate((prev) => {
-        const temp = new Date(prev.getTime());
+        const temp = new Date();
         temp.setDate(1);
-        temp.setMonth(temp.getMonth() + direction);
-        return temp;
+        temp.setMonth(prev.month + direction);
+        return getDateMonthYear(temp);
       });
     },
     [setFocusDate]
   );
 
   const handleChangeToToday = useCallback(
-    () => setFocusDate(new Date()),
+    () => setFocusDate(getDateMonthYear(new Date())),
     [setFocusDate]
   );
 
   const handleBuildCalendar = useCallback(() => {
-    const firstDay = new Date(focusDate.getTime());
+    const firstDay = new Date();
+    firstDay.setFullYear(focusDate.year);
+    firstDay.setMonth(focusDate.month);
     firstDay.setDate(1);
 
     const newCalendar: CalendarDateType[] = [];
@@ -60,8 +67,8 @@ export function LayoutCalendar({
         date: current,
         events: eventsToday,
         focus:
-          date.getDate() === focusDate.getDate() &&
-          date.getMonth() === focusDate.getMonth(),
+          date.getDate() === focusDate.day &&
+          date.getMonth() === focusDate.month,
       };
       i++;
 
@@ -111,7 +118,7 @@ export function LayoutCalendar({
             type === "mobile" && "!w-20 !text-lg"
           )}
         >
-          {strMonth(focusDate.getMonth(), 3)} {focusDate.getFullYear()}
+          {strMonth(focusDate.month, 3)} {focusDate.year}
         </h1>
         <Button
           basic
@@ -135,8 +142,8 @@ export function LayoutCalendar({
           onClick={handleChangeToToday}
           disabled={
             focusDate &&
-            today.getDate() === focusDate.getDate() &&
-            today.getMonth() === focusDate.getMonth()
+            today.getDate() === focusDate.day &&
+            today.getMonth() === focusDate.month
           }
           size={type === "mobile" ? "tiny" : undefined}
         >
@@ -164,17 +171,24 @@ export function LayoutCalendar({
           "flex items-center justify-center gap-2"
         )}
       >
-        <span>Less</span>
-        {CALENDAR_LEGEND_MARKER_STYLE.map((MARKER_STYLE, idx) => (
-          <div
-            key={`Legend_${idx}`}
-            className={clsx(
-              type === "mobile" ? "w-4 h-4 rounded-sm" : "w-8 h-8 rounded-lg",
-              MARKER_STYLE
-            )}
-          />
+        <span>
+          <b>EVENT COUNT</b>
+        </span>
+        <span></span>
+        {CALENDAR_LEGEND_MARKER_STYLE.map(({ color, text }, idx) => (
+          <>
+            <div
+              key={`Legend_${idx}`}
+              className={clsx(
+                type === "mobile" ? "w-4 h-4 rounded-sm" : "w-8 h-8 rounded-lg",
+                color
+              )}
+            />
+            <span className={clsx(type === "mobile" ? "text-xs" : "text-base")}>
+              {type === "mobile" ? text : `${text} Events`}
+            </span>
+          </>
         ))}
-        <span>More</span>
       </div>
     ),
     [type]
@@ -213,7 +227,9 @@ export function LayoutCalendar({
                       type={type}
                       onClick={() => {
                         if (calendar)
-                          setFocusDate(calendar[7 * idx + idx2].date);
+                          setFocusDate(
+                            getDateMonthYear(calendar[7 * idx + idx2].date)
+                          );
                       }}
                     />
                   ))}
@@ -253,8 +269,16 @@ export function LayoutCalendar({
 }
 
 const CALENDAR_LEGEND_MARKER_STYLE = [
-  "bg-emerald-100",
-  "bg-emerald-300",
-  "bg-emerald-500",
-  "bg-emerald-700",
+  {
+    color: "bg-emerald-200",
+    text: "1-3",
+  },
+  {
+    color: "bg-emerald-500",
+    text: "4-6",
+  },
+  {
+    color: "bg-emerald-700",
+    text: ">6",
+  },
 ];

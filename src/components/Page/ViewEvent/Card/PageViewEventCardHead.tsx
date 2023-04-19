@@ -13,6 +13,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
   IdentificationType,
+  EventTagNameType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
 
@@ -22,6 +23,7 @@ export interface PageViewEventHeadProps {
   identification: IdentificationType;
   onDelete: () => void;
   stateDeleting?: StateObject<boolean>;
+  stateModalDelete: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
@@ -33,6 +35,7 @@ export function PageViewEventHead({
   identification,
   onDelete,
   stateDeleting,
+  stateModalDelete,
   stateMode,
   type,
   updateEvent,
@@ -43,8 +46,10 @@ export function PageViewEventHead({
 
   const crumb = useMemo(
     () =>
-      event.tags.length > 0 &&
-      `Events / ${EVENT_TAGS[event.tags[0]].name} / ${event.name}`,
+      Object.keys(event.tags).length > 0 &&
+      `Events / ${
+        EVENT_TAGS[Object.keys(event.tags)[0] as EventTagNameType].name
+      } / ${event.name}`,
     [event.name, event.tags]
   );
 
@@ -114,6 +119,7 @@ export function PageViewEventHead({
           onEdit={handleEdit}
           onDelete={onDelete}
           stateDeleting={stateDeleting}
+          stateModalDelete={stateModalDelete}
         />
       </div>
     ),
@@ -125,6 +131,7 @@ export function PageViewEventHead({
       handleEdit,
       onDelete,
       stateDeleting,
+      stateModalDelete,
     ]
   );
 

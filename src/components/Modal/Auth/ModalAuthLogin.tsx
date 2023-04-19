@@ -1,26 +1,39 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { login } from "@/firebase";
 import { ModalAuthTemplate } from "@/components";
-import { useModal } from "@/hooks";
+import { useModal, useToast } from "@/hooks";
 import { FormLogin, SchemaLogin } from "@/utils";
 import { FormLoginProps } from "@/types";
 
 export function ModalAuthLogin() {
+  const [loading, setLoading] = useState(false);
   const { clearModal, showRegister } = useModal();
+  const { addToast, addToastPreset } = useToast();
   const router = useRouter();
 
   const handleLogin = useCallback(
     async (values: unknown) => {
+      setLoading(true);
       await login({
         ...(values as FormLoginProps),
         onSuccess: () => {
+          addToast({
+            title: "Login Success",
+            description: "Welcome!",
+            variant: "success",
+          });
+          setLoading(false);
           clearModal();
           router.replace(router.asPath);
         },
+        onFail: () => {
+          addToastPreset("generic-fail");
+          setLoading(false);
+        },
       });
     },
-    [clearModal, router]
+    [addToast, addToastPreset, clearModal, router]
   );
 
   const renderFormHead = useMemo(
@@ -46,6 +59,7 @@ export function ModalAuthLogin() {
       formName="Login"
       formSchema={SchemaLogin}
       onSubmit={handleLogin}
+      loading={loading}
     />
   );
 }

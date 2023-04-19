@@ -12,18 +12,23 @@ import "semantic-ui-css/semantic.min.css";
 import { Lato } from "@next/font/google";
 import clsx from "clsx";
 import { LayoutNavbar, Modal } from "@/components";
-import { SCREEN_CONTEXT_DEFAULT, ContextWrapper } from "@/contexts";
+import { ContextWrapper } from "@/contexts";
 import {
   ScreenSizeCategoryType,
   ScreenSizeType,
   IdentificationType,
+  ToastLiveType,
+  ToastType,
+  ToastPresetType,
 } from "@/types";
 import {
   DESKTOP_SMALL_SCREEN_THRESHOLD,
   MOBILE_SCREEN_THRESHOLD,
 } from "@/consts";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, getDataFromPath } from "@/firebase";
+import { auth, readData } from "@/firebase";
+import { ToastWrapper } from "@/components/Toast/Toast";
+import { TOAST_PRESETS } from "@/consts/toast";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
@@ -38,8 +43,13 @@ export default function App({ Component, pageProps }: AppProps) {
     permission: "guest",
   });
   const setIdentification = stateIdentification[1];
-  const [screen, setScreen] = useState<ScreenSizeType>(SCREEN_CONTEXT_DEFAULT);
+  const [screen, setScreen] = useState<ScreenSizeType>({
+    width: 0,
+    type: "mobile",
+  });
   const initialize = useRef(false);
+  const [toasts, setToasts] = useState<ToastLiveType[]>([]);
+  const toastCount = useRef(0);
 
   const handleUpdateScreen = useCallback(() => {
     const width = window.innerWidth;
@@ -67,7 +77,7 @@ export default function App({ Component, pageProps }: AppProps) {
       let newUsers = {};
 
       if (user) {
-        userData = await getDataFromPath(`/user/${user.uid}`).catch(() => null);
+        userData = await readData("users", user.uid).catch(() => null);
 
         if (userData) {
           newUsers = {
@@ -95,6 +105,26 @@ export default function App({ Component, pageProps }: AppProps) {
       setNavBar(false);
     }
   }, [screen, setNavBar]);
+
+  const handleAddToast = useCallback((toast: ToastType) => {
+    toastCount.current++;
+    setToasts((prev) => [
+      ...prev,
+      {
+        ...toast,
+        id: `Toast-${toastCount.current}`,
+        createdAt: new Date().getTime(),
+        time: 4,
+      } as ToastLiveType,
+    ]);
+  }, []);
+
+  const handleAddToastPreset = useCallback(
+    (preset: ToastPresetType) => {
+      handleAddToast(TOAST_PRESETS[preset]);
+    },
+    [handleAddToast]
+  );
 
   const renderShadeNavBar = useMemo(
     () => (
@@ -153,6 +183,12 @@ export default function App({ Component, pageProps }: AppProps) {
         screen={screen}
         stateModal={stateModal}
         stateNavBar={stateNavBar}
+        toastProps={{
+          toasts,
+          setToasts,
+          addToast: handleAddToast,
+          addToastPreset: handleAddToastPreset,
+        }}
       >
         <div id="App" className={clsx("flex flex-row w-full h-full")}>
           {renderShadeNavBar}
@@ -161,6 +197,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <div className="flex flex-auto w-full h-full">
             <Component {...pageProps} />
           </div>
+          <ToastWrapper />
         </div>
       </ContextWrapper>
     </>

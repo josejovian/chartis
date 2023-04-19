@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import { Card } from "semantic-ui-react";
 import clsx from "clsx";
@@ -16,8 +17,7 @@ import {
   EventType,
   IdentificationType,
 } from "@/types";
-import { setDataToPath } from "@/firebase";
-import { useRouter } from "next/router";
+import { useEvent } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
@@ -46,9 +46,11 @@ export function EventCard({
     authorName,
   } = event;
   const { users } = identification;
-
+  const { deleteEvent } = useEvent({});
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
+  const stateModalDelete = useState(false);
+  const setModalDelete = stateModalDelete[1];
   const router = useRouter();
 
   const truncatedDescription = useMemo(
@@ -64,14 +66,28 @@ export function EventCard({
 
     setDeleting(true);
 
-    await setDataToPath(`/events/${event.id}/`, {})
-      .then(async () => {
-        router.reload();
-      })
-      .catch((e) => {
+    await deleteEvent({
+      eventId: id,
+      onSuccess: () => {
+        setModalDelete(false);
+      },
+      onFail: () => {
         setDeleting(false);
-      });
-  }, [event, router, setDeleting]);
+      },
+    });
+  }, [deleteEvent, event.id, id, setDeleting, setModalDelete]);
+
+  const handleEditEvent = useCallback(() => {
+    if (!event.id) return;
+
+    router.push(
+      {
+        pathname: `/event/${event.id}/`,
+        query: { mode: "edit" },
+      },
+      `/event/${event.id}/`
+    );
+  }, [event, router]);
 
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
@@ -191,10 +207,20 @@ export function EventCard({
           identification={identification}
           size="tiny"
           onDelete={handleDeleteEvent}
+          stateModalDelete={stateModalDelete}
+          onEdit={handleEditEvent}
         />
       </div>
     ),
-    [event, identification, type, updateEvent, handleDeleteEvent]
+    [
+      type,
+      event,
+      updateEvent,
+      identification,
+      handleDeleteEvent,
+      stateModalDelete,
+      handleEditEvent,
+    ]
   );
 
   const renderCardContents = useMemo(
