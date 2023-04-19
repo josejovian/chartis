@@ -10,7 +10,7 @@ import {
 } from "@/types";
 import { sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
-import { QueryConstraint, where } from "firebase/firestore";
+import { QueryConstraint, orderBy, where } from "firebase/firestore";
 
 interface useEventProps {
   type?: EventSearchType;
@@ -93,7 +93,7 @@ export function useEvent({ type }: useEventProps) {
     [filterByMethod]
   );
 
-  const getEvents = useCallback(async () => {
+  const getEvents = useCallback(async (): Promise<EventType[]> => {
     let eventArray = [] as EventType[];
     await readData("events", queryConstraints).then((result) => {
       if (result) {
@@ -105,7 +105,7 @@ export function useEvent({ type }: useEventProps) {
   }, [queryConstraints, setEvents]);
 
   const getEventsMonthly = useCallback(
-    async (month: number, year: number) => {
+    async (month: number, year: number): Promise<EventType[]> => {
       const firstDayOfTheMonth = new Date(year, month, 1, 0, 0, 0);
       const lastDayOfTheMonth = new Date(year, month + 1, 1, 0, 0, 0);
 
@@ -128,6 +128,62 @@ export function useEvent({ type }: useEventProps) {
       return eventArray;
     },
     [addToastPreset, setEvents]
+  );
+
+  const getFollowedEvents = useCallback(
+    async (events?: EventType[]): Promise<EventType[]> => {
+      const subscribedEventIds =
+        user && user.uid
+          ? identification.users[user.uid].subscribedEvents
+          : Object.keys(JSON.parse(localStorage.getItem("subscribe") ?? "{}"));
+
+      let eventArray = [] as EventType[];
+      if (!events) {
+        eventArray = await readData("events", [
+          where("id", "in", subscribedEventIds),
+        ]);
+      } else {
+        eventArray = events.filter((event) =>
+          subscribedEventIds?.includes(event.id)
+        );
+      }
+
+      return eventArray;
+    },
+    [identification.users, user]
+  );
+
+  const sortEvents = useCallback(
+    async (
+      events: EventType[] | undefined = undefined,
+      orderCriterion: keyof EventType,
+      sort: "asc" | "desc" = "desc"
+    ): Promise<EventType[]> => {
+      let eventArray = [] as EventType[];
+      if (events) {
+        const sortBy = sort === "desc" ? 1 : -1;
+        eventArray = events.sort((a, b) => {
+          const left = a[orderCriterion] ?? 0;
+          const right = b[orderCriterion] ?? 0;
+          if (
+            (typeof left === "number" && typeof right === "number") ||
+            (typeof left === "string" && typeof right === "string")
+          )
+            if (left > right) {
+              return -1 * sortBy;
+            }
+          if (right > left) {
+            return 1 * sortBy;
+          }
+          return 0;
+        });
+      } else {
+        eventArray = await readData("events", [orderBy(orderCriterion, sort)]);
+      }
+
+      return eventArray;
+    },
+    []
   );
 
   const handleUpdateEvent = useCallback(
@@ -184,8 +240,10 @@ export function useEvent({ type }: useEventProps) {
       filteredEvents,
       getEvents,
       getEventsMonthly,
+      getFollowedEvents,
       handleUpdateEvent,
       deleteEvent: handleDeleteEvent,
+      sortEvents,
       stateQuery: stateUserQuery,
       stateEvents,
       stateFilters,
@@ -196,15 +254,17 @@ export function useEvent({ type }: useEventProps) {
     [
       filteredEvents,
       getEvents,
-      handleDeleteEvent,
       getEventsMonthly,
+      getFollowedEvents,
       handleUpdateEvent,
+      handleDeleteEvent,
+      sortEvents,
+      stateUserQuery,
       stateEvents,
       stateFilters,
-      stateModalDelete,
       stateSortBy,
       stateSortDescending,
-      stateUserQuery,
+      stateModalDelete,
     ]
   );
 }
