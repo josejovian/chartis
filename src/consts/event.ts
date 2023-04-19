@@ -16,7 +16,7 @@ export const EVENT_EMPTY: EventType = {
   location: "",
   postDate: 0,
   startDate: 0,
-  tags: [],
+  tags: {},
 };
 
 export const EVENT_DUMMY_1: EventType = {
@@ -28,7 +28,7 @@ export const EVENT_DUMMY_1: EventType = {
   postDate: 0,
   startDate: 0,
   endDate: 10,
-  tags: ["reminder"],
+  tags: {},
 };
 
 export const EVENT_DUMMY_2: EventType = {
@@ -40,7 +40,7 @@ export const EVENT_DUMMY_2: EventType = {
   postDate: 0,
   startDate: 0,
   endDate: 10,
-  tags: ["reminder"],
+  tags: {},
 };
 
 export const EVENT_TAGS: Record<EventTagNameType, EventTagType> = {
