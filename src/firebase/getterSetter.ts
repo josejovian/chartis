@@ -1,9 +1,8 @@
 import { UserType, EventType } from "@/types";
-import { fs } from "./config";
+import pushid from "pushid";
 import {
-  // eslint-disable-next-line import/named
-  DocumentData,
-  QueryConstraint,
+  type DocumentData,
+  type QueryConstraint,
   collection,
   deleteDoc,
   doc,
@@ -13,7 +12,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import pushid from "pushid";
+import { fs } from "./config";
 
 type FIREBASE_COLLECTIONS = {
   users: UserType;
