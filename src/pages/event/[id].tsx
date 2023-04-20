@@ -34,6 +34,7 @@ export default function ViewEvent() {
 
   const stateEvent = useState(EVENT_DUMMY_1);
   const [event, setEvent] = stateEvent;
+  const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const initialize = useRef(0);
@@ -48,7 +49,8 @@ export default function ViewEvent() {
         setLoading(false);
         if (result) {
           setError(false);
-          setEvent(result as EventType);
+          setEvent(result);
+          eventPreviousValues.current = result;
         } else {
           throw Error("Invalid event data.");
         }
@@ -97,6 +99,7 @@ export default function ViewEvent() {
       <PageViewEventCard
         className="card ui"
         stateEvent={stateEvent}
+        eventPreviousValues={eventPreviousValues}
         stateMode={stateMode}
         type={type}
         updateEvent={handleUpdateEvent}

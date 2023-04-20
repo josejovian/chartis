@@ -4,6 +4,7 @@ import {
   EventTagNameType,
   EventTagType,
   EventType,
+  EventUpdateNameType,
 } from "@/types";
 
 export const EVENT_EMPTY: EventType = {
@@ -77,3 +78,14 @@ export const EVENT_SORT_TYPE: EventSortDirectionType[] = [
 ];
 
 export const EVENT_QUERY_LENGTH_CONSTRAINTS = [3, 20]; //[min, max]
+
+export const EVENT_UPDATE_TERM: Record<EventUpdateNameType, string> = {
+  "update-description": "description",
+  "update-end-date": "end date",
+  "update-location": "location",
+  "update-organizer": "organizer",
+  "update-start-date": "start date",
+  "update-tags": "tags",
+  "update-title": "title",
+  "initial-post": "post",
+};

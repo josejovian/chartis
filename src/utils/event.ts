@@ -3,7 +3,14 @@ import {
   EVENT_QUERY_LENGTH_CONSTRAINTS,
   EVENT_TAGS,
 } from "@/consts";
-import { EventTagNameType, EventType } from "@/types";
+import {
+  EventTagNameType,
+  EventType,
+  EventUpdateNameType,
+  EventUpdateType,
+} from "@/types";
+import pushid from "pushid";
+import { strDateTime } from "./date";
 
 export function filterEventsFromTags(
   events: EventType[],
@@ -79,4 +86,48 @@ export function validateEventQuery(newQuery: string) {
   )
     return false;
   return true;
+}
+
+export function stringifyEventValue(event: EventType, key: keyof EventType) {
+  let result = "-";
+
+  if (event[key]) result = String(event[key]);
+
+  if (key === "startDate" || key === "endDate")
+    result = strDateTime(new Date(event[key] ?? 0));
+
+  if (key === "tags") result = Object.keys(event[key]).join(", ");
+
+  return result;
+}
+
+export function compareEventValues(before: EventType, after: EventType) {
+  const pairs: [keyof EventType, EventUpdateNameType][] = [
+    ["description", "update-description"],
+    ["startDate", "update-start-date"],
+    ["endDate", "update-end-date"],
+    ["location", "update-location"],
+    ["organizer", "update-organizer"],
+    ["tags", "update-tags"],
+    ["name", "update-title"],
+  ];
+
+  const updates: Record<string, EventUpdateType> = {};
+
+  pairs.forEach(([key, updateType]) => {
+    const sameTags = Object.keys(before["tags"]).some((tag) =>
+      Object.keys(after["tags"]).includes(tag)
+    );
+
+    if ((key === "tags" && !sameTags) || before[key] !== after[key]) {
+      const updateId = pushid();
+      updates[updateId] = {
+        type: updateType,
+        valuePrevious: stringifyEventValue(before, key),
+        valueNew: stringifyEventValue(after, key),
+      };
+    }
+  });
+
+  return updates;
 }

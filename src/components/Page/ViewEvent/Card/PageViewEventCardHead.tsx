@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Button } from "semantic-ui-react";
 import clsx from "clsx";
 import {
@@ -7,13 +7,14 @@ import {
   EventButtonMore,
 } from "@/components";
 import {
-  EventModalTabType,
   EventModeType,
   EventType,
   ScreenSizeCategoryType,
   StateObject,
   IdentificationType,
   EventTagNameType,
+  EventCardTabType,
+  EventCardTabNameType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
 
@@ -21,6 +22,7 @@ export interface PageViewEventHeadProps {
   event: EventType;
   identification: IdentificationType;
   onDelete: () => void;
+  stateActiveTab: StateObject<EventCardTabNameType>;
   stateDeleting?: StateObject<boolean>;
   stateModalDelete: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;
@@ -32,14 +34,14 @@ export function PageViewEventHead({
   event,
   identification,
   onDelete,
+  stateActiveTab,
   stateDeleting,
   stateModalDelete,
   stateMode,
   type,
   updateEvent,
 }: PageViewEventHeadProps) {
-  const stateActiveTab = useState(0);
-  const activeTab = stateActiveTab[0];
+  const [activeTab, setActiveTab] = stateActiveTab;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mode, setMode] = stateMode;
 
@@ -52,28 +54,40 @@ export function PageViewEventHead({
     [event.name, event.tags]
   );
 
-  const tabs = useMemo<EventModalTabType[]>(
+  const tabs = useMemo<EventCardTabType[]>(
     () => [
       {
-        name: "Details",
+        id: "detail",
+        name: "Detail",
+        onClick: () => {
+          setActiveTab("detail");
+        },
+      },
+      {
+        id: "updates",
+        name: "Updates",
+        onClick: () => {
+          setActiveTab("updates");
+        },
       },
     ],
-    []
+    [setActiveTab]
   );
 
   const handleEdit = useCallback(() => {
+    setActiveTab("detail");
     setMode("edit");
-  }, [setMode]);
+  }, [setActiveTab, setMode]);
 
   const renderDetailTabs = useMemo(
     () => (
       <div className="flex gap-4 px-4">
-        {tabs.map(({ name, onClick }, idx) => (
+        {tabs.map(({ id, name, onClick }) => (
           <Button
             key={`ModalViewEvent_Tab-${name}`}
             className={clsx(
               "!rounded-none !m-0 !rounded-t-md !h-fit",
-              activeTab === idx &&
+              activeTab === id &&
                 "!bg-white hover:!bg-gray-100 active:!bg-gray-200 focus:!bg-gray-200"
             )}
             size={type === "mobile" ? "tiny" : undefined}

@@ -45,6 +45,9 @@
   pre {
     white-space: pre-wrap;
   }
+  p {
+    @apply text-slate-800;
+  }
 }
 @tailwind base;
 @layer components {

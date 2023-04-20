@@ -6,11 +6,12 @@ import clsx from "clsx";
 import {
   EventTags,
   FormErrorMessage,
-  PageViewEventCardDetail,
+  PageViewEventCardDetailTabDetail,
 } from "@/components";
 import { getTimeDifference, strDateTime } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
 import {
+  EventCardTabNameType,
   EventDetailType,
   EventModeType,
   EventTagNameType,
@@ -21,20 +22,22 @@ import {
 } from "@/types";
 import { useIdentification } from "@/hooks";
 
-export interface PageViewEventBodyProps {
+export interface PageViewEventCardDetailTabProps {
   event: EventType;
   mode: EventModeType;
+  stateActiveTab: StateObject<EventCardTabNameType>;
   stateTags: StateObject<EventTagObjectType>;
   type: ScreenSizeCategoryType;
   validateForm?: () => void;
 }
 
-export function PageViewEventBody({
+export function PageViewEventCardDetailTab({
   event,
   mode,
+  stateActiveTab,
   stateTags,
   validateForm,
-}: PageViewEventBodyProps) {
+}: PageViewEventCardDetailTabProps) {
   const { users } = useIdentification()[0];
   const {
     location,
@@ -209,7 +212,7 @@ export function PageViewEventBody({
   );
 
   const renderEventDetails = useMemo(
-    () => <PageViewEventCardDetail details={details} mode={mode} />,
+    () => <PageViewEventCardDetailTabDetail details={details} mode={mode} />,
     [details, mode]
   );
 
