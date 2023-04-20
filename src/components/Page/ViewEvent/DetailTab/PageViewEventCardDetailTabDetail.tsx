@@ -1,17 +1,17 @@
 import { Icon } from "semantic-ui-react";
 import clsx from "clsx";
-import { PageViewEventCardDetailEditor } from "@/components";
+import { PageViewEventCardDetailTabDetailEditor } from "@/components";
 import { EventDetailType, EventDetailUnionType, EventModeType } from "@/types";
 
-export interface PageViewEventCardDetailProps {
+export interface PageViewEventCardDetailTabDetailProps {
   details: EventDetailType[];
   mode: EventModeType;
 }
 
-export function PageViewEventCardDetail({
+export function PageViewEventCardDetailTabDetail({
   details,
   mode,
-}: PageViewEventCardDetailProps) {
+}: PageViewEventCardDetailTabDetailProps) {
   return (
     <table className="EventDetailsTable border-collapse mt-4">
       <tbody>
@@ -46,7 +46,7 @@ export function PageViewEventCardDetail({
                 {mode === "view"
                   ? viewElement || moddedValue || rawValue || "-"
                   : editElement ?? (
-                      <PageViewEventCardDetailEditor
+                      <PageViewEventCardDetailTabDetailEditor
                         name={id}
                         defaultValue={rawValue}
                         placeholder={placeholder}
