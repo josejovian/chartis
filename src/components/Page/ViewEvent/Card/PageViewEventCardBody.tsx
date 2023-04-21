@@ -332,9 +332,14 @@ export function PageViewEventBody({
         initialValues={{
           comment: "",
         }}
-        onSubmit={handlePostComment}
+        onSubmit={(values, { resetForm }) => {
+          handlePostComment(values);
+          resetForm();
+        }}
         validationSchema={Yup.object().shape({
-          comment: Yup.string().max(500, "Too Long!").required("Required"),
+          comment: Yup.string()
+            .max(500, "Your comment is too Long!")
+            .required("Required"),
         })}
       >
         {({ isSubmitting, submitForm, isValid, dirty, errors, values }) => (
