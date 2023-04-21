@@ -27,7 +27,6 @@ export function PageHomeSideBar({
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
   const stateIdentification = useIdentification();
-  const identification = stateIdentification[0];
 
   const renderTitle = useMemo(
     () => (
@@ -68,13 +67,13 @@ export function PageHomeSideBar({
           <EventCard
             key={`EventCard_${event.id}`}
             event={event}
-            identification={identification}
+            stateIdentification={stateIdentification}
             updateEvent={updateEvent}
           />
         ))}
       </div>
     ),
-    [events, identification, updateEvent]
+    [events, stateIdentification, updateEvent]
   );
 
   const renderEmpty = useMemo(

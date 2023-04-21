@@ -304,7 +304,7 @@ export function PageViewEventCard({
             stateDeleting={stateDeleting}
             stateModalDelete={stateModalDelete}
             stateMode={stateMode}
-            identification={identification}
+            stateIdentification={stateIdentification}
             onDelete={handleDeleteEvent}
             updateEvent={updateEvent}
           />
@@ -327,7 +327,7 @@ export function PageViewEventCard({
       stateDeleting,
       stateModalDelete,
       stateMode,
-      identification,
+      stateIdentification,
       handleDeleteEvent,
       updateEvent,
       stateSubmitting,

@@ -3,7 +3,7 @@ import { USER_TYPES } from "@/consts";
 
 export interface UserType {
   name: string;
-  subscribedEvents?: string[];
+  subscribedEvents?: Record<string, number>;
 }
 
 export type UserObjectType = User | null;

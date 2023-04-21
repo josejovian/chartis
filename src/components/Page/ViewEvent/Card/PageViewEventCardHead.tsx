@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Button } from "semantic-ui-react";
+import { Button, Label } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventThumbnail,
@@ -20,7 +20,7 @@ import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventHeadProps {
   event: EventType;
-  identification: IdentificationType;
+  stateIdentification: StateObject<IdentificationType>;
   onDelete: () => void;
   stateActiveTab: StateObject<EventCardTabNameType>;
   stateDeleting?: StateObject<boolean>;
@@ -32,7 +32,7 @@ export interface PageViewEventHeadProps {
 
 export function PageViewEventHead({
   event,
-  identification,
+  stateIdentification,
   onDelete,
   stateActiveTab,
   stateDeleting,
@@ -44,6 +44,8 @@ export function PageViewEventHead({
   const [activeTab, setActiveTab] = stateActiveTab;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mode, setMode] = stateMode;
+
+  const identification = stateIdentification[0];
 
   const crumb = useMemo(
     () =>
@@ -86,7 +88,7 @@ export function PageViewEventHead({
           <Button
             key={`ModalViewEvent_Tab-${name}`}
             className={clsx(
-              "!rounded-none !m-0 !rounded-t-md !h-fit",
+              "!flex !items-center !rounded-none !m-0 !rounded-t-md !h-11",
               activeTab === id &&
                 "!bg-white hover:!bg-gray-100 active:!bg-gray-200 focus:!bg-gray-200"
             )}
@@ -94,11 +96,16 @@ export function PageViewEventHead({
             onClick={onClick}
           >
             {name}
+            {id === "updates" && (
+              <Label className="!ml-2 !py-1.5" color="grey">
+                {event.version ?? 0}
+              </Label>
+            )}
           </Button>
         ))}
       </div>
     ),
-    [activeTab, tabs, type]
+    [activeTab, event, tabs, type]
   );
 
   const renderActionTabs = useMemo(
@@ -106,7 +113,7 @@ export function PageViewEventHead({
       <div className="flex items-between p-4 gap-4">
         <EventButtonFollow
           event={event}
-          identification={identification}
+          stateIdentification={stateIdentification}
           size={type === "mobile" ? "tiny" : undefined}
           updateEvent={updateEvent}
         />
@@ -123,9 +130,10 @@ export function PageViewEventHead({
     ),
     [
       event,
-      identification,
+      stateIdentification,
       type,
       updateEvent,
+      identification,
       handleEdit,
       onDelete,
       stateDeleting,
