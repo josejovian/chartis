@@ -27,13 +27,14 @@ import {
   ScreenSizeCategoryType,
   StateObject,
   CommentType,
+  DatabaseCommentType,
 } from "@/types";
 import { useIdentification } from "@/hooks";
 import * as Yup from "yup";
-import { auth } from "@/firebase";
-// , db, readData, createData }
-// import pushid from "pushid";
-// import { increment, ref, update } from "firebase/database";
+import { auth, createData } from "@/firebase";
+import { readData, updateData } from "@/firebase/getterSetter";
+import pushid from "pushid";
+import { increment } from "firebase/firestore";
 
 export interface PageViewEventBodyProps {
   stateActiveTab: StateObject<number>;
@@ -53,7 +54,7 @@ export function PageViewEventBody({
 }: PageViewEventBodyProps) {
   const { users } = useIdentification()[0];
   const {
-    // id,
+    id,
     location,
     authorId,
     organizer,
@@ -61,12 +62,10 @@ export function PageViewEventBody({
     endDate,
     description,
     postDate,
-    // commentCount,
   } = event;
   const [tags, setTags] = stateTags;
   const activeTab = stateActiveTab[0];
-  const [comments] = useState<CommentType[]>([]);
-  // const { handleUpdateEvent } = useSearchEvent({});
+  const [comments, setComments] = useState<CommentType[]>([]);
 
   const renderEventTags = useMemo(
     () => (
@@ -267,42 +266,37 @@ export function PageViewEventBody({
     [description, mode]
   );
 
-  // const handleFetchComment = useCallback(async () => {
-  //   const rawData = await readData("comments",[]);
-  //   const data = Object.entries(rawData ?? {})
-  //     .reduce((arr: CommentType[], [k, v]: any) => {
-  //       arr.push({ commentId: k, ...v });
-  //       return arr;
-  //     }, [])
-  //     .sort((a, b) => b.postDate - a.postDate);
+  const handleFetchComment = useCallback(async () => {
+    const rawData = await readData("comments", id);
+    const data = Object.entries(rawData ?? {})
+      .reduce((arr: CommentType[], [k, v]: any) => {
+        arr.push({ commentId: k, ...v });
+        return arr;
+      }, [])
+      .sort((a, b) => b.postDate - a.postDate) as CommentType[];
 
-  //   setComments(data);
-  // }, [id]);
+    setComments(data);
+  }, [id]);
 
-  // const handlePostComment = useCallback(
-  //   async (values: any) => {
-  //     const poster = auth.currentUser;
-  //     const commentId = pushid();
-  //     const newComment = {
-  //       authorId: poster?.uid,
-  //       authorName: poster?.displayName,
-  //       postDate: new Date().getTime(),
-  //       text: values.comment,
-  //     };
+  const handlePostComment = useCallback(
+    async (values: any) => {
+      const poster = auth.currentUser;
+      const commentId = pushid();
+      const newComment = {} as DatabaseCommentType;
+      newComment[commentId] = {
+        commentId: commentId,
+        authorId: poster?.uid as string,
+        authorName: poster?.displayName as string,
+        postDate: new Date().getTime(),
+        text: values.comment,
+      };
 
-  //     const updates: Record<string, unknown> = {};
-
-  //     updates[`/events/${id}/commentCount`] = increment(1);
-
-  //     await update(ref(db), updates);
-  //     await setDataToPath(`/comments/${id}/${commentId}`, newComment).catch(
-  //       () => {
-  //         updates[`/events/${id}/commentCount`] = increment(-1);
-  //       }
-  //     );
-  //   },
-  //   [id]
-  // );
+      createData(`comments`, newComment, id, true).then(() => {
+        updateData("events", id, { commentCount: increment(1) });
+      });
+    },
+    [id]
+  );
 
   const renderCommentCard = useCallback(
     (comment: CommentType) => (
@@ -338,9 +332,7 @@ export function PageViewEventBody({
         initialValues={{
           comment: "",
         }}
-        onSubmit={() => {
-          return undefined;
-        }}
+        onSubmit={handlePostComment}
         validationSchema={Yup.object().shape({
           comment: Yup.string().max(500, "Too Long!").required("Required"),
         })}
@@ -388,13 +380,13 @@ export function PageViewEventBody({
         )}
       </Formik>
     ),
-    []
+    [handlePostComment]
   );
 
   const renderEventCardContent = useMemo(() => {
     const isLoggedIn = auth.currentUser;
     if (activeTab === 1) {
-      // handleFetchComment();
+      handleFetchComment();
 
       return (
         <div className="flex flex-col gap-8 pt-6">
@@ -416,6 +408,7 @@ export function PageViewEventBody({
   }, [
     activeTab,
     comments,
+    handleFetchComment,
     renderCommentCard,
     renderCommentInput,
     renderEventCreators,

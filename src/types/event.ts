@@ -1,3 +1,4 @@
+import { FieldValue } from "firebase/firestore";
 import { HTMLInputTypeAttribute, ReactNode } from "react";
 import type { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
 
@@ -14,10 +15,10 @@ export interface EventType {
   thumbnailSrc?: string;
   startDate: number;
   endDate?: number;
-  subscriberCount?: number;
+  subscriberCount?: number | FieldValue;
   subscriberIds?: string[];
-  guestSubscriberCount?: number;
-  commentCount?: number;
+  guestSubscriberCount?: number | FieldValue;
+  commentCount?: number | FieldValue;
   tags: EventTagObjectType;
 }
 
