@@ -24,7 +24,7 @@ import {
   StateObject,
 } from "@/types";
 import { EVENT_EMPTY } from "@/consts";
-import { createData } from "@/firebase";
+import { createData } from "@/firebase/getterSetter";
 
 export interface ModalViewEventProps {
   className?: string;
