@@ -1,28 +1,33 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fs } from "@/firebase";
 import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
-import { EventType, IdentificationType } from "@/types";
+import { EventType, IdentificationType, StateObject } from "@/types";
 import { sleep } from "@/utils";
 import { useToast } from "@/hooks";
-import { doc, increment, updateDoc } from "firebase/firestore";
+import { doc, increment, updateDoc, writeBatch } from "firebase/firestore";
+import {
+  FIREBASE_COLLECTION_EVENTS,
+  FIREBASE_COLLECTION_USERS,
+} from "@/consts";
 
 export interface EventButtonFollowProps {
   event: EventType;
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
-  identification: IdentificationType;
+  stateIdentification: StateObject<IdentificationType>;
   size?: SemanticSIZES;
 }
 
 export function EventButtonFollow({
   event,
   updateEvent,
-  identification,
+  stateIdentification,
   size,
 }: EventButtonFollowProps) {
   const { addToastPreset } = useToast();
 
   const { id, subscriberIds = [], guestSubscriberCount } = event;
 
+  const [identification, setIdentification] = stateIdentification;
   const { permission, user, users } = identification;
 
   const [subscriberCount, setSubscriberCount] = useState(
@@ -52,8 +57,6 @@ export function EventButtonFollow({
 
       const dbRef = doc(fs, "events", id);
 
-      // Atomically increment the population of the city by 50.
-
       const newSubscribe = subscribed
         ? (() => {
             const temp = { ...subscribe };
@@ -62,7 +65,7 @@ export function EventButtonFollow({
           })()
         : {
             ...subscribe,
-            [id]: true,
+            [id]: event.version ?? 0,
           };
 
       setSubscribed((prev) => !prev);
@@ -76,6 +79,7 @@ export function EventButtonFollow({
           (subscribed ? -1 : 1),
       })
         .then(() => {
+          // Client side
           updateEvent(id, {
             subscriberCount:
               subscriberIds.length +
@@ -92,6 +96,8 @@ export function EventButtonFollow({
         });
       setLoading(false);
     } else if (user && user.uid && users[user.uid]) {
+      const batch = writeBatch(fs);
+
       handleUpdateSubscribeClientSide(subscribed);
       setLoading(true);
 
@@ -100,44 +106,86 @@ export function EventButtonFollow({
         ? subscriberIds.filter((uid) => uid !== user.uid)
         : [...subscriberIds.filter((uid) => uid !== user.uid), user.uid];
 
+      const subscribedEvents = users[user.uid].subscribedEvents;
+
       // User's subscribed events
-      const subscribedEvents = users[user.uid].subscribedEvents ?? [];
       const updatedSubscribedEvents = subscribed
-        ? subscribedEvents.filter((eventId) => eventId !== id)
-        : [...subscribedEvents.filter((eventId) => eventId !== id), id];
+        ? (() => {
+            const temp = { ...subscribedEvents };
+            delete temp[id];
+            return temp;
+          })()
+        : {
+            ...subscribedEvents,
+            [id]: event.version ?? 0,
+          };
 
       setSubscribed((prev) => !prev);
       await sleep(200);
 
-      const dbRef = doc(fs, "events", id);
-      await updateDoc(dbRef, {
+      const dbRef = doc(fs, FIREBASE_COLLECTION_EVENTS, id);
+      const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.uid);
+
+      batch.update(dbRef, {
         subscriberIds: updatedSubscribedIds,
-        subscribedEvents: updatedSubscribedEvents,
         subscriberCount:
           updatedSubscribedIds.length + (guestSubscriberCount ?? 0),
-      })
-        .then(() => {
-          addToastPreset(subscribed ? "unfollow" : "follow");
-          updateEvent(id, {
-            subscriberIds: updatedSubscribedIds,
-            subscriberCount:
-              updatedSubscribedIds.length + (guestSubscriberCount ?? 0),
-          });
-        })
-        .catch(() => {
-          addToastPreset("post-fail");
-          setSubscribed((prev) => !prev);
+      });
+
+      batch.update(userRef, {
+        subscribedEvents: updatedSubscribedEvents,
+      });
+
+      // Client side
+      updateEvent(id, {
+        subscriberIds: updatedSubscribedIds,
+        subscriberCount:
+          updatedSubscribedIds.length + (guestSubscriberCount ?? 0),
+      });
+      setIdentification((prev) => ({
+        ...prev,
+        users: {
+          ...prev.users,
+          [user.uid]: {
+            ...prev.users[user.uid],
+            subscribedEvents: {
+              ...prev.users[user.uid].subscribedEvents,
+              ...(subscribed
+                ? (() => {
+                    const temp = prev.users[user.uid].subscribedEvents ?? {};
+                    delete temp[id];
+                    return temp;
+                  })()
+                : {
+                    [id]: event.version ?? 0,
+                  }),
+            },
+          },
+        },
+      }));
+
+      await batch.commit().catch(() => {
+        updateEvent(id, {
+          subscriberIds,
+          subscriberCount,
         });
+        addToastPreset("post-fail");
+        setSubscribed((prev) => !prev);
+      });
+
       setLoading(false);
     }
   }, [
     addToastPreset,
+    event.version,
     guestSubscriberCount,
     handleUpdateSubscribeClientSide,
     id,
     loading,
     permission,
+    setIdentification,
     subscribed,
+    subscriberCount,
     subscriberIds,
     updateEvent,
     user,

@@ -3,4 +3,5 @@ export interface NotificationType {
   type: string;
   eventId: string;
   commentId?: string;
+  userId?: string;
 }

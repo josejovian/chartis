@@ -42,7 +42,6 @@ export function PageSearchEventCard({
   const sortBy = stateSortBy[0];
   const sortDescending = stateSortDescending[0];
   const stateIdentification = useIdentification();
-  const identification = stateIdentification[0];
 
   const sortCaption = useMemo(
     () =>
@@ -69,11 +68,11 @@ export function PageSearchEventCard({
           key={`PageSearchEventCard_${event.id}`}
           type={type === "mobile" ? "vertical" : "horizontal"}
           event={event}
-          identification={identification}
+          stateIdentification={stateIdentification}
           updateEvent={updateEvent}
         />
       )),
-    [events, identification, type, updateEvent]
+    [events, stateIdentification, type, updateEvent]
   );
 
   const renderEmpty = useMemo(
