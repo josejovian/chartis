@@ -292,7 +292,7 @@ export function PageViewEventBody({
       };
 
       createData(`comments`, newComment, id, true).then(() => {
-        updateData("events", id, { commentCount: increment(1) });
+        updateData("events", id, { commentCount: increment(1) as any });
       });
     },
     [id]
