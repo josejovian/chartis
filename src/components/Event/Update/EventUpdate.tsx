@@ -1,24 +1,29 @@
-import { EventUpdateBatchType } from "@/types";
-import { EVENT_UPDATE_TERM } from "@/consts";
-import clsx from "clsx";
-import { UserPicture } from "@/components/User";
-import { getTimeDifference } from "@/utils";
 import { useMemo } from "react";
 import { Icon } from "semantic-ui-react";
+import clsx from "clsx";
+import { UserPicture } from "@/components";
+import { getTimeDifference } from "@/utils";
+import { EVENT_UPDATE_TERM } from "@/consts";
+import { EventUpdateNameType } from "@/types";
 
 export interface EventUpdateProps {
-  batch: EventUpdateBatchType;
-  idx: number;
+  authorId: string;
+  eventId: string;
+  date: number;
+  type: EventUpdateNameType;
+  valueNew?: string;
+  valuePrevious?: string;
   last?: boolean;
 }
 
-export function EventUpdate({ batch, idx, last }: EventUpdateProps) {
-  const { authorId, date } = batch;
-  const { type, valueNew, valuePrevious } = useMemo(
-    () => batch.updates[idx],
-    [batch, idx]
-  );
-
+export function EventUpdate({
+  authorId,
+  date,
+  type,
+  valueNew,
+  valuePrevious,
+  last,
+}: EventUpdateProps) {
   const renderIcon = useMemo(() => {
     switch (type) {
       case "update-description":

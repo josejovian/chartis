@@ -6,14 +6,23 @@ import {
   useMemo,
   useState,
 } from "react";
+import { fs } from "@/firebase";
+import { doc, increment, runTransaction, writeBatch } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { Formik } from "formik";
 import pushid from "pushid";
-import { LayoutCard, PageViewEventFoot, PageViewEventHead } from "@/components";
+import {
+  LayoutCard,
+  PageViewEventFoot,
+  PageViewEventHead,
+  PageViewEventCardDetailTab,
+  PageViewEventCardUpdatesTab,
+} from "@/components";
 import { useIdentification, useEvent, useToast } from "@/hooks";
 import {
   SchemaEvent,
   compareEventValues,
+  getLocalTimeInISO,
   sleep,
   validateEndDate,
   validateStartDate,
@@ -26,17 +35,14 @@ import {
   StateObject,
   EventCardTabNameType,
   EventUpdateBatchType,
+  EventUpdateArrayType,
 } from "@/types";
 import {
   EVENT_EMPTY,
   FIREBASE_COLLECTION_EVENTS,
   FIREBASE_COLLECTION_UPDATES,
+  FIREBASE_COLLECTION_USERS,
 } from "@/consts";
-import { createData, fs } from "@/firebase";
-import { PageViewEventCardDetailTab } from "../DetailTab";
-import { PageViewEventCardUpdatesTab } from "../UpdatesTab";
-import { doc, writeBatch } from "firebase/firestore";
-import { increment } from "firebase/database";
 
 export interface ModalViewEventProps {
   className?: string;
@@ -78,10 +84,9 @@ export function PageViewEventCard({
     );
 
     if (object.startDate)
-      object.startDate = new Date(object.startDate).toISOString().slice(0, 16);
+      object.startDate = getLocalTimeInISO(object.startDate);
 
-    if (object.endDate)
-      object.endDate = new Date(object.endDate).toISOString().slice(0, 16);
+    if (object.endDate) object.endDate = getLocalTimeInISO(object.endDate);
 
     return object;
   }, [event, mode]);
@@ -100,7 +105,6 @@ export function PageViewEventCard({
       const eventId = mode === "create" ? pushid() : event.id;
       const defaultValues = {
         postDate: new Date().getTime(),
-        editDate: new Date().getTime(),
         subscriberCount: 0,
         guestSubscriberCount: 0,
         subscriberIds: [],
@@ -113,6 +117,7 @@ export function PageViewEventCard({
         id: eventId,
         authorId: user.uid,
         authorName: user.displayName as string,
+        version: (event.version ?? 0) + (mode === "edit" ? 1 : 0),
         tags,
       };
 
@@ -140,11 +145,18 @@ export function PageViewEventCard({
       setSubmitting(true);
 
       const { newEvent, eventId } = data;
+      const eventRef = doc(fs, FIREBASE_COLLECTION_EVENTS, eventId);
+      const updatesRef = doc(fs, FIREBASE_COLLECTION_UPDATES, eventId);
 
       await sleep(200);
 
       if (mode === "create") {
-        await createData("events", newEvent, newEvent.id).catch(() => {
+        const batch = writeBatch(fs);
+        batch.set(eventRef, newEvent);
+        batch.set(updatesRef, {
+          updates: [],
+        });
+        await batch.commit().catch(() => {
           addToastPreset("post-fail");
           setSubmitting(false);
         });
@@ -163,41 +175,60 @@ export function PageViewEventCard({
         );
 
         try {
-          const batch = writeBatch(fs);
-
-          const eventRef = doc(fs, FIREBASE_COLLECTION_EVENTS, eventId);
-          batch.update(eventRef, {
-            ...(newEvent as Partial<EventType>),
-            version: increment(Object.values(changes).length),
-          });
-
           const eventBatchUpdateId = pushid();
-          const updatesRef = doc(
-            fs,
-            FIREBASE_COLLECTION_UPDATES,
-            eventBatchUpdateId
-          );
-          batch.set(updatesRef, {
-            id: eventBatchUpdateId,
-            eventId: event.id,
-            authorId: user.uid,
-            date: new Date().getTime(),
-            updates: Object.values(changes),
-          } as EventUpdateBatchType);
 
-          await batch.commit();
+          await runTransaction(fs, async (transaction) => {
+            const evtDoc = await transaction.get(eventRef);
+            const updatesDoc = await transaction.get(updatesRef);
+            const evt = evtDoc.exists() ? (evtDoc.data() as EventType) : event;
+            const updates = updatesDoc.exists()
+              ? (updatesDoc.data() as EventUpdateArrayType).updates
+              : [];
 
-          await sleep(200);
-          addToast({
-            title: "Event Updated",
-            description: "",
-            variant: "success",
+            if (evt.subscriberIds)
+              evt.subscriberIds.forEach((userId) => {
+                const userRef = doc(fs, FIREBASE_COLLECTION_USERS, userId);
+                transaction.update(userRef, {
+                  notificationCount: increment(1),
+                });
+              });
+
+            transaction.update(eventRef, {
+              ...(newEvent as Partial<EventType>),
+              version: increment(1),
+            });
+
+            transaction.update(updatesRef, {
+              updates: [
+                ...updates,
+                {
+                  id: eventBatchUpdateId,
+                  eventId: event.id,
+                  authorId: user.uid,
+                  date: new Date().getTime(),
+                  updates: changes,
+                } as EventUpdateBatchType,
+              ],
+            });
+          }).then(async () => {
+            await sleep(200);
+            router.replace(`/event/${event.id}/`);
+            addToast({
+              title: "Event Updated",
+              description: "",
+              variant: "success",
+            });
+            await sleep(200);
+            setMode("view");
+            setEvent((prev) => ({
+              ...newEvent,
+              version: (prev.version ?? 0) + 1,
+            }));
+            updateEvent(event.id, newEvent);
+            setSubmitting(false);
+            if (eventPreviousValues && eventPreviousValues.current)
+              eventPreviousValues.current = newEvent;
           });
-          setMode("view");
-          setEvent(newEvent);
-          setSubmitting(false);
-          if (eventPreviousValues && eventPreviousValues.current)
-            eventPreviousValues.current = newEvent;
         } catch (e) {
           addToastPreset("post-fail");
           setSubmitting(false);
@@ -215,6 +246,7 @@ export function PageViewEventCard({
       setEvent,
       setMode,
       setSubmitting,
+      updateEvent,
       user,
     ]
   );
@@ -257,11 +289,16 @@ export function PageViewEventCard({
 
   const renderCardActiveContentTab = useCallback(
     ({
-      submitForm,
       validateForm,
+      setFieldValue,
     }: {
       submitForm?: () => void;
       validateForm?: () => void;
+      setFieldValue?: (
+        field: string,
+        value: any,
+        shouldValidate?: boolean | undefined
+      ) => void;
     }) => {
       switch (activeTab) {
         case "detail":
@@ -270,29 +307,36 @@ export function PageViewEventCard({
               event={event}
               type={type}
               mode={mode}
-              stateActiveTab={stateActiveTab}
               stateTags={stateTags}
               validateForm={validateForm}
+              setFieldValue={setFieldValue}
             />
           );
         case "updates":
           return <PageViewEventCardUpdatesTab event={event} />;
       }
     },
-    [activeTab, event, mode, stateActiveTab, stateTags, type]
+    [activeTab, event, mode, stateTags, type]
   );
 
   const renderCardContents = useCallback(
     ({
       submitForm,
       validateForm,
+      setFieldValue,
     }: {
       submitForm?: () => void;
       validateForm?: () => void;
+      setFieldValue?: (
+        field: string,
+        value: any,
+        shouldValidate?: boolean | undefined
+      ) => void;
     }) => {
       const activeTabContent = renderCardActiveContentTab({
         submitForm,
         validateForm,
+        setFieldValue,
       });
 
       return (
@@ -356,11 +400,12 @@ export function PageViewEventCard({
       validateOnChange
     >
       {/** @todos Submit button seems to not work unless you do this. */}
-      {({ submitForm, validateForm }) => (
+      {({ submitForm, validateForm, setFieldValue }) => (
         <LayoutCard className={className} form>
           {renderCardContents({
             submitForm,
             validateForm,
+            setFieldValue,
           })}
         </LayoutCard>
       )}

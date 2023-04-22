@@ -135,7 +135,7 @@ export function useEvent({ type }: useEventProps) {
       const subscribedEventIds =
         user && user.uid
           ? identification.users[user.uid].subscribedEvents
-          : Object.keys(JSON.parse(localStorage.getItem("subscribe") ?? "{}"));
+          : JSON.parse(localStorage.getItem("subscribe") ?? "{}");
 
       let eventArray = [] as EventType[];
       if (!events) {
@@ -143,9 +143,7 @@ export function useEvent({ type }: useEventProps) {
           where("id", "in", subscribedEventIds),
         ]);
       } else {
-        eventArray = events.filter((event) =>
-          subscribedEventIds?.includes(event.id)
-        );
+        eventArray = events.filter((event) => subscribedEventIds[event.id]);
       }
 
       return eventArray;

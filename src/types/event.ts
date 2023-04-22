@@ -113,7 +113,6 @@ export type EventUpdateNameType =
   | "initial-post";
 
 export interface EventUpdateType {
-  type: EventUpdateNameType;
   valuePrevious?: string;
   valueNew?: string;
 }
@@ -121,7 +120,12 @@ export interface EventUpdateType {
 export interface EventUpdateBatchType {
   id: string;
   eventId: string;
-  updates: EventUpdateType[];
+  updates: Record<EventUpdateNameType, EventUpdateType>;
   authorId: string;
   date: number;
+  version?: number;
+}
+
+export interface EventUpdateArrayType {
+  updates: EventUpdateBatchType[];
 }

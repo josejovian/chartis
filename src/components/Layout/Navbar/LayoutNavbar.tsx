@@ -57,6 +57,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         {
           name: "Notification",
           icon: "bell",
+          href: "/notifications",
         },
         {
           name: "Profile",

@@ -50,7 +50,7 @@ export function EventButtonFollow({
     if (permission === "guest") {
       const subscribe = JSON.parse(
         localStorage.getItem("subscribe") ?? "{}"
-      ) as Record<string, boolean>;
+      ) as Record<string, number>;
 
       handleUpdateSubscribeClientSide(subscribed);
       setLoading(true);
@@ -92,7 +92,7 @@ export function EventButtonFollow({
           addToastPreset("post-fail");
           setLoading(false);
           setSubscribed((prev) => !prev);
-          handleUpdateSubscribeClientSide(subscribe[id]);
+          handleUpdateSubscribeClientSide(subscribe[id] !== undefined);
         });
       setLoading(false);
     } else if (user && user.uid && users[user.uid]) {
