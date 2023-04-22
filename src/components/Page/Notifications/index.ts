@@ -1,1 +1,1 @@
-export * from "./PageNotificationsMain";
+export * from "./PageNotificationsCard";

@@ -192,6 +192,14 @@
       padding: 1rem !important;
     }
   }
+
+  .NotificationCard ul {
+    list-style-type: disc;
+  }
+
+  .NotificationCard:hover :is(p, li) {
+    text-decoration: underline;
+  }
 }
 @tailwind components;
 @layer utilities {

@@ -1,4 +1,4 @@
-import { UserType, EventType, EventUpdateBatchType } from "@/types";
+import { UserType, EventType, EventUpdateArrayType } from "@/types";
 import pushid from "pushid";
 import {
   type DocumentData,
@@ -17,7 +17,7 @@ import { fs } from "./config";
 type FIREBASE_COLLECTION = {
   users: UserType;
   events: EventType;
-  updates: EventUpdateBatchType;
+  updates: EventUpdateArrayType;
 };
 
 export async function createData<

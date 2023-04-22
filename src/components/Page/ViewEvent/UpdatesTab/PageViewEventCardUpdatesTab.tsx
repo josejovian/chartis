@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { EventType, EventUpdateBatchType } from "@/types";
+import { readData } from "@/firebase";
 import clsx from "clsx";
-import { FIREBASE_COLLECTION_UPDATES } from "@/consts";
-import { fs } from "@/firebase";
-import { EventUpdate } from "@/components/Event/Update";
-import { query, orderBy, collection, where, getDocs } from "firebase/firestore";
+import { EventUpdate } from "@/components";
+import { EventType, EventUpdateBatchType, EventUpdateNameType } from "@/types";
 
 interface PageViewEventCardUpdatesTabProps {
   event: EventType;
@@ -16,19 +14,11 @@ export function PageViewEventCardUpdatesTab({
   const [updates, setUpdates] = useState<EventUpdateBatchType[]>();
 
   const handleGetEventUpdates = useCallback(async () => {
-    const updatesRef = collection(fs, FIREBASE_COLLECTION_UPDATES);
+    if (event.version === 0) return;
 
-    const eventUpdatesQuery = query(
-      updatesRef,
-      where("eventId", "==", event.id),
-      orderBy("date", "desc")
-    );
+    const eventUpdates = await readData("updates", event.id);
 
-    const eventUpdates = (await getDocs(eventUpdatesQuery)).docs;
-
-    setUpdates(
-      eventUpdates.map((update) => update.data()) as EventUpdateBatchType[]
-    );
+    if (eventUpdates) setUpdates(eventUpdates.updates);
   }, [event]);
 
   useEffect(() => {
@@ -41,16 +31,23 @@ export function PageViewEventCardUpdatesTab({
       updates.map(
         (batch, idx2) =>
           batch &&
-          batch.updates.map((_, idx) => (
-            <EventUpdate
-              key={`Update_${batch.id}_${idx}`}
-              batch={batch}
-              idx={idx}
-              last={
-                idx2 === updates.length - 1 && idx === batch.updates.length - 1
-              }
-            />
-          ))
+          Object.entries(batch.updates).map(
+            ([type, { valueNew, valuePrevious }], idx) => (
+              <EventUpdate
+                key={`Update_${batch.id}_${idx}`}
+                authorId={batch.authorId}
+                date={batch.date}
+                eventId={batch.eventId}
+                type={type as EventUpdateNameType}
+                valueNew={valueNew}
+                valuePrevious={valuePrevious}
+                last={
+                  idx2 === updates.length - 1 &&
+                  idx === Object.keys(batch.updates).length - 1
+                }
+              />
+            )
+          )
       ),
     [updates]
   );

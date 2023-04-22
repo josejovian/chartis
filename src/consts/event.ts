@@ -18,6 +18,7 @@ export const EVENT_EMPTY: EventType = {
   postDate: 0,
   startDate: 0,
   tags: {},
+  version: 0,
 };
 
 export const EVENT_DUMMY_1: EventType = {

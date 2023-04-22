@@ -9,7 +9,6 @@ import {
   EventUpdateNameType,
   EventUpdateType,
 } from "@/types";
-import pushid from "pushid";
 import { strDateTime } from "./date";
 
 export function filterEventsFromTags(
@@ -112,7 +111,7 @@ export function compareEventValues(before: EventType, after: EventType) {
     ["name", "update-title"],
   ];
 
-  const updates: Record<string, EventUpdateType> = {};
+  const updates: Partial<Record<EventUpdateNameType, EventUpdateType>> = {};
 
   pairs.forEach(([key, updateType]) => {
     const sameTags = Object.keys(before["tags"]).some((tag) =>
@@ -120,9 +119,7 @@ export function compareEventValues(before: EventType, after: EventType) {
     );
 
     if ((key === "tags" && !sameTags) || before[key] !== after[key]) {
-      const updateId = pushid();
-      updates[updateId] = {
-        type: updateType,
+      updates[updateType] = {
         valuePrevious: stringifyEventValue(before, key),
         valueNew: stringifyEventValue(after, key),
       };

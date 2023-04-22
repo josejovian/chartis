@@ -90,3 +90,9 @@ export function getTimeDifference(timeBefore: number, timeAfter?: number) {
 
   return timeAfter < timeBefore ? `in ${string}` : `${string} ago`;
 }
+
+export function getLocalTimeInISO(time: number) {
+  const offset = new Date().getTimezoneOffset() * 60 * 1000;
+  const result = new Date(time).getTime() - offset;
+  return new Date(result).toISOString().substring(0, 16);
+}
