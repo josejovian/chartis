@@ -46,7 +46,7 @@ export function ModalConfirmation({
           {cancelText}
         </Button>
         <Button
-          color="yellow"
+          color="red"
           onClick={onConfirm}
           loading={loading ? loading : false}
         >
