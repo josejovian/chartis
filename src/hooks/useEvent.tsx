@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import _ from "lodash";
-import { deleteData, readData } from "@/firebase";
 import { EVENT_SORT_CRITERIA } from "@/consts";
 import {
   EventSearchType,
@@ -11,6 +10,7 @@ import {
 import { sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
 import { QueryConstraint, orderBy, where } from "firebase/firestore";
+import { deleteData, readData } from "@/firebase/getterSetter";
 
 interface useEventProps {
   type?: EventSearchType;

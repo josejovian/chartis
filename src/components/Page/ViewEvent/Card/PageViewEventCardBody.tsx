@@ -1,12 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useMemo } from "react";
-import { Field } from "formik";
-import { Dropdown, Input, TextArea } from "semantic-ui-react";
+import { useCallback, useMemo, useState } from "react";
+import { Field, Formik } from "formik";
+import {
+  Button,
+  Dropdown,
+  Form,
+  Icon,
+  Input,
+  TextArea,
+} from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventTags,
   FormErrorMessage,
   PageViewEventCardDetail,
+  UserPicture,
 } from "@/components";
 import { getTimeDifference, strDateTime } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
@@ -18,10 +26,18 @@ import {
   EventType,
   ScreenSizeCategoryType,
   StateObject,
+  CommentType,
+  DatabaseCommentType,
 } from "@/types";
 import { useIdentification } from "@/hooks";
+import * as Yup from "yup";
+import { auth, createData } from "@/firebase";
+import { readData, updateData } from "@/firebase/getterSetter";
+import pushid from "pushid";
+import { increment } from "firebase/firestore";
 
 export interface PageViewEventBodyProps {
+  stateActiveTab: StateObject<number>;
   event: EventType;
   mode: EventModeType;
   stateTags: StateObject<EventTagObjectType>;
@@ -30,6 +46,7 @@ export interface PageViewEventBodyProps {
 }
 
 export function PageViewEventBody({
+  stateActiveTab,
   event,
   mode,
   stateTags,
@@ -37,6 +54,7 @@ export function PageViewEventBody({
 }: PageViewEventBodyProps) {
   const { users } = useIdentification()[0];
   const {
+    id,
     location,
     authorId,
     organizer,
@@ -46,6 +64,8 @@ export function PageViewEventBody({
     postDate,
   } = event;
   const [tags, setTags] = stateTags;
+  const activeTab = stateActiveTab[0];
+  const [comments, setComments] = useState<CommentType[]>([]);
 
   const renderEventTags = useMemo(
     () => (
@@ -246,22 +266,161 @@ export function PageViewEventBody({
     [description, mode]
   );
 
-  const renderEventCardContent = useMemo(
+  const handleFetchComment = useCallback(async () => {
+    const rawData = await readData("comments", id);
+    const data = Object.entries(rawData ?? {})
+      .reduce((arr: CommentType[], [k, v]: any) => {
+        arr.push({ commentId: k, ...v });
+        return arr;
+      }, [])
+      .sort((a, b) => b.postDate - a.postDate) as CommentType[];
+
+    setComments(data);
+  }, [id]);
+
+  const handlePostComment = useCallback(
+    async (values: any) => {
+      const poster = auth.currentUser;
+      const commentId = pushid();
+      const newComment = {} as DatabaseCommentType;
+      newComment[commentId] = {
+        commentId: commentId,
+        authorId: poster?.uid as string,
+        authorName: poster?.displayName as string,
+        postDate: new Date().getTime(),
+        text: values.comment,
+      };
+
+      createData(`comments`, newComment, id, true).then(() => {
+        updateData("events", id, { commentCount: increment(1) as any });
+      });
+    },
+    [id]
+  );
+
+  const renderCommentCard = useCallback(
+    (comment: CommentType) => (
+      <div
+        className="grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4"
+        key={comment.commentId}
+      >
+        <div
+          className={clsx(
+            "z-10 relative flex justify-center row-span-3 after:-z-2 text-white",
+            "after:content-[''] after:absolute after:top-0 after:right-1/2",
+            "after:h-full after:w-px after:translate-x-1/2 after:bg-slate-400"
+          )}
+        >
+          <UserPicture fullName={comment.authorName} />
+        </div>
+        <div className="flex gap-2.5 items-center h-8">
+          <div className="font-semibold text-xl">{comment.authorName}</div>
+          <div className="text-slate-400 text-[0.7rem] flex self-end pb-[0.15rem]">
+            {getTimeDifference(comment.postDate)}
+          </div>
+        </div>
+        <div className="flex items-center">{comment.text}</div>
+        <div className="flex items-center text-slate-400 text-sm">Report</div>
+      </div>
+    ),
+    []
+  );
+
+  const renderCommentInput = useMemo(
     () => (
+      <Formik
+        initialValues={{
+          comment: "",
+        }}
+        onSubmit={(values, { resetForm }) => {
+          handlePostComment(values);
+          resetForm();
+        }}
+        validationSchema={Yup.object().shape({
+          comment: Yup.string()
+            .max(500, "Your comment is too Long!")
+            .required("Required"),
+        })}
+      >
+        {({ isSubmitting, submitForm, isValid, dirty, errors, values }) => (
+          <Form className="flex flex-col items-end gap-2">
+            <Field name="comment">
+              {({ form: { touched, errors }, field, meta }: any) => (
+                <TextArea
+                  name="comment"
+                  className="!text-14px"
+                  style={{
+                    resize: "none",
+                    lineHeight: "1.25rem",
+                    height: "5.9rem",
+                    border: "0!important",
+                  }}
+                  onInput={(e) => {
+                    e.currentTarget.style.height = "6rem";
+                    e.currentTarget.style.height =
+                      e.currentTarget.scrollHeight + "px";
+                  }}
+                  placeholder="Discuss about the event here"
+                  {...field}
+                />
+              )}
+            </Field>
+            <div className="flex justify-between w-full">
+              <span className="-mt-5 ml-2 bg-white font-semibold text-red-500 text-12px">
+                {errors.comment !== "Required" ? errors.comment : ""}
+              </span>
+              <Button
+                className="ml-auto"
+                icon
+                type="submit"
+                onClick={submitForm}
+                color="yellow"
+                loading={isSubmitting}
+              >
+                <Icon name="paper plane" className="pr-6" />
+                Post
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    ),
+    [handlePostComment]
+  );
+
+  const renderEventCardContent = useMemo(() => {
+    const isLoggedIn = auth.currentUser;
+    if (activeTab === 1) {
+      handleFetchComment();
+
+      return (
+        <div className="flex flex-col gap-8 pt-6">
+          {isLoggedIn && renderCommentInput}
+          <div className="flex flex-col gap-4">
+            {comments && comments.map(renderCommentCard)}
+          </div>
+        </div>
+      );
+    }
+    return (
       <>
         {renderEventCreators}
         {renderEventName}
         {renderEventDetails}
         {renderEventDescription}
       </>
-    ),
-    [
-      renderEventCreators,
-      renderEventDescription,
-      renderEventDetails,
-      renderEventName,
-    ]
-  );
+    );
+  }, [
+    activeTab,
+    comments,
+    handleFetchComment,
+    renderCommentCard,
+    renderCommentInput,
+    renderEventCreators,
+    renderEventDescription,
+    renderEventDetails,
+    renderEventName,
+  ]);
 
   return (
     <div

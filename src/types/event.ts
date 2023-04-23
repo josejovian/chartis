@@ -17,6 +17,7 @@ export interface EventType {
   subscriberCount?: number;
   subscriberIds?: string[];
   guestSubscriberCount?: number;
+  commentCount?: number;
   tags: EventTagObjectType;
 }
 
@@ -75,6 +76,7 @@ export type EventThumbnailDisplayType =
 export interface EventModalTabType {
   name: string;
   onClick?: () => void;
+  count?: number;
 }
 
 export interface EventSortType {
