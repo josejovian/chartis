@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { Button, Modal } from "semantic-ui-react";
+import { Button, Modal, type SemanticCOLORS } from "semantic-ui-react";
 import { StateObject } from "@/types";
 
 export interface ConfirmationModalProps {
@@ -11,6 +11,7 @@ export interface ConfirmationModalProps {
   modalText?: string;
   confirmText?: string;
   cancelText?: string;
+  color?: SemanticCOLORS;
 }
 
 export function ModalConfirmation({
@@ -22,6 +23,7 @@ export function ModalConfirmation({
   modalText = "Are you sure?",
   confirmText = "Confirm",
   cancelText = "Cancel",
+  color = "yellow",
 }: ConfirmationModalProps) {
   const stateSelf = useState(false);
   const [open, setOpen] = stateOpen ?? stateSelf;
@@ -46,7 +48,7 @@ export function ModalConfirmation({
           {cancelText}
         </Button>
         <Button
-          color="red"
+          color={color}
           onClick={onConfirm}
           loading={loading ? loading : false}
         >

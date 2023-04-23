@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fs } from "@/firebase";
-import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
+import {
+  Button,
+  Label,
+  type SemanticSIZES,
+  type SemanticCOLORS,
+} from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
 import { sleep } from "@/utils";
 import { useToast } from "@/hooks";
@@ -11,6 +16,7 @@ export interface EventButtonFollowProps {
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   identification: IdentificationType;
   size?: SemanticSIZES;
+  color?: SemanticCOLORS;
 }
 
 export function EventButtonFollow({
@@ -18,6 +24,7 @@ export function EventButtonFollow({
   updateEvent,
   identification,
   size,
+  color = "yellow",
 }: EventButtonFollowProps) {
   const { addToastPreset } = useToast();
 
@@ -182,6 +189,7 @@ export function EventButtonFollow({
         size={size}
         onClick={handleFollowEvent}
         disabled={isAuthor}
+        color={isAuthor ? "grey" : "yellow"}
       >
         {subscribed ? "Unfollow" : "Follow"}
       </Button>
