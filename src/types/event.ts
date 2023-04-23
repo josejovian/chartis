@@ -18,6 +18,7 @@ export interface EventType {
   subscriberIds?: string[];
   guestSubscriberCount?: number;
   version?: number;
+  commentCount?: number;
   tags: EventTagObjectType;
 }
 
@@ -77,6 +78,7 @@ export interface EventCardTabType {
   id: EventCardTabNameType;
   name: string;
   onClick?: () => void;
+  count?: number;
 }
 
 export interface EventSortType {

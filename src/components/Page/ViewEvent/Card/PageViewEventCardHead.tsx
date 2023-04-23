@@ -31,10 +31,10 @@ export interface PageViewEventHeadProps {
 }
 
 export function PageViewEventHead({
+  stateActiveTab,
   event,
   stateIdentification,
   onDelete,
-  stateActiveTab,
   stateDeleting,
   stateModalDelete,
   stateMode,
@@ -71,9 +71,18 @@ export function PageViewEventHead({
         onClick: () => {
           setActiveTab("updates");
         },
+        count: event.version ?? 0,
+      },
+      {
+        id: "discussion",
+        name: "Discussion",
+        onClick: () => {
+          setActiveTab("discussion");
+        },
+        count: event.commentCount ?? 0,
       },
     ],
-    [setActiveTab]
+    [event.commentCount, event.version, setActiveTab]
   );
 
   const handleEdit = useCallback(() => {
@@ -84,7 +93,7 @@ export function PageViewEventHead({
   const renderDetailTabs = useMemo(
     () => (
       <div className="flex gap-4 px-4">
-        {tabs.map(({ id, name, onClick }) => (
+        {tabs.map(({ id, name, onClick, count }) => (
           <Button
             key={`ModalViewEvent_Tab-${name}`}
             className={clsx(
@@ -96,16 +105,16 @@ export function PageViewEventHead({
             onClick={onClick}
           >
             {name}
-            {id === "updates" && (
+            {count !== undefined && (
               <Label className="!ml-2 !py-1.5" color="grey">
-                {event.version ?? 0}
+                {count}
               </Label>
             )}
           </Button>
         ))}
       </div>
     ),
-    [activeTab, event, tabs, type]
+    [activeTab, tabs, type]
   );
 
   const renderActionTabs = useMemo(
