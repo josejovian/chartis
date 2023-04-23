@@ -17,6 +17,7 @@ import {
   PageViewEventHead,
   PageViewEventCardDetailTab,
   PageViewEventCardUpdatesTab,
+  PageViewEventCardDiscussionTab,
 } from "@/components";
 import { useIdentification, useEvent, useToast } from "@/hooks";
 import {
@@ -314,6 +315,8 @@ export function PageViewEventCard({
           );
         case "updates":
           return <PageViewEventCardUpdatesTab event={event} />;
+        case "discussion":
+          return <PageViewEventCardDiscussionTab event={event} />;
       }
     },
     [activeTab, event, mode, stateTags, type]

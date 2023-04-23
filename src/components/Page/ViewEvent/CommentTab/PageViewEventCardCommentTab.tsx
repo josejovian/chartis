@@ -3,10 +3,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { increment } from "firebase/firestore";
 import { createData, readData, updateData } from "@/firebase";
-import { Field, Form, Formik } from "formik";
+import { Field, Formik } from "formik";
 import * as Yup from "yup";
 import pushid from "pushid";
-import { Button, Icon, TextArea } from "semantic-ui-react";
+import { Button, Form, Icon, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import { UserPicture } from "@/components";
 import { getTimeDifference } from "@/utils";
@@ -107,12 +107,12 @@ export function PageViewEventCardDiscussionTab({
         })}
       >
         {({ isSubmitting, submitForm, isValid, dirty, errors, values }) => (
-          <Form className="flex flex-col items-end gap-2">
+          <Form className="form flex flex-col items-end gap-2">
             <Field name="comment">
               {({ form: { touched, errors }, field, meta }: any) => (
                 <TextArea
-                  name="comment"
-                  className="!text-14px"
+                  name="ui comment"
+                  className="!text-14px !w-full"
                   style={{
                     resize: "none",
                     lineHeight: "1.25rem",
@@ -154,9 +154,9 @@ export function PageViewEventCardDiscussionTab({
 
   const renderEventComments = useMemo(
     () => (
-      <div className="flex flex-col gap-8 pt-6">
+      <div className="flex flex-col gap-8 pt-6 w-full">
         {isLoggedIn && renderCommentInput}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full">
           {comments && comments.map(renderCommentCard)}
         </div>
       </div>
