@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Icon } from "semantic-ui-react";
 import clsx from "clsx";
 import { UserPicture } from "@/components";
 import { getTimeDifference } from "@/utils";
@@ -24,34 +23,13 @@ export function EventUpdate({
   valuePrevious,
   last,
 }: EventUpdateProps) {
-  const renderIcon = useMemo(() => {
-    switch (type) {
-      case "update-description":
-        return <Icon name="chat" />;
-      case "update-location":
-        return <Icon name="location arrow" />;
-      case "update-end-date":
-        return <Icon name="calendar" />;
-      case "update-start-date":
-        return <Icon name="calendar" />;
-      case "update-organizer":
-        return <Icon name="user" />;
-      case "update-tags":
-        return <Icon name="tags" />;
-      case "update-title":
-        return <Icon name="font" />;
-    }
-    return <></>;
-  }, [type]);
-
   const entryText = useMemo(() => {
     const phrase =
       type === "update-description" ? (
         <span className="underline">description</span>
       ) : (
         <>
-          <span className="underline">{EVENT_UPDATE_TERM[type]}</span> from{" "}
-          <b className="line-through">{valuePrevious ?? "-"}</b> to{" "}
+          <b>{EVENT_UPDATE_TERM[type]}</b> from <b>{valuePrevious ?? "-"}</b> to{" "}
           <b>{valueNew ?? "-"}</b>
         </>
       );
@@ -77,8 +55,8 @@ export function EventUpdate({
         <UserPicture fullName="Unknown User" />
       </div>
       <p className="pl-4 mt-1.5">
-        {renderIcon} <b>{authorId}</b> {entryText}{" "}
-        <span className="inline-block">{getTimeDifference(date)}</span>
+        <b>{authorId}</b> {entryText}{" "}
+        <span className="inline-block">{getTimeDifference(date)}.</span>
       </p>
     </div>
   );

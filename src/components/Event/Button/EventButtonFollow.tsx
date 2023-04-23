@@ -27,7 +27,7 @@ export function EventButtonFollow({
 
   const { id, subscriberIds = [], guestSubscriberCount } = event;
 
-  const [identification, setIdentification] = stateIdentification;
+  const [identification] = stateIdentification;
   const { permission, user, users } = identification;
 
   const [subscriberCount, setSubscriberCount] = useState(
@@ -142,27 +142,6 @@ export function EventButtonFollow({
         subscriberCount:
           updatedSubscribedIds.length + (guestSubscriberCount ?? 0),
       });
-      setIdentification((prev) => ({
-        ...prev,
-        users: {
-          ...prev.users,
-          [user.uid]: {
-            ...prev.users[user.uid],
-            subscribedEvents: {
-              ...prev.users[user.uid].subscribedEvents,
-              ...(subscribed
-                ? (() => {
-                    const temp = prev.users[user.uid].subscribedEvents ?? {};
-                    delete temp[id];
-                    return temp;
-                  })()
-                : {
-                    [id]: event.version ?? 0,
-                  }),
-            },
-          },
-        },
-      }));
 
       await batch.commit().catch(() => {
         updateEvent(id, {
@@ -183,7 +162,6 @@ export function EventButtonFollow({
     id,
     loading,
     permission,
-    setIdentification,
     subscribed,
     subscriberCount,
     subscriberIds,
