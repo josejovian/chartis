@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Button } from "semantic-ui-react";
 import clsx from "clsx";
 import {
@@ -18,6 +18,7 @@ import {
 import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventHeadProps {
+  stateActiveTab: StateObject<number>;
   event: EventType;
   identification: IdentificationType;
   onDelete: () => void;
@@ -29,6 +30,7 @@ export interface PageViewEventHeadProps {
 }
 
 export function PageViewEventHead({
+  stateActiveTab,
   event,
   identification,
   onDelete,
@@ -38,8 +40,7 @@ export function PageViewEventHead({
   type,
   updateEvent,
 }: PageViewEventHeadProps) {
-  const stateActiveTab = useState(0);
-  const activeTab = stateActiveTab[0];
+  const [activeTab, setActiveTab] = stateActiveTab;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mode, setMode] = stateMode;
 
@@ -56,9 +57,19 @@ export function PageViewEventHead({
     () => [
       {
         name: "Details",
+        onClick: () => {
+          setActiveTab(0);
+        },
+      },
+      {
+        name: "Discussion",
+        onClick: () => {
+          setActiveTab(1);
+        },
+        count: event.commentCount,
       },
     ],
-    []
+    [event.commentCount, setActiveTab]
   );
 
   const handleEdit = useCallback(() => {
@@ -68,7 +79,7 @@ export function PageViewEventHead({
   const renderDetailTabs = useMemo(
     () => (
       <div className="flex gap-4 px-4">
-        {tabs.map(({ name, onClick }, idx) => (
+        {tabs.map(({ name, onClick, count }, idx) => (
           <Button
             key={`ModalViewEvent_Tab-${name}`}
             className={clsx(
@@ -80,6 +91,11 @@ export function PageViewEventHead({
             onClick={onClick}
           >
             {name}
+            {count && (
+              <span className="ml-2 bg-zinc-600 py-[2px] px-2 rounded min-w-2 text-white">
+                {count}
+              </span>
+            )}
           </Button>
         ))}
       </div>
