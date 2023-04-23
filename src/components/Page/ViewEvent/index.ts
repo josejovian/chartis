@@ -1,4 +1,4 @@
 export * from "./Card";
-export * from "./CommentTab";
+export * from "./DiscussionTab";
 export * from "./DetailTab";
 export * from "./UpdatesTab";
