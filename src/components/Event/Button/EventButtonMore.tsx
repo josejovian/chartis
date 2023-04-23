@@ -37,7 +37,9 @@ export function EventButtonMore({
   const modalDelete = useMemo(
     () => (
       <ModalConfirmation
-        trigger={<Dropdown.Item className="!bg-red-400">Delete</Dropdown.Item>}
+        trigger={
+          <Dropdown.Item className="!text-red-400">Delete</Dropdown.Item>
+        }
         onConfirm={onDelete}
         stateOpen={stateModalDelete}
         stateLoading={stateDeleting}
