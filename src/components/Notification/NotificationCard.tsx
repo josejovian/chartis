@@ -123,17 +123,17 @@ export function NotificationCard({
   );
 }
 
-export const NOTIFICATION_CARD_BASE_STYLE =
+const NOTIFICATION_CARD_BASE_STYLE =
   "NotificationCard ui fluid card w-full !break-words !flex-row !py-5";
 
-export const NOTIFICATION_CARD_DESKTOP_STYLE = "!px-10";
+const NOTIFICATION_CARD_DESKTOP_STYLE = "!px-10";
 
-export const NOTIFICATION_CARD_MOBILE_STYLE = "!px-5";
+const NOTIFICATION_CARD_MOBILE_STYLE = "!px-5";
 
-export const NOTIFICATION_MAIN_BASE_STYLE = "flex mt-1 w-full";
+const NOTIFICATION_MAIN_BASE_STYLE = "flex mt-1 w-full";
 
-export const NOTIFICATION_MAIN_DESKTOP_STYLE = "flex-row pl-10";
+const NOTIFICATION_MAIN_DESKTOP_STYLE = "flex-row pl-10";
 
-export const NOTIFICATION_MAIN_MOBILE_STYLE = "flex-row pl-5";
+const NOTIFICATION_MAIN_MOBILE_STYLE = "flex-row pl-5";
 
-export const NOTIFICATION_CHANGES_LIST_STYLE = "mb-2 w-full pl-8";
+const NOTIFICATION_CHANGES_LIST_STYLE = "mb-2 w-full pl-8";
