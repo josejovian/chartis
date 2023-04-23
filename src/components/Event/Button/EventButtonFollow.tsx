@@ -183,13 +183,14 @@ export function EventButtonFollow({
       labelPosition="right"
       size={size}
       disabled={isAuthor}
+      color={isAuthor ? "grey" : "yellow"}
     >
       <Button
         className="!w-full"
         size={size}
         onClick={handleFollowEvent}
         disabled={isAuthor}
-        color={isAuthor ? "grey" : "yellow"}
+        color={subscribed ? "green" : "yellow"}
       >
         {subscribed ? "Unfollow" : "Follow"}
       </Button>
