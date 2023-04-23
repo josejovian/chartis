@@ -1,4 +1,9 @@
-import { UserType, EventType, EventUpdateArrayType } from "@/types";
+import {
+  UserType,
+  EventType,
+  EventUpdateArrayType,
+  DatabaseCommentType,
+} from "@/types";
 import pushid from "pushid";
 import {
   type DocumentData,
@@ -18,6 +23,7 @@ type FIREBASE_COLLECTION = {
   users: UserType;
   events: EventType;
   updates: EventUpdateArrayType;
+  comments: DatabaseCommentType;
 };
 
 export async function createData<
@@ -25,11 +31,12 @@ export async function createData<
 >(
   group: COLLECTION_NAME,
   data: FIREBASE_COLLECTION[COLLECTION_NAME],
-  id?: string
+  id?: string,
+  merge = false
 ): Promise<void> {
   const autoId = pushid();
 
-  return setDoc(doc(fs, group, id ?? autoId), data);
+  return setDoc(doc(fs, group, id ?? autoId), data, { merge: merge });
 }
 
 export async function readData<
