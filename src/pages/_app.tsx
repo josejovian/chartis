@@ -139,11 +139,14 @@ export default function App({ Component, pageProps }: AppProps) {
         const userDoc = doc.data();
 
         if (userDoc) {
-          const { notificationCount = 0 } = userDoc as UserType;
+          const { unseenEvents = {} } = userDoc as UserType;
           const notificationUpdates: EventUpdateBatchType[] = [];
 
-          if (notificationCount > 0 && subscribedEventIds.length > 0) {
-            for (const eventId of subscribedEventIds) {
+          if (
+            Object.entries(unseenEvents).length > 0 &&
+            subscribedEventIds.length > 0
+          ) {
+            for (const eventId of Object.keys(unseenEvents)) {
               const lastSeenVersion = subscribedEvents[eventId];
               const newEvent = await readData("events", eventId);
               if (
