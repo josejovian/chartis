@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { LayoutTemplateCard, PageNotificationsCard } from "@/components";
 import { useScreen } from "@/hooks";
 import { ResponsiveStyleType } from "@/types";
+import clsx from "clsx";
 
 export default function Notification() {
   const router = useRouter();
@@ -16,9 +17,14 @@ export default function Notification() {
           router.back();
         },
       }}
-      classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
+      classNameMain={clsx(
+        LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type],
+        "!pb-0"
+      )}
     >
-      <PageNotificationsCard className="!bg-sky-50" />
+      <PageNotificationsCard
+        className={clsx("!bg-sky-50 h-full", type === "mobile" && "pt-8")}
+      />
     </LayoutTemplateCard>
   );
 }

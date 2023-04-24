@@ -119,13 +119,16 @@ export interface EventUpdateType {
   valueNew?: string;
 }
 
-export interface EventUpdateBatchType {
+export interface EventUpdateBatchDatabaseType {
   id: string;
-  eventId: string;
-  updates: Record<EventUpdateNameType, EventUpdateType>;
+  updates: Partial<Record<EventUpdateNameType, EventUpdateType>>;
   authorId: string;
   date: number;
-  version?: number;
+}
+
+export interface EventUpdateBatchType extends EventUpdateBatchDatabaseType {
+  eventId: string;
+  version: number;
 }
 
 export interface EventUpdateArrayType {

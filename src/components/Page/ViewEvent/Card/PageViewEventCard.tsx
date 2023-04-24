@@ -35,8 +35,8 @@ import {
   ScreenSizeCategoryType,
   StateObject,
   EventCardTabNameType,
-  EventUpdateBatchType,
   EventUpdateArrayType,
+  EventUpdateBatchDatabaseType,
 } from "@/types";
 import {
   EVENT_EMPTY,
@@ -51,6 +51,11 @@ export interface ModalViewEventProps {
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvt: Partial<EventType>) => void;
+  updateUserSubscribedEventClientSide: (
+    userId: string,
+    eventId: string,
+    version?: number
+  ) => void;
   eventPreviousValues?: MutableRefObject<EventType>;
 }
 
@@ -60,6 +65,7 @@ export function PageViewEventCard({
   stateMode,
   type,
   updateEvent,
+  updateUserSubscribedEventClientSide,
   eventPreviousValues,
 }: ModalViewEventProps) {
   const [event, setEvent] = stateEvent;
@@ -94,7 +100,7 @@ export function PageViewEventCard({
   const { addToast, addToastPreset } = useToast();
   const { stateModalDelete, deleteEvent } = useEvent({});
 
-  const stateIdentification = useIdentification();
+  const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
 
@@ -182,13 +188,14 @@ export function PageViewEventCard({
             const evtDoc = await transaction.get(eventRef);
             const updatesDoc = await transaction.get(updatesRef);
             const evt = evtDoc.exists() ? (evtDoc.data() as EventType) : event;
-            const updates = updatesDoc.exists()
+            let updates: EventUpdateBatchDatabaseType[] = updatesDoc.exists()
               ? (updatesDoc.data() as EventUpdateArrayType).updates
               : [];
 
             if (evt.subscriberIds)
               evt.subscriberIds.forEach((userId) => {
                 const userRef = doc(fs, FIREBASE_COLLECTION_USERS, userId);
+
                 transaction.update(userRef, {
                   notificationCount: increment(1),
                 });
@@ -199,17 +206,18 @@ export function PageViewEventCard({
               version: increment(1),
             });
 
+            updates = [
+              ...updates,
+              {
+                id: eventBatchUpdateId,
+                authorId: user.uid,
+                date: new Date().getTime(),
+                updates: changes,
+              },
+            ];
+
             transaction.update(updatesRef, {
-              updates: [
-                ...updates,
-                {
-                  id: eventBatchUpdateId,
-                  eventId: event.id,
-                  authorId: user.uid,
-                  date: new Date().getTime(),
-                  updates: changes,
-                } as EventUpdateBatchType,
-              ],
+              updates,
             });
           }).then(async () => {
             await sleep(200);
@@ -354,6 +362,9 @@ export function PageViewEventCard({
             stateIdentification={stateIdentification}
             onDelete={handleDeleteEvent}
             updateEvent={updateEvent}
+            updateUserSubscribedEventClientSide={
+              updateUserSubscribedEventClientSide
+            }
           />
           {activeTabContent}
           <PageViewEventFoot
@@ -377,6 +388,7 @@ export function PageViewEventCard({
       stateIdentification,
       handleDeleteEvent,
       updateEvent,
+      updateUserSubscribedEventClientSide,
       stateSubmitting,
       handleLeaveEdit,
     ]

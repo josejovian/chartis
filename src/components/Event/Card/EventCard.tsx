@@ -24,16 +24,22 @@ export interface EventCardProps {
   className?: string;
   stateIdentification: StateObject<IdentificationType>;
   event: EventType;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   type?: EventCardDisplayType;
+  updateUserSubscribedEventClientSide: (
+    userId: string,
+    eventId: string,
+    version?: number
+  ) => void;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
 export function EventCard({
   className,
   stateIdentification,
   event,
-  updateEvent,
   type = "vertical",
+  updateUserSubscribedEventClientSide,
+  updateEvent,
 }: EventCardProps) {
   const {
     id,
@@ -201,7 +207,10 @@ export function EventCard({
         <EventButtonFollow
           event={event}
           updateEvent={updateEvent}
-          stateIdentification={stateIdentification}
+          identification={identification}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
           size="tiny"
         />
         <EventButtonMore
@@ -218,8 +227,8 @@ export function EventCard({
       type,
       event,
       updateEvent,
-      stateIdentification,
       identification,
+      updateUserSubscribedEventClientSide,
       handleDeleteEvent,
       stateModalDelete,
       handleEditEvent,

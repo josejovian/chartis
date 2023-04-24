@@ -187,6 +187,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
                   notificationUpdates.push({
                     ...lastBatch,
+                    eventId: newEvent.id,
                     version: newEvent.version,
                     updates: unseenUpdates as Record<
                       EventUpdateNameType,

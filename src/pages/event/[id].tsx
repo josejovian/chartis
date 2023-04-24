@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useRouter } from "next/router";
 import {
   LayoutNotice,
@@ -9,15 +8,7 @@ import { EVENT_DUMMY_1 } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIdentification, useScreen, useEvent } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
-import {
-  Button,
-  Dimmer,
-  Header,
-  Icon,
-  Loader,
-  Segment,
-} from "semantic-ui-react";
-import { sleep } from "@/utils";
+import { Button } from "semantic-ui-react";
 import { readData } from "@/firebase";
 
 export default function ViewEvent() {
@@ -37,8 +28,8 @@ export default function ViewEvent() {
   const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const initialize = useRef(0);
-  const stateIdentification = useIdentification();
+  const { stateIdentification, updateUserSubscribedEventClientSide } =
+    useIdentification();
   const { user } = stateIdentification[0];
 
   const handleGetEvent = useCallback(async () => {
@@ -103,9 +94,21 @@ export default function ViewEvent() {
         stateMode={stateMode}
         type={type}
         updateEvent={handleUpdateEvent}
+        updateUserSubscribedEventClientSide={
+          updateUserSubscribedEventClientSide
+        }
       />
     );
-  }, [error, handleUpdateEvent, loading, router, stateEvent, stateMode, type]);
+  }, [
+    error,
+    handleUpdateEvent,
+    loading,
+    router,
+    stateEvent,
+    stateMode,
+    type,
+    updateUserSubscribedEventClientSide,
+  ]);
 
   return (
     <LayoutTemplateCard
