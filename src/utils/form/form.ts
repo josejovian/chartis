@@ -1,10 +1,11 @@
 import { FormCustomFieldProps } from "@/types";
-import { FieldEmail, FieldName, FieldPassword } from "./field";
+import { FieldConfirmPass, FieldEmail, FieldName, FieldPassword } from "./field";
 
 export const FormRegister: FormCustomFieldProps[] = [
   FieldName,
   FieldEmail,
   FieldPassword,
+  FieldConfirmPass
 ];
 
 export const FormLogin: FormCustomFieldProps[] = [FieldEmail, FieldPassword];
