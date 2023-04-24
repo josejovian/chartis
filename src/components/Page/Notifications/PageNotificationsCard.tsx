@@ -5,7 +5,7 @@ import { useIdentification, useNotification, useToast } from "@/hooks";
 import { Button } from "semantic-ui-react";
 import { useRouter } from "next/router";
 import { EventUpdateBatchType, UserType } from "@/types";
-import { doc, increment, runTransaction, updateDoc } from "firebase/firestore";
+import { doc, increment, runTransaction } from "firebase/firestore";
 import { fs } from "@/firebase";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
 
@@ -35,28 +35,26 @@ export function PageNotificationsCard({
 
       const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.uid);
 
-      try {
-        await runTransaction(fs, async (transaction) => {
-          const userDoc = await transaction.get(userRef);
-          if (!userDoc.exists()) {
-            throw Error("Document does not exist!");
-          }
+      await runTransaction(fs, async (transaction) => {
+        const userDoc = await transaction.get(userRef);
+        if (!userDoc.exists()) {
+          throw Error("Document does not exist!");
+        }
 
-          const userData = userDoc.data() as UserType;
+        const userData = userDoc.data() as UserType;
 
-          transaction.update(userRef, {
-            ...(() => {
-              const evts = userData.unseenEvents ?? {};
-              delete evts[eventId];
-              return evts;
-            })(),
-            [`subscribedEvents.${eventId}`]: version,
-            notificationCount: increment(-1),
-          });
+        transaction.update(userRef, {
+          ...(() => {
+            const evts = userData.unseenEvents ?? {};
+            delete evts[eventId];
+            return evts;
+          })(),
+          [`subscribedEvents.${eventId}`]: version,
+          notificationCount: increment(-1),
         });
-      } catch (e) {
+      }).catch(() => {
         addToastPreset("post-fail");
-      }
+      });
 
       setUpdates((prev) =>
         prev.filter((instance) => instance.eventId !== eventId)
@@ -69,7 +67,7 @@ export function PageNotificationsCard({
 
   const handleReadAndViewNotification = useCallback(
     async (update: EventUpdateBatchType) => {
-      router.push(`/events/${update.eventId}`);
+      router.push(`/event/${update.eventId}`);
       await handleReadNotification(update);
     },
     [handleReadNotification, router]
@@ -90,20 +88,33 @@ export function PageNotificationsCard({
         {}
       );
 
-    await updateDoc(userRef, {
-      ...lastSeenVersions,
-      notificationCount: increment(-1 * updates.length),
+    await runTransaction(fs, async (transaction) => {
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists()) {
+        throw Error("Document does not exist!");
+      }
+
+      const userData = userDoc.data() as UserType;
+
+      const { unseenEvents } = userData;
+      Object.entries(updates)
+        .filter(([_, batch]) => batch.version !== undefined)
+        .forEach(([_, batch]) => {
+          if (unseenEvents) delete unseenEvents[batch.eventId];
+        });
+
+      transaction.update(userRef, {
+        ...lastSeenVersions,
+        unseenEvents,
+        notificationCount: increment(-1 * updates.length),
+      });
     }).catch(() => {
       addToastPreset("post-fail");
     });
 
     updateUserSubscribedEventsClientSide(user.uid, lastSeenVersions);
 
-    setUpdates((prev) =>
-      prev.filter(
-        (instance) => !Object.keys(updates).includes(instance.eventId)
-      )
-    );
+    setUpdates([]);
   }, [
     addToastPreset,
     setUpdates,
