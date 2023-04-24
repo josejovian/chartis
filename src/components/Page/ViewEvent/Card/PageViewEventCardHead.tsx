@@ -28,6 +28,11 @@ export interface PageViewEventHeadProps {
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
+  updateUserSubscribedEventClientSide: (
+    userId: string,
+    eventId: string,
+    version?: number
+  ) => void;
 }
 
 export function PageViewEventHead({
@@ -40,6 +45,7 @@ export function PageViewEventHead({
   stateMode,
   type,
   updateEvent,
+  updateUserSubscribedEventClientSide,
 }: PageViewEventHeadProps) {
   const [activeTab, setActiveTab] = stateActiveTab;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -122,7 +128,10 @@ export function PageViewEventHead({
       <div className="flex items-between p-4 gap-4">
         <EventButtonFollow
           event={event}
-          stateIdentification={stateIdentification}
+          identification={identification}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
           size={type === "mobile" ? "tiny" : undefined}
           updateEvent={updateEvent}
         />
@@ -139,10 +148,10 @@ export function PageViewEventHead({
     ),
     [
       event,
-      stateIdentification,
+      identification,
+      updateUserSubscribedEventClientSide,
       type,
       updateEvent,
-      identification,
       handleEdit,
       onDelete,
       stateDeleting,

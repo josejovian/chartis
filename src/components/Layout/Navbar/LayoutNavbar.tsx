@@ -37,7 +37,7 @@ const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
 export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [navBar, setNavBar] = stateNavBar;
   const { type } = useScreen();
-  const stateIdentification = useIdentification();
+  const { stateIdentification } = useIdentification();
   const { user } = stateIdentification[0];
 
   const permission = useMemo<UserPermissionType>(

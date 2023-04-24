@@ -41,7 +41,8 @@ export function PageSearchEventCard({
   const query = stateQuery[0];
   const sortBy = stateSortBy[0];
   const sortDescending = stateSortDescending[0];
-  const stateIdentification = useIdentification();
+  const { stateIdentification, updateUserSubscribedEventClientSide } =
+    useIdentification();
 
   const sortCaption = useMemo(
     () =>
@@ -69,10 +70,19 @@ export function PageSearchEventCard({
           type={type === "mobile" ? "vertical" : "horizontal"}
           event={event}
           stateIdentification={stateIdentification}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
           updateEvent={updateEvent}
         />
       )),
-    [events, stateIdentification, type, updateEvent]
+    [
+      events,
+      stateIdentification,
+      type,
+      updateEvent,
+      updateUserSubscribedEventClientSide,
+    ]
   );
 
   const renderEmpty = useMemo(

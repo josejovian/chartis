@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fs } from "@/firebase";
 import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
-import { EventType, IdentificationType, StateObject } from "@/types";
+import { EventType, IdentificationType } from "@/types";
 import { sleep } from "@/utils";
 import { useToast } from "@/hooks";
 import { doc, increment, updateDoc, writeBatch } from "firebase/firestore";
@@ -12,22 +12,27 @@ import {
 
 export interface EventButtonFollowProps {
   event: EventType;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
-  stateIdentification: StateObject<IdentificationType>;
+  identification: IdentificationType;
   size?: SemanticSIZES;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
+  updateUserSubscribedEventClientSide: (
+    userId: string,
+    eventId: string,
+    version?: number
+  ) => void;
 }
 
 export function EventButtonFollow({
   event,
-  updateEvent,
-  stateIdentification,
+  identification,
   size,
+  updateEvent,
+  updateUserSubscribedEventClientSide,
 }: EventButtonFollowProps) {
   const { addToastPreset } = useToast();
 
   const { id, subscriberIds = [], guestSubscriberCount } = event;
 
-  const [identification] = stateIdentification;
   const { permission, user, users } = identification;
 
   const [subscriberCount, setSubscriberCount] = useState(
@@ -143,6 +148,8 @@ export function EventButtonFollow({
           updatedSubscribedIds.length + (guestSubscriberCount ?? 0),
       });
 
+      updateUserSubscribedEventClientSide(user.uid, id, event.version);
+
       await batch.commit().catch(() => {
         updateEvent(id, {
           subscriberIds,
@@ -166,6 +173,7 @@ export function EventButtonFollow({
     subscriberCount,
     subscriberIds,
     updateEvent,
+    updateUserSubscribedEventClientSide,
     user,
     users,
   ]);

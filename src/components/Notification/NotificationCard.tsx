@@ -1,14 +1,11 @@
-import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { doc, updateDoc } from "firebase/firestore";
-import { fs } from "@/firebase";
 import clsx from "clsx";
-import { Button } from "semantic-ui-react";
+import { Button, Card } from "semantic-ui-react";
 import { UserPicture } from "@/components";
-import { useIdentification, useScreen } from "@/hooks";
+import { useScreen } from "@/hooks";
 import { getTimeDifference } from "@/utils";
-import { EVENT_UPDATE_TERM, FIREBASE_COLLECTION_USERS } from "@/consts";
+import { EVENT_UPDATE_TERM } from "@/consts";
 import {
   EventUpdateBatchType,
   EventUpdateNameType,
@@ -17,37 +14,17 @@ import {
 
 interface NotificationCardProps {
   update: EventUpdateBatchType;
-  setUpdates: Dispatch<SetStateAction<EventUpdateBatchType[]>>;
+  handleReadNotification: () => void;
+  handleReadAndViewNotification: () => void;
 }
 
 export function NotificationCard({
   update,
-  setUpdates,
+  handleReadNotification,
+  handleReadAndViewNotification,
 }: NotificationCardProps) {
-  const { authorId, eventId, updates, date, id, version } = update;
+  const { authorId, eventId, updates, date, id } = update;
   const { type } = useScreen();
-  const [{ user }] = useIdentification();
-  const router = useRouter();
-
-  const handleReadNotification = useCallback(async () => {
-    if (!user || !version) return;
-
-    const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.uid);
-
-    await updateDoc(userRef, {
-      [`subscribedEvents.${eventId}`]: version,
-    });
-
-    setUpdates((prev) =>
-      prev.filter((instance) => instance.eventId !== eventId)
-    );
-  }, [eventId, setUpdates, user, version]);
-
-  const handleReadAndViewNotification = useCallback(async () => {
-    router.push(`/events/${eventId}`);
-    await handleReadNotification();
-  }, [eventId, handleReadNotification, router]);
-
   const renderChangeList = useMemo(
     () => (
       <ul className={NOTIFICATION_CHANGES_LIST_STYLE}>
@@ -79,7 +56,7 @@ export function NotificationCard({
   const renderUpdateDetail = useMemo(
     () => (
       <div className="break-words w-full pr-8">
-        <Link href="#" onClick={handleReadAndViewNotification}>
+        <Link href="#" onClick={() => handleReadAndViewNotification()}>
           <p className="text-16px mb-2 pr-8">
             <b>{authorId}</b> updated <b>{eventId}</b>.
           </p>
@@ -92,13 +69,14 @@ export function NotificationCard({
   );
 
   return (
-    <article
+    <Card
       className={clsx(
         NOTIFICATION_CARD_BASE_STYLE,
         type !== "mobile"
           ? NOTIFICATION_CARD_DESKTOP_STYLE
           : NOTIFICATION_CARD_MOBILE_STYLE
       )}
+      fluid
     >
       <div>
         <UserPicture fullName="Unknown User" />
@@ -119,21 +97,21 @@ export function NotificationCard({
           Read
         </Button>
       </div>
-    </article>
+    </Card>
   );
 }
 
 const NOTIFICATION_CARD_BASE_STYLE =
-  "NotificationCard ui fluid card w-full !break-words !flex-row !py-5";
+  "NotificationCard w-full !min-h-fit !break-words !flex-row !py-5";
 
 const NOTIFICATION_CARD_DESKTOP_STYLE = "!px-10";
 
 const NOTIFICATION_CARD_MOBILE_STYLE = "!px-5";
 
-const NOTIFICATION_MAIN_BASE_STYLE = "flex mt-1 w-full";
+const NOTIFICATION_MAIN_BASE_STYLE = "flex pt-1 w-full";
 
 const NOTIFICATION_MAIN_DESKTOP_STYLE = "flex-row pl-10";
 
-const NOTIFICATION_MAIN_MOBILE_STYLE = "flex-row pl-5";
+const NOTIFICATION_MAIN_MOBILE_STYLE = "flex-col pl-5";
 
-const NOTIFICATION_CHANGES_LIST_STYLE = "mb-2 w-full pl-8";
+const NOTIFICATION_CHANGES_LIST_STYLE = "pb-2 w-full pl-8";

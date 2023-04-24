@@ -26,7 +26,7 @@ export function useEvent({ type }: useEventProps) {
   const sortDescending = stateSortDescending[0];
   const stateUserQuery = useState("");
   const userQuery = stateUserQuery[0];
-  const stateIdentification = useIdentification();
+  const { stateIdentification } = useIdentification();
   const [identification] = stateIdentification;
   const { user } = identification;
 

@@ -41,7 +41,8 @@ export function PageViewEventCardDetailTab({
   validateForm,
   setFieldValue,
 }: PageViewEventCardDetailTabProps) {
-  const { users } = useIdentification()[0];
+  const { stateIdentification } = useIdentification();
+  const { users } = stateIdentification[0];
   const {
     location,
     authorId,
