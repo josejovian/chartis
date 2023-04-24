@@ -14,12 +14,7 @@ export function PageNotificationsCard({
 
   const renderNotifications = useMemo(
     () => (
-      <div
-        className={clsx(
-          "flex flex-col gap-4",
-          "px-4 mr-4 py-0.5 h-full overflow-y-auto"
-        )}
-      >
+      <div className={NOTIFICATION_LIST_STYLE}>
         {updates.map((update) => (
           <NotificationCard
             key={`Update_${update.eventId}-${update.id}`}
@@ -48,3 +43,8 @@ export function PageNotificationsCard({
     </LayoutCard>
   );
 }
+
+const NOTIFICATION_LIST_STYLE = clsx(
+  "flex flex-col gap-4",
+  "px-4 mr-4 py-0.5 h-full overflow-y-auto"
+);
