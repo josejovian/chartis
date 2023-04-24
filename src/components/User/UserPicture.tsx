@@ -17,9 +17,15 @@ export function UserPicture({ fullName, pictureUrl }: UserPictureProps) {
   return (
     <div
       className={clsx(
-        "flex items-center justify-center w-8 h-8",
-        "rounded-full bg-red-700 overflow-hidden z-10"
+        "flex items-center justify-center",
+        "rounded-full text-white bg-red-700 overflow-hidden z-10"
       )}
+      style={{
+        width: "2rem",
+        height: "2rem",
+        minWidth: "2rem",
+        minHeight: "2rem",
+      }}
     >
       {pictureUrl ? (
         <Image

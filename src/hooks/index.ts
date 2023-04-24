@@ -4,3 +4,4 @@ export * from "./useScreen";
 export * from "./useEvent";
 export * from "./useToast";
 export * from "./useIdentification";
+export * from "./useNotification";
