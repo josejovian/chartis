@@ -197,6 +197,7 @@ export function PageViewEventCard({
                 const userRef = doc(fs, FIREBASE_COLLECTION_USERS, userId);
 
                 transaction.update(userRef, {
+                  [`unseenEvents.${evt.id}`]: true,
                   notificationCount: increment(1),
                 });
               });

@@ -4,8 +4,8 @@ import { LayoutCard, LayoutNotice, NotificationCard } from "@/components";
 import { useIdentification, useNotification, useToast } from "@/hooks";
 import { Button } from "semantic-ui-react";
 import { useRouter } from "next/router";
-import { EventUpdateBatchType } from "@/types";
-import { doc, increment, updateDoc } from "firebase/firestore";
+import { EventUpdateBatchType, UserType } from "@/types";
+import { doc, increment, runTransaction, updateDoc } from "firebase/firestore";
 import { fs } from "@/firebase";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
 
@@ -35,12 +35,28 @@ export function PageNotificationsCard({
 
       const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.uid);
 
-      await updateDoc(userRef, {
-        [`subscribedEvents.${eventId}`]: version,
-        notificationCount: increment(-1),
-      }).catch(() => {
+      try {
+        await runTransaction(fs, async (transaction) => {
+          const userDoc = await transaction.get(userRef);
+          if (!userDoc.exists()) {
+            throw Error("Document does not exist!");
+          }
+
+          const userData = userDoc.data() as UserType;
+
+          transaction.update(userRef, {
+            ...(() => {
+              const evts = userData.unseenEvents ?? {};
+              delete evts[eventId];
+              return evts;
+            })(),
+            [`subscribedEvents.${eventId}`]: version,
+            notificationCount: increment(-1),
+          });
+        });
+      } catch (e) {
         addToastPreset("post-fail");
-      });
+      }
 
       setUpdates((prev) =>
         prev.filter((instance) => instance.eventId !== eventId)
