@@ -17,6 +17,7 @@ export interface EventType {
   subscriberCount?: number;
   subscriberIds?: string[];
   guestSubscriberCount?: number;
+  version?: number;
   commentCount?: number;
   tags: EventTagObjectType;
 }
@@ -73,7 +74,8 @@ export type EventThumbnailDisplayType =
   | "thumbnail-fixed-height"
   | "banner";
 
-export interface EventModalTabType {
+export interface EventCardTabType {
+  id: EventCardTabNameType;
   name: string;
   onClick?: () => void;
   count?: number;
@@ -95,3 +97,40 @@ export type EventSearchType =
   | "userFollowedEvents"
   | "userCreatedEvents"
   | "userFollowedTags";
+
+export type EventCardTabNameType =
+  | "detail"
+  | "updates"
+  | "discussion"
+  | "reports";
+
+export type EventUpdateNameType =
+  | "update-description"
+  | "update-start-date"
+  | "update-end-date"
+  | "update-title"
+  | "update-tags"
+  | "update-location"
+  | "update-organizer"
+  | "initial-post";
+
+export interface EventUpdateType {
+  valuePrevious?: string;
+  valueNew?: string;
+}
+
+export interface EventUpdateBatchDatabaseType {
+  id: string;
+  updates: Partial<Record<EventUpdateNameType, EventUpdateType>>;
+  authorId: string;
+  date: number;
+}
+
+export interface EventUpdateBatchType extends EventUpdateBatchDatabaseType {
+  eventId: string;
+  version: number;
+}
+
+export interface EventUpdateArrayType {
+  updates: EventUpdateBatchType[];
+}
