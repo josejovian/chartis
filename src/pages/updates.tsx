@@ -10,7 +10,7 @@ export default function Notification() {
 
   return (
     <LayoutTemplateCard
-      title="Notifications"
+      title="Updates"
       leftButton={{
         icon: "arrow left",
         onClick: () => {
