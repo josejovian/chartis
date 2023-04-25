@@ -69,7 +69,7 @@
     @apply !m-0;
     margin: 0 !important;
   }
-  .PageSearchEventCard i.dropdown.icon {
+  :is(.PageSearchEventCard, .dropdown) i.dropdown.icon {
     display: none !important;
   }
   [role="listbox"] .ui.label.empty {

@@ -1,5 +1,4 @@
 import {
-  EventSortDirectionType,
   EventSortType,
   EventTagNameType,
   EventTagType,
@@ -69,13 +68,20 @@ export const EVENT_TAGS: Record<EventTagNameType, EventTagType> = {
 };
 
 export const EVENT_SORT_CRITERIA: EventSortType[] = [
-  { id: "postDate", name: "Post Date" },
-  { id: "subscriberCount", name: "Followers" },
-];
-
-export const EVENT_SORT_TYPE: EventSortDirectionType[] = [
-  { value: false, name: "Ascending" },
-  { value: true, name: "Descending" },
+  { id: "oldest", key: "postDate", name: "Oldest", descending: false },
+  { id: "latest", key: "postDate", name: "Latest", descending: true },
+  {
+    id: "leastFollowers",
+    key: "subscriberCount",
+    name: "Least Followers",
+    descending: false,
+  },
+  {
+    id: "mostFollowers",
+    key: "subscriberCount",
+    name: "Most Followers",
+    descending: true,
+  },
 ];
 
 export const EVENT_QUERY_LENGTH_CONSTRAINTS = [3, 20]; //[min, max]
