@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { type UserCredential, updateProfile } from "firebase/auth";
 import { auth, createData, register } from "@/firebase";
-import { ModalAuthTemplate } from "@/components";
+import { ModalAuthLogin, ModalAuthTemplate } from "@/components";
 import { useModal, useToast } from "@/hooks";
 import { FormRegister, SchemaRegister } from "@/utils";
 import { FormRegisterProps } from "@/types";
@@ -10,9 +10,13 @@ import { FIREBASE_COLLECTION_USERS } from "@/consts";
 
 export function ModalAuthRegister() {
   const [loading, setLoading] = useState(false);
-  const { clearModal, showLogin } = useModal();
+  const { setModal, clearModal } = useModal();
   const { addToast, addToastPreset } = useToast();
   const router = useRouter();
+
+  const handleShowLoginModal = useCallback(() => {
+    setModal(<ModalAuthLogin />);
+  }, [setModal]);
 
   const handleStoreUserData = useCallback(
     async (data: FormRegisterProps, cred: UserCredential) => {
@@ -69,14 +73,14 @@ export function ModalAuthRegister() {
         <h2 className="text-20px">Register</h2>
         <span className="mt-2">
           Already have an account?{" "}
-          <u className="cursor-pointer" onClick={showLogin}>
+          <u className="cursor-pointer" onClick={handleShowLoginModal}>
             Login
           </u>{" "}
           instead.
         </span>
       </div>
     ),
-    [showLogin]
+    [handleShowLoginModal]
   );
 
   return (
