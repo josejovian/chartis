@@ -2,7 +2,6 @@ import clsx from "clsx";
 import {
   EventButtonFilter,
   EventButtonSort,
-  EventButtonSortType,
   PageSearchEventInput,
 } from "@/components";
 import {
@@ -43,9 +42,6 @@ export function PageSearchEventCardHead({
         />
         <EventButtonSort
           stateSortBy={stateSortBy}
-          size={type === "mobile" ? "tiny" : undefined}
-        />
-        <EventButtonSortType
           stateSortDescending={stateSortDescending}
           size={type === "mobile" ? "tiny" : undefined}
         />

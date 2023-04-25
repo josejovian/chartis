@@ -82,8 +82,10 @@ export interface EventCardTabType {
 }
 
 export interface EventSortType {
-  id: keyof EventType;
+  id: string;
+  key: keyof EventType;
   name: string;
+  descending: boolean;
 }
 
 export interface EventSortDirectionType {

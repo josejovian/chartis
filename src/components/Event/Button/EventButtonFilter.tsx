@@ -1,15 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Button,
-  Dropdown,
-  Icon,
-  Label,
-  type SemanticSIZES,
-} from "semantic-ui-react";
+import { Button, Dropdown, Icon, type SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_TAGS } from "@/consts";
 import { EventTagNameType, EventTagType, StateObject } from "@/types";
-import { useScreen } from "@/hooks";
 
 export interface EventButtonFilterProps {
   stateFilters: StateObject<EventTagNameType[]>;
@@ -23,13 +16,13 @@ export function EventButtonFilter({
   size,
 }: EventButtonFilterProps) {
   const [filters, setFilters] = stateFilters;
-  const { type } = useScreen();
   const [open, setOpen] = useState(false);
 
   const renderDropdownItems = useMemo(
     () =>
       (Object.entries(EVENT_TAGS) as [EventTagNameType, EventTagType][]).map(
         ([id, { name, color }]) => {
+          const active = filters.includes(id);
           return (
             <Dropdown.Item
               key={name}
@@ -45,7 +38,11 @@ export function EventButtonFilter({
                 );
               }}
             >
-              <Label color={color} circular empty />
+              <Icon
+                className={clsx(!active && "invisible")}
+                color={color}
+                name="check circle"
+              />
               <span>{name}</span>
             </Dropdown.Item>
           );
@@ -97,24 +94,36 @@ export function EventButtonFilter({
   return (
     <Dropdown
       id="FilterDropdown"
-      icon={asButton ? undefined : "filter"}
       className="icon z-16"
-      labeled={asButton ? undefined : type !== "mobile"}
       floating
       direction="left"
       trigger={
         asButton ? (
-          <Button className="w-fit" size={size} onClick={() => setOpen(true)}>
-            <Icon name="filter" />
+          <Button
+            className="w-fit !pr-4"
+            size={size}
+            onClick={() => setOpen(true)}
+          >
             Filter
+            <Icon className="!ml-2 !mr-0" name="triangle down" />
           </Button>
-        ) : undefined
+        ) : (
+          <Button
+            className="w-fit !pr-4"
+            size={size}
+            onClick={() => setOpen(true)}
+          >
+            Filter
+            <Icon className="!ml-2 !mr-0" name="triangle down" />
+          </Button>
+        )
       }
       open={open}
     >
       <Dropdown.Menu>
         <Dropdown.Menu scrolling>
           {renderClearFilter}
+          <Dropdown.Divider className="!m-0" />
           {renderDropdownItems}
         </Dropdown.Menu>
       </Dropdown.Menu>

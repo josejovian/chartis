@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon } from "semantic-ui-react";
 import clsx from "clsx";
-import { PageHomeCalendarDate } from "@/components";
+import { EventButtonFilter, PageHomeCalendarDate } from "@/components";
 import {
   CalendarDateType,
+  EventTagNameType,
   EventType,
   FocusDateType,
   StateObject,
@@ -14,11 +15,13 @@ import { useScreen } from "@/hooks";
 
 export interface LayoutCalendarProps {
   stateFocusDate: StateObject<FocusDateType>;
+  stateFilters: StateObject<EventTagNameType[]>;
   events: EventType[];
 }
 
 export function LayoutCalendar({
   stateFocusDate,
+  stateFilters,
   events,
 }: LayoutCalendarProps) {
   const [focusDate, setFocusDate] = stateFocusDate;
@@ -35,11 +38,6 @@ export function LayoutCalendar({
         return getDateMonthYear(temp);
       });
     },
-    [setFocusDate]
-  );
-
-  const handleChangeToToday = useCallback(
-    () => setFocusDate(getDateMonthYear(new Date())),
     [setFocusDate]
   );
 
@@ -135,23 +133,12 @@ export function LayoutCalendar({
   );
 
   const renderMenu = useMemo(() => {
-    const today = new Date();
     return (
       <div className="flex gap-4">
-        <Button
-          onClick={handleChangeToToday}
-          disabled={
-            focusDate &&
-            today.getDate() === focusDate.day &&
-            today.getMonth() === focusDate.month
-          }
-          size={type === "mobile" ? "tiny" : undefined}
-        >
-          Today
-        </Button>
+        <EventButtonFilter stateFilters={stateFilters} />
       </div>
     );
-  }, [focusDate, handleChangeToToday, type]);
+  }, [stateFilters]);
 
   const renderHead = useMemo(
     () => (

@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  PageHomeSideBar,
-  LayoutCalendar,
-  LayoutTemplate,
-  EventButtonFilter,
-} from "@/components";
+import { PageHomeSideBar, LayoutCalendar, LayoutTemplate } from "@/components";
 import { useEvent } from "@/hooks";
 import { filterEventsFromTags, getDateMonthYear } from "@/utils";
 
@@ -30,10 +25,11 @@ export default function Home() {
     () => (
       <LayoutCalendar
         stateFocusDate={stateFocusDate}
+        stateFilters={stateFilters}
         events={displayedEvents}
       />
     ),
-    [displayedEvents, stateFocusDate]
+    [displayedEvents, stateFilters, stateFocusDate]
   );
 
   const renderSidebar = useMemo(
@@ -63,12 +59,7 @@ export default function Home() {
   }, [handlePopulateCalendar]);
 
   return (
-    <LayoutTemplate
-      title="Home"
-      rightElement={<EventButtonFilter stateFilters={stateFilters} />}
-      side={renderSidebar}
-      classNameMain="!bg-white"
-    >
+    <LayoutTemplate title="Home" side={renderSidebar} classNameMain="!bg-white">
       {renderCalendar}
     </LayoutTemplate>
   );
