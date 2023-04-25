@@ -1,4 +1,4 @@
-import { createRef, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Input } from "semantic-ui-react";
 import { validateEventQuery } from "@/utils";
 import { StateObject } from "@/types";
@@ -11,7 +11,6 @@ export function PageSearchEventInput({ stateQuery }: SearchEventInputProps) {
   const [query, setQuery] = stateQuery;
 
   const timeoutRef = useRef<NodeJS.Timeout>();
-  const inputRef = createRef<Input>();
 
   const handleUpdateQuery = useCallback(
     (newQuery: string) => {
@@ -31,14 +30,6 @@ export function PageSearchEventInput({ stateQuery }: SearchEventInputProps) {
     [setQuery]
   );
 
-  const handleFocusUponLoad = useCallback(() => {
-    if (inputRef.current) inputRef.current.focus();
-  }, [inputRef]);
-
-  useEffect(() => {
-    handleFocusUponLoad();
-  }, [handleFocusUponLoad]);
-
   useEffect(() => {
     return () => {
       clearTimeout(timeoutRef.current);
@@ -47,7 +38,6 @@ export function PageSearchEventInput({ stateQuery }: SearchEventInputProps) {
 
   return (
     <Input
-      ref={inputRef}
       className="grow"
       placeholder="Search events..."
       defaultValue={query}
