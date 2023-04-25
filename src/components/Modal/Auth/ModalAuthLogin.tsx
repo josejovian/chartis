@@ -1,16 +1,20 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { login } from "@/firebase";
-import { ModalAuthTemplate } from "@/components";
+import { ModalAuthRegister, ModalAuthTemplate } from "@/components";
 import { useModal, useToast } from "@/hooks";
 import { FormLogin, SchemaLogin } from "@/utils";
 import { FormLoginProps } from "@/types";
 
 export function ModalAuthLogin() {
   const [loading, setLoading] = useState(false);
-  const { clearModal, showRegister } = useModal();
+  const { setModal, clearModal } = useModal();
   const { addToast, addToastPreset } = useToast();
   const router = useRouter();
+
+  const handleShowRegisterModal = useCallback(() => {
+    setModal(<ModalAuthRegister />);
+  }, [setModal]);
 
   const handleLogin = useCallback(
     async (values: unknown) => {
@@ -42,14 +46,14 @@ export function ModalAuthLogin() {
         <h2 className="text-20px">Login</h2>
         <span className="mt-2">
           No account?{" "}
-          <u className="cursor-pointer" onClick={showRegister}>
+          <u className="cursor-pointer" onClick={handleShowRegisterModal}>
             Register
           </u>{" "}
           instead.
         </span>
       </div>
     ),
-    [showRegister]
+    [handleShowRegisterModal]
   );
 
   return (

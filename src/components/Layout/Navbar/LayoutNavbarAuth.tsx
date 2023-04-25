@@ -2,7 +2,12 @@ import { useCallback, useMemo } from "react";
 import { Button, type SemanticICONS } from "semantic-ui-react";
 import clsx from "clsx";
 import { auth, logout } from "@/firebase";
-import { LayoutNavbarButton, UserPicture } from "@/components";
+import {
+  LayoutNavbarButton,
+  ModalAuthLogin,
+  ModalAuthRegister,
+  UserPicture,
+} from "@/components";
 import { useModal, useToast } from "@/hooks";
 
 export interface LayoutNavbarAuthProps {
@@ -15,8 +20,16 @@ export interface LayoutNavbarAuthProps {
 
 export function LayoutNavbarAuth() {
   const user = auth.currentUser;
-  const { showRegister, showLogin } = useModal();
   const { addToast } = useToast();
+  const { setModal } = useModal();
+
+  const handleShowLoginModal = useCallback(() => {
+    setModal(<ModalAuthLogin />);
+  }, [setModal]);
+
+  const handleShowRegisterModal = useCallback(() => {
+    setModal(<ModalAuthRegister />);
+  }, [setModal]);
 
   const handleLogout = useCallback(async () => {
     await logout()
@@ -56,15 +69,15 @@ export function LayoutNavbarAuth() {
   const renderGuest = useMemo(
     () => (
       <div className="w-full flex items-center justify-center gap-4">
-        <Button size="tiny" onClick={showRegister}>
+        <Button size="tiny" onClick={handleShowRegisterModal}>
           Register
         </Button>
-        <Button color="yellow" size="tiny" onClick={showLogin}>
+        <Button color="yellow" size="tiny" onClick={handleShowLoginModal}>
           Login
         </Button>
       </div>
     ),
-    [showLogin, showRegister]
+    [handleShowLoginModal, handleShowRegisterModal]
   );
 
   return (
