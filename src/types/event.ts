@@ -120,7 +120,7 @@ export interface EventUpdateType {
 }
 
 export interface EventUpdateBatchDatabaseType {
-  id: string;
+  updateId: string;
   updates: Partial<Record<EventUpdateNameType, EventUpdateType>>;
   authorId: string;
   date: number;

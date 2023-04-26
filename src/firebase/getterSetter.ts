@@ -16,6 +16,7 @@ import {
   query,
   setDoc,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { fs } from "./config";
 import {
@@ -93,4 +94,48 @@ export async function deleteData<
   COLLECTION_NAME extends keyof FIREBASE_COLLECTION
 >(group: COLLECTION_NAME, id: string): Promise<void> {
   return deleteDoc(doc(fs, group, id));
+}
+
+type OPERATION_TYPE = {
+  create: FIREBASE_COLLECTION;
+  update: Partial<FIREBASE_COLLECTION>;
+  delete: object;
+};
+
+export type BatchOperationType = {
+  collectionName: keyof FIREBASE_COLLECTION;
+  documentId: string;
+  operationType: keyof OPERATION_TYPE;
+  value: OPERATION_TYPE[keyof OPERATION_TYPE];
+};
+
+export async function writeDataBatch(
+  batchOperations: BatchOperationType[]
+): Promise<void> {
+  const batch = writeBatch(fs);
+
+  for (const operation of batchOperations) {
+    const operationTarget = doc(
+      fs,
+      operation.collectionName,
+      operation.documentId
+    );
+    switch (operation.operationType) {
+      case "create":
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        batch.set(operationTarget, operation.value);
+        break;
+      case "update":
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        batch.update(operationTarget, operation.value);
+        break;
+      case "delete":
+        batch.delete(operationTarget);
+        break;
+    }
+  }
+
+  return batch.commit();
 }
