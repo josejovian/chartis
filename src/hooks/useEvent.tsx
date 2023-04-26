@@ -1,16 +1,33 @@
 import { useCallback, useMemo, useState } from "react";
 import _ from "lodash";
-import { EVENT_SORT_CRITERIA } from "@/consts";
+import {
+  EVENT_SORT_CRITERIA,
+  FIREBASE_COLLECTION_EVENTS,
+  FIREBASE_COLLECTION_UPDATES,
+  FIREBASE_COLLECTION_USERS,
+} from "@/consts";
 import {
   EventSearchType,
   EventSortType,
   EventTagNameType,
   EventType,
 } from "@/types";
-import { sleep } from "@/utils";
+import { compareEventValues, sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
-import { QueryConstraint, orderBy, where } from "firebase/firestore";
-import { deleteData, readData } from "@/firebase";
+import {
+  QueryConstraint,
+  arrayUnion,
+  increment,
+  orderBy,
+  where,
+} from "firebase/firestore";
+import {
+  BatchOperationType,
+  deleteData,
+  readData,
+  writeDataBatch,
+} from "@/firebase";
+import pushid from "pushid";
 
 interface useEventProps {
   type?: EventSearchType;
@@ -207,6 +224,76 @@ export function useEvent({ type }: useEventProps) {
     []
   );
 
+  const updateEventNew = useCallback(
+    async (eventId: string, previousValue: EventType, newValue: EventType) => {
+      const eventUpdateId = pushid();
+      const batchOperations: BatchOperationType[] = [];
+      const updateDocumentExists = await readData(
+        FIREBASE_COLLECTION_UPDATES,
+        eventId
+      );
+      const databaseEventData = (await readData(
+        FIREBASE_COLLECTION_EVENTS,
+        eventId
+      )) as EventType;
+
+      const changes = compareEventValues(previousValue, newValue);
+
+      if (!updateDocumentExists) {
+        batchOperations.push({
+          collectionName: FIREBASE_COLLECTION_UPDATES,
+          documentId: eventId,
+          operationType: "create",
+          value: [],
+        });
+      }
+
+      if (databaseEventData.subscriberIds) {
+        batchOperations.push(
+          ...databaseEventData.subscriberIds.map(
+            (userId) =>
+              ({
+                collectionName: FIREBASE_COLLECTION_USERS,
+                documentId: userId,
+                operationType: "update",
+                value: {
+                  [`unseenEvents.${eventId}`]: true,
+                  notificationCount: increment(1),
+                },
+              } as BatchOperationType)
+          )
+        );
+      }
+
+      batchOperations.push({
+        collectionName: FIREBASE_COLLECTION_EVENTS,
+        documentId: eventId,
+        operationType: "update",
+        value: {
+          ...(newValue as Partial<EventType>),
+          version: increment(1),
+        },
+      });
+
+      batchOperations.push({
+        collectionName: FIREBASE_COLLECTION_UPDATES,
+        documentId: eventId,
+        operationType: "update",
+        value: {
+          updates: arrayUnion({
+            updateId: eventUpdateId,
+            authorId: databaseEventData.authorId,
+            date: new Date().getTime(),
+            updates: changes,
+          }),
+        },
+      });
+
+      return writeDataBatch(batchOperations);
+    },
+    []
+  );
+
   const handleUpdateEvent = useCallback(
     (id: string, newEvt: Partial<EventType>) => {
       setEvents((prev) => {
@@ -263,6 +350,7 @@ export function useEvent({ type }: useEventProps) {
       getEventsMonthly,
       getFollowedEvents,
       handleUpdateEvent,
+      updateEventNew,
       deleteEvent: handleDeleteEvent,
       sortEvents,
       filterEvents,
@@ -279,6 +367,7 @@ export function useEvent({ type }: useEventProps) {
       getEventsMonthly,
       getFollowedEvents,
       handleUpdateEvent,
+      updateEventNew,
       handleDeleteEvent,
       sortEvents,
       filterEvents,
