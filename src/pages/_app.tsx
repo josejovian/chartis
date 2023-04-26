@@ -253,7 +253,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const renderShadeModal = useMemo(
     () =>
-      modal && (
+      modal &&
+      (modal as JSX.Element).type && (
         <div
           className={clsx(
             "fixed left-0 top-0 w-screen h-screen",
@@ -263,7 +264,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <div
             className="w-screen h-screen z-40 bg-black opacity-80"
             onClick={() => {
-              setModal(false);
+              setModal(null);
             }}
           />
           <Modal content={modal} />

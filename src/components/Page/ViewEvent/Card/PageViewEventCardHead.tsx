@@ -17,6 +17,7 @@ import {
   EventCardTabNameType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
+import { useReport } from "@/hooks";
 
 export interface PageViewEventHeadProps {
   event: EventType;
@@ -48,10 +49,14 @@ export function PageViewEventHead({
   updateUserSubscribedEventClientSide,
 }: PageViewEventHeadProps) {
   const [activeTab, setActiveTab] = stateActiveTab;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mode, setMode] = stateMode;
-
   const identification = stateIdentification[0];
+  const { user } = identification;
+  const { showReportModal } = useReport({
+    contentId: event.id,
+    contentType: "event",
+    reportedBy: user ? user.uid : "",
+  });
 
   const crumb = useMemo(
     () =>
@@ -139,10 +144,11 @@ export function PageViewEventHead({
           event={event}
           identification={identification}
           size={type === "mobile" ? "tiny" : undefined}
-          onEdit={handleEdit}
-          onDelete={onDelete}
           stateDeleting={stateDeleting}
           stateModalDelete={stateModalDelete}
+          onEdit={handleEdit}
+          onDelete={onDelete}
+          onReport={showReportModal}
         />
       </div>
     ),
@@ -152,10 +158,11 @@ export function PageViewEventHead({
       updateUserSubscribedEventClientSide,
       type,
       updateEvent,
-      handleEdit,
-      onDelete,
       stateDeleting,
       stateModalDelete,
+      handleEdit,
+      onDelete,
+      showReportModal,
     ]
   );
 

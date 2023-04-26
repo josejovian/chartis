@@ -17,6 +17,11 @@ export const RuleDescription = Yup.string()
   .max(5000, "Description is too long!")
   .required("Description is required.");
 
+export const RuleReason = Yup.string()
+  .min(8, "Reason is too short!")
+  .max(200, "Reason is too long!")
+  .required("Reason is required.");
+
 export function validateStartDate(start?: number) {
   if (!start) return "Start date is required.";
   return undefined;

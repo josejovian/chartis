@@ -18,7 +18,7 @@ import {
   IdentificationType,
   StateObject,
 } from "@/types";
-import { useEvent } from "@/hooks";
+import { useEvent, useReport } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
@@ -53,8 +53,13 @@ export function EventCard({
     authorName,
   } = event;
   const identification = stateIdentification[0];
-  const { users } = identification;
+  const { users, user } = identification;
   const { deleteEvent } = useEvent({});
+  const { showReportModal } = useReport({
+    contentId: id,
+    contentType: "event",
+    reportedBy: user ? user.uid : "invalid",
+  });
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
   const stateModalDelete = useState(false);
@@ -217,9 +222,10 @@ export function EventCard({
           event={event}
           identification={identification}
           size="tiny"
-          onDelete={handleDeleteEvent}
           stateModalDelete={stateModalDelete}
+          onDelete={handleDeleteEvent}
           onEdit={handleEditEvent}
+          onReport={showReportModal}
         />
       </div>
     ),
@@ -229,9 +235,10 @@ export function EventCard({
       updateEvent,
       identification,
       updateUserSubscribedEventClientSide,
-      handleDeleteEvent,
       stateModalDelete,
+      handleDeleteEvent,
       handleEditEvent,
+      showReportModal,
     ]
   );
 

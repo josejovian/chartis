@@ -129,8 +129,7 @@
       .ui.floating.dropdown .visible.menu
     ) {
     min-width: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
+    border-top: none !important;
   }
   .ui.dropdown > .visible.menu > .scrolling.menu {
     min-width: 0 !important;
