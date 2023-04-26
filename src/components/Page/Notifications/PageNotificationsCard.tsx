@@ -5,7 +5,7 @@ import { useIdentification, useNotification, useToast } from "@/hooks";
 import { Button } from "semantic-ui-react";
 import { useRouter } from "next/router";
 import { EventUpdateBatchType, UserType } from "@/types";
-import { doc, increment, runTransaction } from "firebase/firestore";
+import { doc, runTransaction } from "firebase/firestore";
 import { fs } from "@/firebase";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
 
@@ -50,7 +50,6 @@ export function PageNotificationsCard({
             return evts;
           })(),
           [`subscribedEvents.${eventId}`]: version,
-          notificationCount: increment(-1),
         });
       }).catch(() => {
         addToastPreset("post-fail");
@@ -106,7 +105,6 @@ export function PageNotificationsCard({
       transaction.update(userRef, {
         ...lastSeenVersions,
         unseenEvents,
-        notificationCount: increment(-1 * updates.length),
       });
     }).catch(() => {
       addToastPreset("post-fail");
@@ -141,7 +139,7 @@ export function PageNotificationsCard({
           >
             {updates.map((update) => (
               <NotificationCard
-                key={`Update_${update.eventId}-${update.id}`}
+                key={`Update_${update.eventId}-${update.updateId}`}
                 update={update}
                 handleReadNotification={() => handleReadNotification(update)}
                 handleReadAndViewNotification={() =>

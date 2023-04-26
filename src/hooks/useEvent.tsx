@@ -261,7 +261,6 @@ export function useEvent({ type }: useEventProps) {
                 operationType: "update",
                 value: {
                   [`unseenEvents.${eventId}`]: true,
-                  notificationCount: increment(1),
                 },
               } as BatchOperationType)
           )
