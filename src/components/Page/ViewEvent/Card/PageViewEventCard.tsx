@@ -201,63 +201,6 @@ export function PageViewEventCard({
             addToastPreset("post-fail");
             setSubmitting(false);
           });
-
-        // try {
-        //   const eventBatchUpdateId = pushid();
-        //   await runTransaction(fs, async (transaction) => {
-        //     const evtDoc = await transaction.get(eventRef);
-        //     const updatesDoc = await transaction.get(updatesRef);
-        //     const evt = evtDoc.exists() ? (evtDoc.data() as EventType) : event;
-        //     let updates: EventUpdateBatchDatabaseType[] = updatesDoc.exists()
-        //       ? (updatesDoc.data() as EventUpdateArrayType).updates
-        //       : [];
-        //     if (evt.subscriberIds)
-        //       evt.subscriberIds.forEach((userId) => {
-        //         const userRef = doc(fs, FIREBASE_COLLECTION_USERS, userId);
-        //         transaction.update(userRef, {
-        //           [`unseenEvents.${evt.id}`]: true,
-        //           notificationCount: increment(1),
-        //         });
-        //       });
-        //     transaction.update(eventRef, {
-        //       ...(newEvent as Partial<EventType>),
-        //       version: increment(1),
-        //     });
-        //     updates = [
-        //       ...updates,
-        //       {
-        //         updateId: eventBatchUpdateId,
-        //         authorId: user.uid,
-        //         date: new Date().getTime(),
-        //         updates: changes,
-        //       },
-        //     ];
-        //     transaction.update(updatesRef, {
-        //       updates,
-        //     });
-        //   }).then(async () => {
-        //     await sleep(200);
-        //     router.replace(`/event/${event.id}/`);
-        //     addToast({
-        //       title: "Event Updated",
-        //       description: "",
-        //       variant: "success",
-        //     });
-        //     await sleep(200);
-        //     setMode("view");
-        //     setEvent((prev) => ({
-        //       ...newEvent,
-        //       version: (prev.version ?? 0) + 1,
-        //     }));
-        //     updateEvent(event.id, newEvent);
-        //     setSubmitting(false);
-        //     if (eventPreviousValues && eventPreviousValues.current)
-        //       eventPreviousValues.current = newEvent;
-        //   });
-        // } catch (e) {
-        //   addToastPreset("post-fail");
-        //   setSubmitting(false);
-        // }
       }
     },
     [
