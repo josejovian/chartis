@@ -34,7 +34,7 @@ export function PageViewEventCardUpdatesTab({
           Object.entries(batch.updates).map(
             ([type, { valueNew, valuePrevious }], idx) => (
               <EventUpdate
-                key={`Update_${batch.id}_${idx}`}
+                key={`Update_${batch.updateId}_${idx}`}
                 authorId={batch.authorId}
                 date={batch.date}
                 eventId={batch.eventId}
