@@ -16,7 +16,9 @@ import { compareEventValues, sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
 import {
   QueryConstraint,
+  arrayRemove,
   arrayUnion,
+  deleteField,
   increment,
   orderBy,
   where,
@@ -25,6 +27,7 @@ import {
   BatchOperationType,
   deleteData,
   readData,
+  updateData,
   writeDataBatch,
 } from "@/firebase";
 import pushid from "pushid";
@@ -294,6 +297,65 @@ export function useEvent({ type }: useEventProps) {
     []
   );
 
+  const toggleEventSubscription = useCallback(
+    async (
+      eventId: string,
+      eventVersion: number,
+      currentlySubscribed: boolean,
+      userId?: string
+    ): Promise<void> => {
+      // for guest
+      if (!userId) {
+        return updateData("events", eventId, {
+          guestSubscriberCount: (currentlySubscribed
+            ? increment(-1)
+            : increment(1)) as unknown as number,
+        }).then(() => {
+          const subscribe = JSON.parse(
+            localStorage.getItem("subscribe") ?? "{}"
+          ) as Record<string, number>;
+          const newSubscribe = currentlySubscribed
+            ? (() => {
+                const temp = { ...subscribe };
+                delete temp[eventId];
+                return temp;
+              })()
+            : {
+                ...subscribe,
+                [eventId]: eventVersion,
+              };
+          localStorage.setItem("subscribe", JSON.stringify(newSubscribe));
+        });
+      }
+
+      // for registered user
+      return writeDataBatch([
+        {
+          collectionName: FIREBASE_COLLECTION_USERS,
+          documentId: userId,
+          operationType: "update",
+          value: {
+            [`subscribedEvents.${eventId}`]: currentlySubscribed
+              ? deleteField()
+              : eventVersion,
+          },
+        },
+        {
+          collectionName: FIREBASE_COLLECTION_EVENTS,
+          documentId: eventId,
+          operationType: "update",
+          value: {
+            subscriberIds: currentlySubscribed
+              ? arrayRemove(userId)
+              : arrayUnion(userId),
+            subscriberCount: currentlySubscribed ? increment(-1) : increment(1),
+          },
+        },
+      ]);
+    },
+    []
+  );
+
   const handleUpdateEvent = useCallback(
     (id: string, newEvt: Partial<EventType>) => {
       setEvents((prev) => {
@@ -354,6 +416,7 @@ export function useEvent({ type }: useEventProps) {
       deleteEvent: handleDeleteEvent,
       sortEvents,
       filterEvents,
+      toggleEventSubscription,
       stateQuery: stateUserQuery,
       stateEvents,
       stateFilters,
@@ -371,6 +434,7 @@ export function useEvent({ type }: useEventProps) {
       handleDeleteEvent,
       sortEvents,
       filterEvents,
+      toggleEventSubscription,
       stateUserQuery,
       stateEvents,
       stateFilters,
