@@ -23,7 +23,7 @@ export function NotificationCard({
   handleReadNotification,
   handleReadAndViewNotification,
 }: NotificationCardProps) {
-  const { authorId, eventId, updates, date, id } = update;
+  const { authorId, eventId, updates, date, updateId } = update;
   const { type } = useScreen();
   const renderChangeList = useMemo(
     () => (
@@ -33,7 +33,7 @@ export function NotificationCard({
         ).map(([updateType, { valuePrevious, valueNew }], idx) => (
           <li
             className={clsx(idx > 0 && "mt-2", "pr-8")}
-            key={`Update_${id}_${idx}`}
+            key={`Update_${updateId}_${idx}`}
           >
             {updateType !== "update-description" ? (
               <>
@@ -50,7 +50,7 @@ export function NotificationCard({
         ))}
       </ul>
     ),
-    [id, updates]
+    [updateId, updates]
   );
 
   const renderUpdateDetail = useMemo(

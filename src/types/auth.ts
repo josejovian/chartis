@@ -5,7 +5,6 @@ export interface UserType {
   name: string;
   subscribedEvents?: Record<string, number>;
   unseenEvents?: Record<string, boolean>;
-  notificationCount?: number;
 }
 
 export type UserObjectType = User | null;
