@@ -247,7 +247,10 @@ export function useEvent({ type }: useEventProps) {
           collectionName: FIREBASE_COLLECTION_UPDATES,
           documentId: eventId,
           operationType: "create",
-          value: [],
+          value: {
+            eventId: eventId,
+            updates: [],
+          },
         });
       }
 
@@ -274,6 +277,7 @@ export function useEvent({ type }: useEventProps) {
         value: {
           ...(newValue as Partial<EventType>),
           version: increment(1),
+          lastUpdatedAt: new Date().getTime(),
         },
       });
 
@@ -282,10 +286,9 @@ export function useEvent({ type }: useEventProps) {
         documentId: eventId,
         operationType: "update",
         value: {
+          eventId: eventId,
           updates: arrayUnion({
             updateId: eventUpdateId,
-            authorId: databaseEventData.authorId,
-            date: new Date().getTime(),
             updates: changes,
           }),
         },
@@ -337,6 +340,9 @@ export function useEvent({ type }: useEventProps) {
             [`subscribedEvents.${eventId}`]: currentlySubscribed
               ? deleteField()
               : eventVersion,
+            [`unseenEvents.${eventId}`]: currentlySubscribed
+              ? deleteField()
+              : false,
           },
         },
         {
