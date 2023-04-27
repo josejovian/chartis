@@ -199,6 +199,10 @@
   .NotificationCard:hover :is(p, li) {
     text-decoration: underline;
   }
+
+  .h-full-1rem {
+    height: calc(100% + 1rem);
+  }
 }
 @tailwind components;
 @layer utilities {

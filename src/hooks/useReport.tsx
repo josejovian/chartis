@@ -1,18 +1,25 @@
-import { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { ModalReportProps } from "@/components";
 import { useModal } from "./useModal";
+import { Loader } from "semantic-ui-react";
 
 const ModalReport = dynamic(
-  () => import("../components/Modal/Moderation/ModalReport")
+  () => import("../components/Modal/Moderation/ModalReport"),
+  {
+    loading: () => <Loader>Loading</Loader>,
+  }
 );
 
-export function useReport(props: ModalReportProps) {
+export function useReport() {
   const { setModal } = useModal();
 
-  const showReportModal = useCallback(() => {
-    setModal(<ModalReport {...props} />);
-  }, [props, setModal]);
+  const showReportModal = useCallback(
+    (props: ModalReportProps) => {
+      setModal(<ModalReport {...props} />);
+    },
+    [setModal]
+  );
 
   return useMemo(
     () => ({
