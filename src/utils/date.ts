@@ -26,7 +26,11 @@ export function strDay(idx: number, length?: number) {
 }
 
 export function strDate(date: Date) {
-  return date.toLocaleDateString("en", { month: "short" });
+  return date.toLocaleString("en-gb", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function strTime(date: Date) {
