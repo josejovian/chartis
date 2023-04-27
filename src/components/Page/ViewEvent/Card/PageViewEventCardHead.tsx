@@ -52,11 +52,7 @@ export function PageViewEventHead({
   const [mode, setMode] = stateMode;
   const identification = stateIdentification[0];
   const { user } = identification;
-  const { showReportModal } = useReport({
-    contentId: event.id,
-    contentType: "event",
-    reportedBy: user ? user.uid : "",
-  });
+  const { showReportModal } = useReport();
 
   const crumb = useMemo(
     () =>
@@ -93,7 +89,7 @@ export function PageViewEventHead({
         count: event.commentCount ?? 0,
       },
     ],
-    [event.commentCount, event.version, setActiveTab]
+    [event, setActiveTab]
   );
 
   const handleEdit = useCallback(() => {
@@ -148,7 +144,13 @@ export function PageViewEventHead({
           stateModalDelete={stateModalDelete}
           onEdit={handleEdit}
           onDelete={onDelete}
-          onReport={showReportModal}
+          onReport={() =>
+            showReportModal({
+              contentId: event.id,
+              contentType: "event",
+              reportedBy: user ? user.uid : "",
+            })
+          }
         />
       </div>
     ),
@@ -163,6 +165,7 @@ export function PageViewEventHead({
       handleEdit,
       onDelete,
       showReportModal,
+      user,
     ]
   );
 

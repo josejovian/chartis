@@ -325,10 +325,10 @@ export function PageViewEventCard({
         case "updates":
           return <PageViewEventCardUpdatesTab event={event} />;
         case "discussion":
-          return <PageViewEventCardDiscussionTab event={event} />;
+          return <PageViewEventCardDiscussionTab stateEvent={stateEvent} />;
       }
     },
-    [activeTab, event, mode, stateTags, type]
+    [activeTab, event, mode, stateEvent, stateTags, type]
   );
 
   const renderCardContents = useCallback(

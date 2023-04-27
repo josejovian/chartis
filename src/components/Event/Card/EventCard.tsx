@@ -55,11 +55,7 @@ export function EventCard({
   const identification = stateIdentification[0];
   const { users, user } = identification;
   const { deleteEvent } = useEvent({});
-  const { showReportModal } = useReport({
-    contentId: id,
-    contentType: "event",
-    reportedBy: user ? user.uid : "invalid",
-  });
+  const { showReportModal } = useReport();
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
   const stateModalDelete = useState(false);
@@ -225,7 +221,13 @@ export function EventCard({
           stateModalDelete={stateModalDelete}
           onDelete={handleDeleteEvent}
           onEdit={handleEditEvent}
-          onReport={showReportModal}
+          onReport={() =>
+            showReportModal({
+              contentId: id,
+              contentType: "event",
+              reportedBy: user ? user.uid : "invalid",
+            })
+          }
         />
       </div>
     ),
@@ -239,6 +241,8 @@ export function EventCard({
       handleDeleteEvent,
       handleEditEvent,
       showReportModal,
+      id,
+      user,
     ]
   );
 
