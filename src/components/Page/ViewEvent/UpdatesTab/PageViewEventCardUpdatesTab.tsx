@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { readData } from "@/firebase";
 import clsx from "clsx";
 import { EventUpdate } from "@/components";
-import { EventType, EventUpdateBatchType, EventUpdateNameType } from "@/types";
+import { EventType, EventUpdateBatchType, UpdateNameType } from "@/types";
 
 interface PageViewEventCardUpdatesTabProps {
   event: EventType;
@@ -38,7 +38,7 @@ export function PageViewEventCardUpdatesTab({
                 authorId={batch.authorId}
                 date={batch.date}
                 eventId={batch.eventId}
-                type={type as EventUpdateNameType}
+                type={type as UpdateNameType}
                 valueNew={valueNew}
                 valuePrevious={valuePrevious}
                 last={

@@ -33,6 +33,19 @@ type FIREBASE_COLLECTION = {
   [FIREBASE_COLLECTION_COMMENTS]: DatabaseCommentType;
 };
 
+type OPERATION_TYPE = {
+  create: FIREBASE_COLLECTION;
+  update: Partial<FIREBASE_COLLECTION>;
+  delete: object;
+};
+
+export type BatchOperationType = {
+  collectionName: keyof FIREBASE_COLLECTION;
+  documentId: string;
+  operationType: keyof OPERATION_TYPE;
+  value: OPERATION_TYPE[keyof OPERATION_TYPE];
+};
+
 export async function createData<
   COLLECTION_NAME extends keyof FIREBASE_COLLECTION
 >(
@@ -95,19 +108,6 @@ export async function deleteData<
 >(group: COLLECTION_NAME, id: string): Promise<void> {
   return deleteDoc(doc(fs, group, id));
 }
-
-type OPERATION_TYPE = {
-  create: FIREBASE_COLLECTION;
-  update: Partial<FIREBASE_COLLECTION>;
-  delete: object;
-};
-
-export type BatchOperationType = {
-  collectionName: keyof FIREBASE_COLLECTION;
-  documentId: string;
-  operationType: keyof OPERATION_TYPE;
-  value: OPERATION_TYPE[keyof OPERATION_TYPE];
-};
 
 export async function writeDataBatch(
   batchOperations: BatchOperationType[]

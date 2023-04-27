@@ -6,38 +6,45 @@ import { UserPicture } from "@/components";
 import { useScreen } from "@/hooks";
 import { getTimeDifference } from "@/utils";
 import { EVENT_UPDATE_TERM } from "@/consts";
-import {
-  EventUpdateBatchType,
-  EventUpdateNameType,
-  EventUpdateType,
-} from "@/types";
+import { UpdateNameType, UpdateChangedValueType } from "@/types";
+import { NotificationData } from "@/pages/updates";
+import router from "next/router";
 
 interface NotificationCardProps {
-  update: EventUpdateBatchType;
-  handleReadNotification: () => void;
-  handleReadAndViewNotification: () => void;
+  udpateData: NotificationData;
+  handleReadNotification: (
+    eventId: string,
+    eventVersion: number
+  ) => Promise<void>;
 }
 
 export function NotificationCard({
-  update,
+  udpateData,
   handleReadNotification,
-  handleReadAndViewNotification,
 }: NotificationCardProps) {
-  const { authorId, eventId, updates, date, updateId } = update;
+  const {
+    eventId,
+    eventVersion,
+    eventName,
+    authorName,
+    lastUpdatedAt,
+    changes,
+  } = udpateData;
   const { type } = useScreen();
+
   const renderChangeList = useMemo(
     () => (
       <ul className={NOTIFICATION_CHANGES_LIST_STYLE}>
         {(
-          Object.entries(updates) as [EventUpdateNameType, EventUpdateType][]
-        ).map(([updateType, { valuePrevious, valueNew }], idx) => (
+          Object.entries(changes) as [UpdateNameType, UpdateChangedValueType][]
+        ).map(([UpdateChangesType, { valuePrevious, valueNew }], idx) => (
           <li
             className={clsx(idx > 0 && "mt-2", "pr-8")}
-            key={`Update_${updateId}_${idx}`}
+            key={`Update_${eventId}_${idx}`}
           >
-            {updateType !== "update-description" ? (
+            {UpdateChangesType !== "update-description" ? (
               <>
-                <b>Update {EVENT_UPDATE_TERM[updateType]}:</b>{" "}
+                <b>Update {EVENT_UPDATE_TERM[UpdateChangesType]}:</b>{" "}
                 <span className="text-gray-400 line-through text-16px">
                   {valuePrevious}
                 </span>{" "}
@@ -50,22 +57,24 @@ export function NotificationCard({
         ))}
       </ul>
     ),
-    [updateId, updates]
+    [changes, eventId]
   );
 
-  const renderUpdateDetail = useMemo(
+  const renderUpdateCard = useMemo(
     () => (
       <div className="break-words w-full pr-8">
-        <Link href="#" onClick={() => handleReadAndViewNotification()}>
+        <Link href="#" onClick={() => router.push(`/event/${eventId}`)}>
           <p className="text-16px mb-2 pr-8">
-            <b>{authorId}</b> updated <b>{eventId}</b>.
+            <b>{authorName}</b> updated <b>{eventName}</b>.
           </p>
           {renderChangeList}
-          <span className="text-gray-400">{getTimeDifference(date)}</span>
+          <span className="text-gray-400">
+            {getTimeDifference(lastUpdatedAt)}
+          </span>
         </Link>
       </div>
     ),
-    [authorId, date, eventId, handleReadAndViewNotification, renderChangeList]
+    [authorName, eventId, eventName, lastUpdatedAt, renderChangeList]
   );
 
   return (
@@ -89,10 +98,10 @@ export function NotificationCard({
             : NOTIFICATION_MAIN_MOBILE_STYLE
         )}
       >
-        {renderUpdateDetail}
+        {renderUpdateCard}
         <Button
           className={clsx("!w-fit", type !== "mobile" ? "self-end" : "!mt-4")}
-          onClick={handleReadNotification}
+          onClick={() => handleReadNotification(eventId, eventVersion)}
         >
           Read
         </Button>
