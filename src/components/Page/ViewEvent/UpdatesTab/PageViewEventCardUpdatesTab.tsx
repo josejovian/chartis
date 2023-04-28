@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { readData } from "@/firebase";
 import clsx from "clsx";
 import { EventUpdate } from "@/components";
-import { EventType, EventUpdateBatchType, UpdateNameType } from "@/types";
+import { EventType, UpdateNameType, UpdateVersion } from "@/types";
 
 interface PageViewEventCardUpdatesTabProps {
   event: EventType;
@@ -11,7 +11,7 @@ interface PageViewEventCardUpdatesTabProps {
 export function PageViewEventCardUpdatesTab({
   event,
 }: PageViewEventCardUpdatesTabProps) {
-  const [updates, setUpdates] = useState<EventUpdateBatchType[]>();
+  const [updates, setUpdates] = useState<UpdateVersion[]>();
 
   const handleGetEventUpdates = useCallback(async () => {
     if (event.version === 0) return;
@@ -35,9 +35,9 @@ export function PageViewEventCardUpdatesTab({
             ([type, { valueNew, valuePrevious }], idx) => (
               <EventUpdate
                 key={`Update_${batch.updateId}_${idx}`}
-                authorId={batch.authorId}
+                authorId={event.authorName}
                 date={batch.date}
-                eventId={batch.eventId}
+                eventId={event.id}
                 type={type as UpdateNameType}
                 valueNew={valueNew}
                 valuePrevious={valuePrevious}
@@ -49,10 +49,8 @@ export function PageViewEventCardUpdatesTab({
             )
           )
       ),
-    [updates]
+    [event.authorName, event.id, updates]
   );
-
-  // return <div className="pt-8 px-16 overflow-y">{renderEventUpdates}</div>;
 
   return (
     <div className={clsx(EVENT_CARD_BODY_WRAPPER_STYLE)}>

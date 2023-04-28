@@ -1,8 +1,8 @@
 import {
   UserType,
   EventType,
-  EventUpdateArrayType,
   DatabaseCommentType,
+  DatabaseUpdateChangesType,
 } from "@/types";
 import pushid from "pushid";
 import {
@@ -29,7 +29,7 @@ import {
 type FIREBASE_COLLECTION = {
   [FIREBASE_COLLECTION_USERS]: UserType;
   [FIREBASE_COLLECTION_EVENTS]: EventType;
-  [FIREBASE_COLLECTION_UPDATES]: EventUpdateArrayType;
+  [FIREBASE_COLLECTION_UPDATES]: DatabaseUpdateChangesType;
   [FIREBASE_COLLECTION_COMMENTS]: DatabaseCommentType;
 };
 
