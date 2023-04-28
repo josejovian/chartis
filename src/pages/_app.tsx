@@ -54,8 +54,8 @@ export default function App({ Component, pageProps }: AppProps) {
   const initialize = useRef(false);
   const initializeListener = useRef(false);
   const [toasts, setToasts] = useState<ToastLiveType[]>([]);
-  const staetNotification = useState<EventUpdateBatchType[]>([]);
-  const setNotification = staetNotification[1];
+  const stateNotification = useState<EventUpdateBatchType[]>([]);
+  const setNotification = stateNotification[1];
   const toastCount = useRef(0);
   const auth = getAuth();
 
@@ -236,7 +236,7 @@ export default function App({ Component, pageProps }: AppProps) {
           addToastPreset: handleAddToastPreset,
         }}
         notificationProps={{
-          stateUpdates: staetNotification,
+          stateUpdates: stateNotification,
         }}
       >
         <div id="App" className={clsx("flex flex-row w-full h-full")}>
