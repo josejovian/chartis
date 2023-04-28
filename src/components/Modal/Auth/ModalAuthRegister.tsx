@@ -24,6 +24,8 @@ export function ModalAuthRegister() {
         FIREBASE_COLLECTION_USERS,
         {
           name: data.name,
+          email: data.email,
+          joinDate: new Date().getTime(),
         },
         cred.user.uid
       )
