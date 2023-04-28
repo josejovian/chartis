@@ -171,7 +171,7 @@ export default function Notification() {
           if (notification.unseen) filtered.push(notification.eventId);
           return filtered;
         },
-        []
+        [] as string[]
       );
       if (updateEventId.length > 0) {
         setIsLoading(true);
