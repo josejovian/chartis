@@ -2,25 +2,32 @@ import { useMemo } from "react";
 import { Button, Dropdown, Icon, type SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EVENT_SORT_CRITERIA } from "@/consts";
-import { EventSortType, StateObject } from "@/types";
+import {
+  DropdownSortOptionType,
+  EventType,
+  StateObject,
+  UserType,
+} from "@/types";
 
-export interface EventButtonSortProps {
+export interface ButtonDropdownSortProps<X> {
   size?: SemanticSIZES;
-  stateSortBy: StateObject<EventSortType>;
+  options: DropdownSortOptionType<X>[];
+  stateSortBy: StateObject<DropdownSortOptionType<X>>;
   stateSortDescending: StateObject<boolean>;
 }
 
-export function EventButtonSort({
+export function ButtonDropdownSort<X>({
   size,
+  options,
   stateSortBy,
   stateSortDescending,
-}: EventButtonSortProps) {
+}: ButtonDropdownSortProps<X>) {
   const [sortBy, setSortBy] = stateSortBy;
   const setSortDescending = stateSortDescending[1];
 
   const renderDropdownItems = useMemo(
     () =>
-      EVENT_SORT_CRITERIA.map((criterion) => {
+      options.map((criterion) => {
         const { id, name, descending } = criterion;
         const active = sortBy.id === id;
         return (
@@ -28,7 +35,8 @@ export function EventButtonSort({
             key={name}
             value={id}
             onClick={() => {
-              setSortBy(criterion);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              setSortBy(criterion as any);
               setSortDescending(descending);
             }}
           >
@@ -37,7 +45,7 @@ export function EventButtonSort({
           </Dropdown.Item>
         );
       }),
-    [setSortBy, setSortDescending, sortBy.id]
+    [options, setSortBy, setSortDescending, sortBy.id]
   );
   return (
     <Dropdown
@@ -47,7 +55,7 @@ export function EventButtonSort({
       floating
       trigger={
         <Button className="w-fit !pr-2 !h-full" size={size}>
-          Sort By
+          Sort
           <Icon className="!ml-2 !mr-0" name="triangle down" />
         </Button>
       }

@@ -10,6 +10,8 @@ import {
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
+import { ButtonDropdownSelect, ButtonDropdownSort } from "@/components/Button";
+import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
 
 export interface PageSearchEventHeadProps {
   stateQuery: StateObject<string>;
@@ -35,15 +37,18 @@ export function PageSearchEventCardHead({
     >
       <PageSearchEventInput stateQuery={stateQuery} />
       <div className="flex grow-0 gap-4 justify-end">
-        <EventButtonFilter
-          stateFilters={stateFilters}
-          asButton
+        <ButtonDropdownSelect
+          name="Filter"
+          stateActive={stateFilters}
+          options={EVENT_TAGS}
           size={type === "mobile" ? "tiny" : undefined}
+          type="multiple"
         />
-        <EventButtonSort
+        <ButtonDropdownSort
           stateSortBy={stateSortBy}
           stateSortDescending={stateSortDescending}
           size={type === "mobile" ? "tiny" : undefined}
+          options={EVENT_SORT_CRITERIA}
         />
       </div>
     </div>
