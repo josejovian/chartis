@@ -1,4 +1,11 @@
-import { ReportCategoryOptionType, ReportCategoryType } from "@/types";
+import {
+  DropdownOptionType,
+  DropdownSortOptionType,
+  ReportCategoryOptionType,
+  ReportCategoryType,
+  UserGroupFilterType,
+  UserType,
+} from "@/types";
 
 export const REPORT_CATEGORY: Record<
   ReportCategoryType,
@@ -17,3 +24,38 @@ export const REPORT_CATEGORY: Record<
     name: "Spam",
   },
 };
+
+export const MODERATION_USER_TYPE_FILTERS: Record<
+  UserGroupFilterType,
+  DropdownOptionType
+> = {
+  all: {
+    name: "All Users",
+  },
+  user: {
+    name: "Users",
+  },
+  banned: {
+    name: "Banned Users",
+  },
+  admin: {
+    name: "Admin",
+  },
+};
+
+export const MODERATION_USER_SORT: DropdownSortOptionType<UserType>[] = [
+  { id: "oldest", key: "joinDate", name: "Oldest", descending: false },
+  { id: "newest", key: "joinDate", name: "Newest", descending: true },
+  {
+    id: "a-z",
+    key: "name",
+    name: "Name (A to Z)",
+    descending: false,
+  },
+  {
+    id: "z-a",
+    key: "name",
+    name: "Name (Z to A)",
+    descending: true,
+  },
+];

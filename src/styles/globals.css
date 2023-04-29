@@ -203,6 +203,16 @@
   .h-full-1rem {
     height: calc(100% + 1rem);
   }
+
+  .ManageUserTableTop {
+    border-bottom: 0 !important;
+    border-radius: 0.28571429rem 0.28571429rem 0 0 !important;
+  }
+
+  .ManageUserTableBottom :is(table, tbody) {
+    border-top: 0px !important;
+    border-radius: 0 0 0.28571429rem 0.28571429rem !important;
+  }
 }
 @tailwind components;
 @layer utilities {

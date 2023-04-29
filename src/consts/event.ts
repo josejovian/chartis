@@ -1,4 +1,5 @@
 import {
+  DropdownOptionType,
   EventSortType,
   EventTagNameType,
   EventTagType,
@@ -44,7 +45,7 @@ export const EVENT_DUMMY_2: EventType = {
   tags: {},
 };
 
-export const EVENT_TAGS: Record<EventTagNameType, EventTagType> = {
+export const EVENT_TAGS: Record<EventTagNameType, DropdownOptionType> = {
   seminar: {
     name: "Seminar",
     color: "blue",
