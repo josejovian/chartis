@@ -204,9 +204,21 @@
     height: calc(100% + 1rem);
   }
 
+  .h-full--4rem {
+    height: calc(100% - 4rem);
+  }
   .ManageUserTableTop {
-    border-bottom: 0 !important;
+    background-color: #f9fafb;
+    border: 1px solid rgba(34, 36, 38, 0.1);
     border-radius: 0.28571429rem 0.28571429rem 0 0 !important;
+  }
+  .ManageUserTableTop :is(table, th, td) {
+    border: 0 !important;
+    outline: 0 !important;
+  }
+  .ManageUserTableBottom {
+    max-height: calc(100% - 3rem);
+    border-bottom: 1px solid rgba(34, 36, 38, 0.1);
   }
 
   .ManageUserTableBottom :is(table, tbody) {

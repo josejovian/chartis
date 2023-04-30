@@ -15,7 +15,11 @@ import { useMemo } from "react";
 import clsx from "clsx";
 import { useIdentification } from "@/hooks";
 import { validateEventQuery } from "@/utils";
-import { EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
+import {
+  ASSET_CALENDAR,
+  ASSET_NO_CONTENT,
+  EVENT_QUERY_LENGTH_CONSTRAINTS,
+} from "@/consts";
 
 export interface PageSearchEventCardProps {
   className?: string;
@@ -40,26 +44,35 @@ export function PageSearchEventCard({
 }: PageSearchEventCardProps) {
   const query = stateQuery[0];
   const sortBy = stateSortBy[0];
-  const sortDescending = stateSortDescending[0];
+  const filters = stateFilters[0];
   const { stateIdentification, updateUserSubscribedEventClientSide } =
     useIdentification();
 
-  const sortCaption = useMemo(
-    () =>
-      `, sorted by ${sortBy.name} ${
-        sortDescending ? "descending" : "ascending"
-      }ly.`,
-    [sortBy, sortDescending]
+  const filterCaption = useMemo(
+    () => (
+      <>
+        &nbsp;that has the tag(s): <b>{filters.join(", ")}</b>
+      </>
+    ),
+    [filters]
   );
+
+  const sortCaption = useMemo(() => ` , sorted by ${sortBy.name}.`, [sortBy]);
 
   const mainCaption = useMemo(() => `Searching for "${query}" events`, [query]);
 
   const renderCaption = useMemo(
     () =>
-      validateEventQuery(query) && query !== ""
-        ? `${mainCaption} ${sortCaption}`
-        : `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters.`,
-    [mainCaption, query, sortCaption]
+      validateEventQuery(query) && query !== "" ? (
+        <>
+          {mainCaption}
+          {filters.length > 0 && filterCaption}
+          {sortCaption}
+        </>
+      ) : (
+        `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters.`
+      ),
+    [filterCaption, filters.length, mainCaption, query, sortCaption]
   );
 
   const renderEvents = useMemo(
@@ -88,7 +101,8 @@ export function PageSearchEventCard({
   const renderEmpty = useMemo(
     () => (
       <LayoutNotice
-        title={query !== "" ? "It's Empty" : "Start Searching"}
+        illustration={query !== "" ? ASSET_NO_CONTENT : ASSET_CALENDAR}
+        title={query !== "" ? "No Events" : "Start Searching"}
         description={
           query !== ""
             ? "No events found with such query."
@@ -113,7 +127,7 @@ export function PageSearchEventCard({
         stateSortBy={stateSortBy}
         stateSortDescending={stateSortDescending}
       />
-      <div className="mt-4 mb-6 pl-4">{renderCaption}&nbsp;</div>
+      <div className="mt-4 mb-6 pl-4">{renderCaption}</div>
       <div
         className={clsx(
           "flex flex-col gap-4",
