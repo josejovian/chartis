@@ -24,15 +24,16 @@ export function LayoutNavbarItem({
     () => (
       <div
         className={clsx(
-          "h-8",
-          "flex items-center",
+          "flex items-center h-8 border-l border-l-4",
           active
             ? [
                 "text-primary-3 bg-slate-800 hover:bg-slate-700",
                 "border-l border-l-4 border-primary-3",
-                // eslint-disable-next-line no-mixed-spaces-and-tabs
               ]
-            : ["!text-gray-50 hover:bg-slate-700", "cursor-pointer"]
+            : [
+                "!text-gray-50 hover:bg-slate-700 border-transparent",
+                "cursor-pointer",
+              ]
         )}
         onClick={onClick}
       >

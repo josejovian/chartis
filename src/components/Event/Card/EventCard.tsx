@@ -16,23 +16,30 @@ import {
   EventDetailCompactType,
   EventType,
   IdentificationType,
+  StateObject,
 } from "@/types";
 import { useEvent } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
-  identification: IdentificationType;
+  stateIdentification: StateObject<IdentificationType>;
   event: EventType;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   type?: EventCardDisplayType;
+  updateUserSubscribedEventClientSide: (
+    userId: string,
+    eventId: string,
+    version?: number
+  ) => void;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
 export function EventCard({
   className,
-  identification,
+  stateIdentification,
   event,
-  updateEvent,
   type = "vertical",
+  updateUserSubscribedEventClientSide,
+  updateEvent,
 }: EventCardProps) {
   const {
     id,
@@ -45,6 +52,7 @@ export function EventCard({
     postDate,
     authorName,
   } = event;
+  const identification = stateIdentification[0];
   const { users } = identification;
   const { deleteEvent } = useEvent({});
   const stateDeleting = useState(false);
@@ -200,6 +208,9 @@ export function EventCard({
           event={event}
           updateEvent={updateEvent}
           identification={identification}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
           size="tiny"
         />
         <EventButtonMore
@@ -217,6 +228,7 @@ export function EventCard({
       event,
       updateEvent,
       identification,
+      updateUserSubscribedEventClientSide,
       handleDeleteEvent,
       stateModalDelete,
       handleEditEvent,

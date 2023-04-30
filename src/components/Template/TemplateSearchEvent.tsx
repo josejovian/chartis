@@ -33,7 +33,7 @@ export function TemplateSearchEvent({
   const router = useRouter();
   const { type } = useScreen();
 
-  const stateIdentification = useIdentification();
+  const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
   const queried = useRef(0);
