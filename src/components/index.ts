@@ -5,6 +5,7 @@ export * from "./Layout";
 export * from "./Modal";
 export * from "./Notification";
 export * from "./Page";
+export * from "./Table";
 export * from "./Template";
 export * from "./Toast";
 export * from "./User";
