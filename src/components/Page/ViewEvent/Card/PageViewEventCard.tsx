@@ -1,17 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { fs } from "@/firebase";
+import { doc, increment, runTransaction, writeBatch } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { Formik } from "formik";
 import pushid from "pushid";
 import {
   LayoutCard,
-  PageViewEventBody,
   PageViewEventFoot,
   PageViewEventHead,
+  PageViewEventCardDetailTab,
+  PageViewEventCardUpdatesTab,
+  PageViewEventCardDiscussionTab,
 } from "@/components";
 import { useIdentification, useEvent, useToast } from "@/hooks";
 import {
   SchemaEvent,
+  compareEventValues,
+  getLocalTimeInISO,
   sleep,
   validateEndDate,
   validateStartDate,
@@ -22,9 +34,16 @@ import {
   EventModeType,
   ScreenSizeCategoryType,
   StateObject,
+  EventCardTabNameType,
+  EventUpdateArrayType,
+  EventUpdateBatchDatabaseType,
 } from "@/types";
-import { EVENT_EMPTY } from "@/consts";
-import { createData } from "@/firebase/getterSetter";
+import {
+  EVENT_EMPTY,
+  FIREBASE_COLLECTION_EVENTS,
+  FIREBASE_COLLECTION_UPDATES,
+  FIREBASE_COLLECTION_USERS,
+} from "@/consts";
 
 export interface ModalViewEventProps {
   className?: string;
@@ -32,6 +51,12 @@ export interface ModalViewEventProps {
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvt: Partial<EventType>) => void;
+  updateUserSubscribedEventClientSide: (
+    userId: string,
+    eventId: string,
+    version?: number
+  ) => void;
+  eventPreviousValues?: MutableRefObject<EventType>;
 }
 
 export function PageViewEventCard({
@@ -40,8 +65,9 @@ export function PageViewEventCard({
   stateMode,
   type,
   updateEvent,
+  updateUserSubscribedEventClientSide,
+  eventPreviousValues,
 }: ModalViewEventProps) {
-  const stateActiveTab = useState(0);
   const [event, setEvent] = stateEvent;
   const router = useRouter();
   const [mode, setMode] = stateMode;
@@ -51,6 +77,8 @@ export function PageViewEventCard({
   const setSubmitting = stateSubmitting[1];
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
+  const stateActiveTab = useState<EventCardTabNameType>("detail");
+  const activeTab = stateActiveTab[0];
   const initialEventData = useMemo(() => {
     if (!event || mode === "create") return EVENT_EMPTY;
 
@@ -63,31 +91,27 @@ export function PageViewEventCard({
     );
 
     if (object.startDate)
-      object.startDate = new Date(object.startDate).toISOString().slice(0, 16);
+      object.startDate = getLocalTimeInISO(object.startDate);
 
-    if (object.endDate)
-      object.endDate = new Date(object.endDate).toISOString().slice(0, 16);
+    if (object.endDate) object.endDate = getLocalTimeInISO(object.endDate);
 
     return object;
   }, [event, mode]);
   const { addToast, addToastPreset } = useToast();
   const { stateModalDelete, deleteEvent } = useEvent({});
 
-  const stateIdentification = useIdentification();
+  const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
 
-  const handleSubmitForm = useCallback(
-    async (values: unknown) => {
-      if (!user) return;
-
-      setSubmitting(true);
+  const handleConstructEventValues = useCallback(
+    (values: unknown) => {
+      if (!user) return null;
 
       const { startDate, endDate } = values as EventType;
       const eventId = mode === "create" ? pushid() : event.id;
       const defaultValues = {
         postDate: new Date().getTime(),
-        editDate: new Date().getTime(),
         subscriberCount: 0,
         guestSubscriberCount: 0,
         subscriberIds: [],
@@ -100,6 +124,7 @@ export function PageViewEventCard({
         id: eventId,
         authorId: user.uid,
         authorName: user.displayName as string,
+        version: (event.version ?? 0) + (mode === "edit" ? 1 : 0),
         tags,
       };
 
@@ -110,43 +135,128 @@ export function PageViewEventCard({
 
       if (!newEvent.postDate) newEvent.postDate = defaultValues.postDate;
 
+      return {
+        newEvent,
+        eventId,
+      };
+    },
+    [event, mode, tags, user]
+  );
+
+  const handleSubmitForm = useCallback(
+    async (values: unknown) => {
+      const data = handleConstructEventValues(values);
+
+      if (!user || !data) return;
+
+      setSubmitting(true);
+
+      const { newEvent, eventId } = data;
+      const eventRef = doc(fs, FIREBASE_COLLECTION_EVENTS, eventId);
+      const updatesRef = doc(fs, FIREBASE_COLLECTION_UPDATES, eventId);
+
       await sleep(200);
 
-      await createData("events", newEvent, newEvent.id)
-        .then(async (value) => {
-          await sleep(200);
-          if (mode === "create") {
-            addToast({
-              title: "Event Created",
-              description: "",
-              variant: "success",
+      if (mode === "create") {
+        const batch = writeBatch(fs);
+        batch.set(eventRef, newEvent);
+        batch.set(updatesRef, {
+          updates: [],
+        });
+        await batch.commit().catch(() => {
+          addToastPreset("post-fail");
+          setSubmitting(false);
+        });
+
+        await sleep(200);
+        addToast({
+          title: "Event Created",
+          description: "",
+          variant: "success",
+        });
+        router.push(`/event/${eventId}`);
+      } else if (eventPreviousValues && eventPreviousValues.current) {
+        const changes = compareEventValues(
+          eventPreviousValues.current,
+          newEvent
+        );
+
+        try {
+          const eventBatchUpdateId = pushid();
+
+          await runTransaction(fs, async (transaction) => {
+            const evtDoc = await transaction.get(eventRef);
+            const updatesDoc = await transaction.get(updatesRef);
+            const evt = evtDoc.exists() ? (evtDoc.data() as EventType) : event;
+            let updates: EventUpdateBatchDatabaseType[] = updatesDoc.exists()
+              ? (updatesDoc.data() as EventUpdateArrayType).updates
+              : [];
+
+            if (evt.subscriberIds)
+              evt.subscriberIds.forEach((userId) => {
+                const userRef = doc(fs, FIREBASE_COLLECTION_USERS, userId);
+
+                transaction.update(userRef, {
+                  [`unseenEvents.${evt.id}`]: true,
+                  notificationCount: increment(1),
+                });
+              });
+
+            transaction.update(eventRef, {
+              ...(newEvent as Partial<EventType>),
+              version: increment(1),
             });
-            router.push(`/event/${eventId}`);
-          } else {
+
+            updates = [
+              ...updates,
+              {
+                id: eventBatchUpdateId,
+                authorId: user.uid,
+                date: new Date().getTime(),
+                updates: changes,
+              },
+            ];
+
+            transaction.update(updatesRef, {
+              updates,
+            });
+          }).then(async () => {
+            await sleep(200);
+            router.replace(`/event/${event.id}/`);
             addToast({
               title: "Event Updated",
               description: "",
               variant: "success",
             });
+            await sleep(200);
             setMode("view");
-            setEvent(newEvent);
-          }
-        })
-        .catch((e) => {
+            setEvent((prev) => ({
+              ...newEvent,
+              version: (prev.version ?? 0) + 1,
+            }));
+            updateEvent(event.id, newEvent);
+            setSubmitting(false);
+            if (eventPreviousValues && eventPreviousValues.current)
+              eventPreviousValues.current = newEvent;
+          });
+        } catch (e) {
           addToastPreset("post-fail");
           setSubmitting(false);
-        });
+        }
+      }
     },
     [
       addToast,
       addToastPreset,
       event,
+      eventPreviousValues,
+      handleConstructEventValues,
       mode,
       router,
       setEvent,
       setMode,
       setSubmitting,
-      tags,
+      updateEvent,
       user,
     ]
   );
@@ -187,55 +297,99 @@ export function PageViewEventCard({
     setMode("view");
   }, [setMode]);
 
-  const renderCardContent = useCallback(
+  const renderCardActiveContentTab = useCallback(
     ({
-      submitForm,
       validateForm,
+      setFieldValue,
     }: {
       submitForm?: () => void;
       validateForm?: () => void;
-    }) => (
-      <>
-        <PageViewEventHead
-          stateActiveTab={stateActiveTab}
-          event={event}
-          type={type}
-          stateDeleting={stateDeleting}
-          stateModalDelete={stateModalDelete}
-          stateMode={stateMode}
-          identification={identification}
-          onDelete={handleDeleteEvent}
-          updateEvent={updateEvent}
-        />
-        <PageViewEventBody
-          stateActiveTab={stateActiveTab}
-          event={event}
-          type={type}
-          mode={mode}
-          stateTags={stateTags}
-          validateForm={validateForm}
-        />
-        <PageViewEventFoot
-          event={event}
-          stateSubmitting={stateSubmitting}
-          stateMode={stateMode}
-          onLeaveEdit={handleLeaveEdit}
-          submitForm={submitForm}
-        />
-      </>
-    ),
+      setFieldValue?: (
+        field: string,
+        value: any,
+        shouldValidate?: boolean | undefined
+      ) => void;
+    }) => {
+      switch (activeTab) {
+        case "detail":
+          return (
+            <PageViewEventCardDetailTab
+              event={event}
+              type={type}
+              mode={mode}
+              stateTags={stateTags}
+              validateForm={validateForm}
+              setFieldValue={setFieldValue}
+            />
+          );
+        case "updates":
+          return <PageViewEventCardUpdatesTab event={event} />;
+        case "discussion":
+          return <PageViewEventCardDiscussionTab event={event} />;
+      }
+    },
+    [activeTab, event, mode, stateTags, type]
+  );
+
+  const renderCardContents = useCallback(
+    ({
+      submitForm,
+      validateForm,
+      setFieldValue,
+    }: {
+      submitForm?: () => void;
+      validateForm?: () => void;
+      setFieldValue?: (
+        field: string,
+        value: any,
+        shouldValidate?: boolean | undefined
+      ) => void;
+    }) => {
+      const activeTabContent = renderCardActiveContentTab({
+        submitForm,
+        validateForm,
+        setFieldValue,
+      });
+
+      return (
+        <>
+          <PageViewEventHead
+            event={event}
+            type={type}
+            stateActiveTab={stateActiveTab}
+            stateDeleting={stateDeleting}
+            stateModalDelete={stateModalDelete}
+            stateMode={stateMode}
+            stateIdentification={stateIdentification}
+            onDelete={handleDeleteEvent}
+            updateEvent={updateEvent}
+            updateUserSubscribedEventClientSide={
+              updateUserSubscribedEventClientSide
+            }
+          />
+          {activeTabContent}
+          <PageViewEventFoot
+            event={event}
+            stateSubmitting={stateSubmitting}
+            stateMode={stateMode}
+            onLeaveEdit={handleLeaveEdit}
+            submitForm={submitForm}
+          />
+        </>
+      );
+    },
     [
-      stateActiveTab,
+      renderCardActiveContentTab,
       event,
       type,
+      stateActiveTab,
       stateDeleting,
       stateModalDelete,
       stateMode,
-      identification,
+      stateIdentification,
       handleDeleteEvent,
       updateEvent,
-      mode,
-      stateTags,
+      updateUserSubscribedEventClientSide,
       stateSubmitting,
       handleLeaveEdit,
     ]
@@ -252,7 +406,7 @@ export function PageViewEventCard({
   }, [handleUpdateTagsOnEditMode]);
 
   return mode === "view" ? (
-    <LayoutCard className={className}>{renderCardContent({})}</LayoutCard>
+    <LayoutCard className={className}>{renderCardContents({})}</LayoutCard>
   ) : (
     <Formik
       initialValues={initialEventData}
@@ -262,11 +416,12 @@ export function PageViewEventCard({
       validateOnChange
     >
       {/** @todos Submit button seems to not work unless you do this. */}
-      {({ submitForm, validateForm }) => (
+      {({ submitForm, validateForm, setFieldValue }) => (
         <LayoutCard className={className} form>
-          {renderCardContent({
+          {renderCardContents({
             submitForm,
             validateForm,
+            setFieldValue,
           })}
         </LayoutCard>
       )}
