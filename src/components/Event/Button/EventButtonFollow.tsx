@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fs } from "@/firebase";
 import {
   Button,
@@ -38,9 +38,14 @@ export function EventButtonFollow({
 }: EventButtonFollowProps) {
   const { addToastPreset } = useToast();
 
-  const { id, subscriberIds = [], guestSubscriberCount } = event;
+  const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
 
   const { permission, user, users } = identification;
+
+  const isAuthor = useMemo(
+    () => Boolean(user && user.uid === authorId),
+    [authorId, user]
+  );
 
   const [subscriberCount, setSubscriberCount] = useState(
     subscriberIds.length + (guestSubscriberCount ?? 0)
@@ -206,8 +211,21 @@ export function EventButtonFollow({
   }, [handleInitializeSubscribeState]);
 
   return (
-    <Button className="!m-0 !w-fit" as="div" labelPosition="right" size={size} disabled={isAuthor} color={isAuthor ? "grey" : "yellow"}>
-      <Button className="!w-full" size={size} onClick={handleFollowEvent} disabled={isAuthor} color={isAuthor ? "grey" : "yellow"}>
+    <Button
+      className="!m-0 !w-fit"
+      as="div"
+      labelPosition="right"
+      size={size}
+      disabled={isAuthor}
+      color={isAuthor ? "grey" : "yellow"}
+    >
+      <Button
+        className="!w-full"
+        size={size}
+        onClick={handleFollowEvent}
+        disabled={isAuthor}
+        color={subscribed ? "green" : "yellow"}
+      >
         {subscribed ? "Unfollow" : "Follow"}
       </Button>
       <Label as="a" basic>
