@@ -225,6 +225,10 @@
     border-top: 0px !important;
     border-radius: 0 0 0.28571429rem 0.28571429rem !important;
   }
+  .StickyHeaderTableMobile {
+    max-height: calc(100% - 8rem) !important;
+    border-bottom: 1px solid rgba(34, 36, 38, 0.1);
+  }
 }
 @tailwind components;
 @layer utilities {
