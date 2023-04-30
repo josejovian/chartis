@@ -217,11 +217,13 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
           className: clsx(data.role === "admin" && "font-bold text-blue-600"),
         }),
         headerName: "Name",
+        important: true,
       },
       {
         cellWidth: 2,
         headerName: "E-mail",
         key: "email",
+        important: true,
       },
       {
         cellElement: (data) => strDateTime(new Date(data.joinDate ?? 0)),
@@ -232,35 +234,40 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
         cellElement: (data) => <>{data.ban ? "Banned" : "Active"}</>,
         cellWidth: 2,
         headerName: "Status",
+        important: true,
       },
       {
-        cellElement: (data) =>
-          data.ban ? (
-            <Button
-              size="mini"
-              color="yellow"
-              onClick={() =>
-                data.id && handleToggleBanUser(data.id, data.ban ?? false)
-              }
-            >
-              Unban
-            </Button>
-          ) : (
-            <Button
-              size="mini"
-              color="red"
-              className={clsx(data.role === "admin" && "invisible")}
-              onClick={() =>
-                data.role !== "admin" &&
-                data.id &&
-                handleToggleBanUser(data.id, data.ban ?? false)
-              }
-            >
-              Ban
-            </Button>
-          ),
+        cellElement: (data) => (
+          <>
+            {data.ban ? (
+              <Button
+                size="mini"
+                color="yellow"
+                onClick={() =>
+                  data.id && handleToggleBanUser(data.id, data.ban ?? false)
+                }
+              >
+                Unban
+              </Button>
+            ) : (
+              <Button
+                size="mini"
+                color="red"
+                className={clsx(data.role === "admin" && "invisible")}
+                onClick={() =>
+                  data.role !== "admin" &&
+                  data.id &&
+                  handleToggleBanUser(data.id, data.ban ?? false)
+                }
+              >
+                Ban
+              </Button>
+            )}
+          </>
+        ),
         cellWidth: 2,
         headerName: "Actions",
+        important: true,
       },
     ],
     [handleToggleBanUser]
