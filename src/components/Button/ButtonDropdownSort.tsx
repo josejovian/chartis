@@ -1,13 +1,7 @@
 import { useMemo } from "react";
 import { Button, Dropdown, Icon, type SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
-import { EVENT_SORT_CRITERIA } from "@/consts";
-import {
-  DropdownSortOptionType,
-  EventType,
-  StateObject,
-  UserType,
-} from "@/types";
+import { DropdownSortOptionType, StateObject } from "@/types";
 
 export interface ButtonDropdownSortProps<X> {
   size?: SemanticSIZES;
