@@ -2,7 +2,6 @@ import {
   DropdownOptionType,
   EventSortType,
   EventTagNameType,
-  EventTagType,
   EventType,
   EventUpdateNameType,
 } from "@/types";

@@ -1,9 +1,5 @@
 import clsx from "clsx";
-import {
-  EventButtonFilter,
-  EventButtonSort,
-  PageSearchEventInput,
-} from "@/components";
+import { PageSearchEventInput } from "@/components";
 import {
   EventSortType,
   EventTagNameType,
