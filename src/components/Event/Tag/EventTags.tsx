@@ -24,6 +24,7 @@ export function EventTags({
           <EventTag
             key={`${type}_${id}_${tag}`}
             size={size}
+            color="yellow"
             {...EVENT_TAGS[tag as EventTagNameType]}
           />
         ))}
