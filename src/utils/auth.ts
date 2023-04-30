@@ -3,7 +3,11 @@ import { UserPermissionType } from "@/types";
 
 export function hasPermission(
   user: UserPermissionType,
-  requirement: UserPermissionType
+  requirement?: UserPermissionType
 ) {
-  return USER_TYPES.indexOf(user) >= USER_TYPES.indexOf(requirement);
+  if (requirement === "guest") return user === requirement;
+
+  return (
+    !requirement || USER_TYPES.indexOf(user) >= USER_TYPES.indexOf(requirement)
+  );
 }
