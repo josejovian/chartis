@@ -217,7 +217,6 @@ export function EventButtonFollow({
       labelPosition="right"
       size={size}
       disabled={isAuthor}
-      color={isAuthor ? "grey" : "yellow"}
     >
       <Button
         className="!w-full"
