@@ -39,13 +39,23 @@ export const MODERATION_USER_TYPE_FILTERS: Record<
     name: "Banned Users",
   },
   admin: {
-    name: "Admin",
+    name: "Admins",
   },
 };
 
 export const MODERATION_USER_SORT: DropdownSortOptionType<UserType>[] = [
-  { id: "oldest", key: "joinDate", name: "Oldest", descending: false },
-  { id: "newest", key: "joinDate", name: "Newest", descending: true },
+  {
+    id: "oldest",
+    key: "joinDate",
+    name: "Join Date (Oldest)",
+    descending: false,
+  },
+  {
+    id: "newest",
+    key: "joinDate",
+    name: "Join Date (Newest)",
+    descending: true,
+  },
   {
     id: "a-z",
     key: "name",
