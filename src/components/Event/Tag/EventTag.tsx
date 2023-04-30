@@ -5,7 +5,11 @@ export interface EventTagProps extends EventTagType {
   size?: SemanticSIZES;
 }
 
-export function EventTag({ name, color, size = "small" }: EventTagProps) {
+export function EventTag({
+  name,
+  color = "black",
+  size = "small",
+}: EventTagProps) {
   return (
     <Label size={size} color={color} className="text-12px font-bold !uppercase">
       {name}
