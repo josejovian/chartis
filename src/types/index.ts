@@ -5,6 +5,7 @@ export * from "./controls";
 export * from "./event";
 export * from "./form";
 export * from "./layout";
+export * from "./table";
 export * from "./misc";
 export * from "./moderation";
 export * from "./notifications";

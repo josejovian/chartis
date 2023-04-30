@@ -1,23 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { fs, updateData } from "@/firebase";
+import { Button, Icon } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   LayoutCard,
   TemplateSearchInput,
   ButtonDropdownSelect,
   ButtonDropdownSort,
+  StickyHeaderTable,
   LayoutNotice,
 } from "@/components";
 import { useIdentification, useScreen, useToast } from "@/hooks";
-import { Button, Icon, Table } from "semantic-ui-react";
-import { DropdownSortOptionType, UserGroupFilterType, UserType } from "@/types";
-import { collection, getDocs } from "firebase/firestore";
-import { fs, updateData } from "@/firebase";
 import { sleep, strDateTime, validateEventQuery } from "@/utils";
 import {
   MODERATION_USER_SORT,
   MODERATION_USER_TYPE_FILTERS,
-} from "@/consts/moderation";
-import { EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
+  EVENT_QUERY_LENGTH_CONSTRAINTS,
+} from "@/consts";
+import {
+  DropdownSortOptionType,
+  StickyHeaderTableColumnProps,
+  UserGroupFilterType,
+  UserType,
+} from "@/types";
 
 export interface PageManageUsersProps {
   className?: string;
@@ -190,6 +196,76 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
     handleCheckPermission();
   }, [users, handleCheckPermission]);
 
+  const manageUserTableColumns = useMemo<
+    StickyHeaderTableColumnProps<UserType>[]
+  >(
+    () => [
+      {
+        cellWidth: 4,
+        headerName: "ID",
+        key: "id",
+      },
+      {
+        cellElement: (data) => (
+          <>
+            {data.role === "admin" && <Icon name="shield" />}
+            {data.name}
+          </>
+        ),
+        cellWidth: 3,
+        cellProps: (data) => ({
+          className: clsx(data.role === "admin" && "font-bold text-blue-600"),
+        }),
+        headerName: "Name",
+      },
+      {
+        cellWidth: 2,
+        headerName: "E-mail",
+        key: "email",
+      },
+      {
+        cellElement: (data) => strDateTime(new Date(data.joinDate ?? 0)),
+        cellWidth: 3,
+        headerName: "Join Date",
+      },
+      {
+        cellElement: (data) => <>{data.ban ? "Banned" : "Active"}</>,
+        cellWidth: 2,
+        headerName: "Status",
+      },
+      {
+        cellElement: (data) =>
+          data.ban ? (
+            <Button
+              size="mini"
+              color="yellow"
+              onClick={() =>
+                data.id && handleToggleBanUser(data.id, data.ban ?? false)
+              }
+            >
+              Unban
+            </Button>
+          ) : (
+            <Button
+              size="mini"
+              color="red"
+              className={clsx(data.role === "admin" && "invisible")}
+              onClick={() =>
+                data.role !== "admin" &&
+                data.id &&
+                handleToggleBanUser(data.id, data.ban ?? false)
+              }
+            >
+              Ban
+            </Button>
+          ),
+        cellWidth: 2,
+        headerName: "Actions",
+      },
+    ],
+    [handleToggleBanUser]
+  );
+
   const renderControls = useMemo(
     () => (
       <div
@@ -223,99 +299,21 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
 
   const renderUserTable = useMemo(
     () => (
-      <div className="h-full overflow-hidden">
-        <div className="ManageUserTableTop pr-2">
-          <Table className="!h-fit !border-b-0 !m-0">
-            <Table.Header className="text-12px">
-              <Table.Row>
-                <Table.HeaderCell width="4">ID</Table.HeaderCell>
-                <Table.HeaderCell width="3">Name</Table.HeaderCell>
-                <Table.HeaderCell width="2">E-mail</Table.HeaderCell>
-                <Table.HeaderCell width="3">Date Joined</Table.HeaderCell>
-                <Table.HeaderCell width="2">Status</Table.HeaderCell>
-                <Table.HeaderCell width="2">Actions</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-          </Table>
-        </div>
-        <div
-          className={clsx(
-            "ManageUserTableBottom !border-l overflow-y-scroll",
-            filteredData.length === 0 && "!h-full flex items-center"
-          )}
-        >
-          {filteredData.length > 0 ? (
-            <Table className=" !h-fit !border-b-0 !border-l-0">
-              <Table.Body className="text-12px">
-                {filteredData.map(
-                  (
-                    { id, name, joinDate, email, ban = false, role = "user" },
-                    idx
-                  ) => (
-                    <Table.Row key={`${name}${idx}`}>
-                      <Table.Cell width="4">{id}</Table.Cell>
-                      <Table.Cell
-                        width="3"
-                        className={clsx(
-                          role === "admin" && "font-bold text-blue-600"
-                        )}
-                      >
-                        {role === "admin" && <Icon name="shield" />}
-                        {name}
-                      </Table.Cell>
-                      <Table.Cell width="2">{email}</Table.Cell>
-                      <Table.Cell width="3">
-                        {strDateTime(new Date(joinDate ?? 0))}
-                      </Table.Cell>
-                      <Table.Cell
-                        className={clsx(
-                          "font-bold",
-                          ban ? "text-red-500" : "text-green-500"
-                        )}
-                        width="2"
-                      >
-                        {ban ? "Banned" : "Active"}
-                      </Table.Cell>
-                      <Table.Cell width="2">
-                        {ban ? (
-                          <Button
-                            size="mini"
-                            color="yellow"
-                            onClick={() => id && handleToggleBanUser(id, ban)}
-                          >
-                            Unban
-                          </Button>
-                        ) : (
-                          <Button
-                            size="mini"
-                            color="red"
-                            className={clsx(role === "admin" && "invisible")}
-                            onClick={() =>
-                              role !== "admin" &&
-                              id &&
-                              handleToggleBanUser(id, ban)
-                            }
-                          >
-                            Ban
-                          </Button>
-                        )}
-                      </Table.Cell>
-                    </Table.Row>
-                  )
-                )}
-              </Table.Body>
-            </Table>
-          ) : (
-            <LayoutNotice
-              title="No Users"
-              description="No users matched such query."
-              illustration="/no-users.png"
-            />
-          )}
-        </div>
-      </div>
+      <StickyHeaderTable
+        name="ManageUser"
+        emptyElement={
+          <LayoutNotice
+            title="No Users"
+            description="No users matched such query."
+            illustration="/no-users.png"
+          />
+        }
+        type={type}
+        data={filteredData}
+        columns={manageUserTableColumns}
+      />
     ),
-    [filteredData, handleToggleBanUser]
+    [filteredData, manageUserTableColumns, type]
   );
 
   const renderPage = useMemo(
