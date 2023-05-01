@@ -27,4 +27,9 @@ export const TOAST_PRESETS: Record<ToastPresetType, ToastType> = {
     description: "You'll no longer receive notifications about the event.",
     variant: "success",
   },
+  "no-permission": {
+    title: "No Permission",
+    description: "You have insufficient permission to access this content.",
+    variant: "danger",
+  },
 };

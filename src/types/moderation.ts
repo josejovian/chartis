@@ -1,18 +1,24 @@
-export type ReportNameType = "event" | "comment";
+export type ReportNameType = "event" | "comment" | "all";
 
 export type ReportCategoryType =
   | "spam"
   | "misleading"
   | "fake"
-  | "inappropriate";
+  | "inappropriate"
+  | "all";
+
+export type ReportStatusType = "open" | "resolved" | "closed";
 
 export interface ReportType {
   contentType: ReportNameType;
   contentId: string;
+  authorId: string;
   reportedBy: string;
   category?: ReportCategoryType;
   date?: number;
   reason: string;
+  status?: ReportStatusType;
+  note?: string;
 }
 
 export interface ReportCategoryOptionType {

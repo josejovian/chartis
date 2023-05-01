@@ -26,4 +26,5 @@ export interface IdentificationType {
   user: UserObjectType;
   users: Record<string, UserType>;
   permission: UserPermissionType;
+  initialized: boolean;
 }

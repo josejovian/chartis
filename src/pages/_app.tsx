@@ -46,6 +46,7 @@ export default function App({ Component, pageProps }: AppProps) {
     user: null,
     users: {},
     permission: "guest",
+    initialized: false,
   });
   const [identification, setIdentification] = stateIdentification;
   const { user, users } = identification;
@@ -121,6 +122,7 @@ export default function App({ Component, pageProps }: AppProps) {
           ...prev.users,
           ...newUsers,
         },
+        initialized: true,
       }));
     });
   }, [auth, setIdentification]);

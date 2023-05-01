@@ -147,6 +147,7 @@ export function PageViewEventHead({
           onReport={() =>
             showReportModal({
               contentId: event.id,
+              authorId: event.authorId,
               contentType: "event",
               reportedBy: user ? user.uid : "",
             })

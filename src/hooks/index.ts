@@ -1,3 +1,4 @@
+export * from "./useAuthorization";
 export * from "./useModal";
 export * from "./useNavBar";
 export * from "./useScreen";
