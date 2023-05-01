@@ -8,7 +8,7 @@ import { ReportCategoryType, ReportType, ResponsiveStyleType } from "@/types";
 import { Field, Formik } from "formik";
 import { Button, Form, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
-import { REPORT_CATEGORY } from "@/consts/moderation";
+import { MODERATION_REPORT_CATEGORY } from "@/consts";
 import pushid from "pushid";
 
 export type ModalReportProps = Omit<ReportType, "category" | "reason">;
@@ -16,6 +16,7 @@ export type ModalReportProps = Omit<ReportType, "category" | "reason">;
 export default function ModalReport({
   contentType,
   contentId,
+  contentAuthor,
   reportedBy,
 }: ModalReportProps) {
   const { clearModal } = useModal();
@@ -23,7 +24,9 @@ export default function ModalReport({
   const { type } = useScreen();
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<ReportType>({
+    status: "open",
     contentId,
+    contentAuthor,
     contentType,
     reportedBy,
     reason: "",
@@ -91,11 +94,13 @@ export default function ModalReport({
           fieldName="category"
           className=""
           placeholder="Choose report category"
-          options={Object.entries(REPORT_CATEGORY).map(([id, { name }]) => ({
-            key: `SelectCategory_${id}`,
-            text: name,
-            value: id,
-          }))}
+          options={Object.entries(MODERATION_REPORT_CATEGORY).map(
+            ([id, { name }]) => ({
+              key: `SelectCategory_${id}`,
+              text: name,
+              value: id,
+            })
+          )}
           onChange={(_, { value }) =>
             setReport((prev) => ({
               ...prev,

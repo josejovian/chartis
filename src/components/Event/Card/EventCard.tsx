@@ -225,6 +225,7 @@ export function EventCard({
             showReportModal({
               contentId: id,
               contentType: "event",
+              authorId,
               reportedBy: user ? user.uid : "invalid",
             })
           }
@@ -242,6 +243,7 @@ export function EventCard({
       handleEditEvent,
       showReportModal,
       id,
+      authorId,
       user,
     ]
   );

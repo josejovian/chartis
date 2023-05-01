@@ -107,6 +107,7 @@ export function PageViewEventCardDiscussionTab({
           onClick={() =>
             showReportModal({
               contentId: id,
+              authorId: comment.authorId,
               contentType: "comment",
               reportedBy: auth.currentUser ? auth.currentUser.uid : "invalid",
             })

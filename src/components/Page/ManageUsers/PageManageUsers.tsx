@@ -11,7 +11,12 @@ import {
   StickyHeaderTable,
   LayoutNotice,
 } from "@/components";
-import { useIdentification, useScreen, useToast } from "@/hooks";
+import {
+  useAuthorization,
+  useIdentification,
+  useScreen,
+  useToast,
+} from "@/hooks";
 import { sleep, strDateTime, validateEventQuery } from "@/utils";
 import {
   MODERATION_USER_SORT,
@@ -24,29 +29,40 @@ import {
   UserGroupFilterType,
   UserType,
 } from "@/types";
+import { getAuth } from "firebase/auth";
+import { useRouter } from "next/router";
 
 export interface PageManageUsersProps {
   className?: string;
 }
 
 export function PageManageUsers({ className }: PageManageUsersProps) {
+  const { addToast, addToastPreset } = useToast();
   const { stateIdentification } = useIdentification();
-  const [{ user, users }] = stateIdentification;
-  const [loading] = useState(true);
+  const router = useRouter();
+  const auth = getAuth();
+  const isAuthorized = useAuthorization({
+    auth,
+    stateIdentification,
+    onFail: () => {
+      router.push("/");
+    },
+    permission: "admin",
+  });
   const { type } = useScreen();
 
-  const { addToast, addToastPreset } = useToast();
+  const [loading, setLoading] = useState(true);
   const stateQuery = useState("");
-  const query = stateQuery[0];
   const stateUserType = useState<UserGroupFilterType>("all");
-  const [userType] = stateUserType;
   const stateSort = useState<DropdownSortOptionType<UserType>>(
     MODERATION_USER_SORT[0]
   );
-  const [sortBy] = stateSort;
-
   const stateSortDescending = useState(false);
-  const [sortDescending] = stateSortDescending;
+
+  const query = stateQuery[0];
+  const userType = stateUserType[0];
+  const sortBy = stateSort[0];
+  const sortDescending = stateSortDescending[0];
 
   const filterCaption = useMemo(
     () => (
@@ -56,7 +72,6 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
     ),
     [userType]
   );
-
   const sortCaption = useMemo(
     () => (
       <>
@@ -66,9 +81,7 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
     ),
     [sortBy]
   );
-
   const mainCaption = useMemo(() => `Searching for "${query}" `, [query]);
-
   const renderCaption = useMemo(
     () =>
       validateEventQuery(query) && query !== "" ? (
@@ -167,7 +180,7 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
   );
 
   const handleGetUsers = useCallback(async () => {
-    if (initialize.current) return;
+    if (!isAuthorized || initialize.current) return;
 
     const docs = await getDocs(collection(fs, "users"));
     const results: Record<string, UserType> = {};
@@ -184,27 +197,17 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
 
     initialize.current = true;
     setData(results);
-  }, []);
-
-  const handleCheckPermission = useCallback(async () => {
-    if (user && users[user.uid].role === "admin") {
-      await handleGetUsers();
-    }
-  }, [handleGetUsers, user, users]);
+    setLoading(false);
+  }, [isAuthorized]);
 
   useEffect(() => {
-    handleCheckPermission();
-  }, [users, handleCheckPermission]);
+    handleGetUsers();
+  }, [handleGetUsers]);
 
   const manageUserTableColumns = useMemo<
     StickyHeaderTableColumnProps<UserType>[]
   >(
     () => [
-      {
-        cellWidth: 4,
-        headerName: "ID",
-        key: "id",
-      },
       {
         cellElement: (data) => (
           <>
@@ -212,7 +215,11 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
             {data.name}
           </>
         ),
-        cellWidth: 3,
+        cellWidth: {
+          desktop_lg: 4,
+          desktop_sm: 4,
+          mobile: 4,
+        },
         cellProps: (data) => ({
           className: clsx(data.role === "admin" && "font-bold text-blue-600"),
         }),
@@ -220,21 +227,40 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
         important: true,
       },
       {
-        cellWidth: 2,
+        cellWidth: {
+          desktop_lg: 3,
+          desktop_sm: 3,
+          mobile: 4,
+        },
         headerName: "E-mail",
         key: "email",
         important: true,
       },
       {
         cellElement: (data) => strDateTime(new Date(data.joinDate ?? 0)),
-        cellWidth: 3,
+
+        cellWidth: {
+          desktop_lg: 3,
+          desktop_sm: 3,
+          mobile: 4,
+        },
         headerName: "Join Date",
+        important: true,
       },
       {
         cellElement: (data) => <>{data.ban ? "Banned" : "Active"}</>,
-        cellWidth: 2,
+        cellProps: (data) => ({
+          className: clsx(
+            "font-black",
+            data.ban ? "text-red-600" : "text-green-600"
+          ),
+        }),
+        cellWidth: {
+          desktop_lg: 3,
+          desktop_sm: 3,
+          mobile: 4,
+        },
         headerName: "Status",
-        important: true,
       },
       {
         cellElement: (data) => (
@@ -253,7 +279,7 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
               <Button
                 size="mini"
                 color="red"
-                className={clsx(data.role === "admin" && "invisible")}
+                disabled={data.role === "admin"}
                 onClick={() =>
                   data.role !== "admin" &&
                   data.id &&
@@ -265,7 +291,11 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
             )}
           </>
         ),
-        cellWidth: 2,
+        cellWidth: {
+          desktop_lg: 3,
+          desktop_sm: 3,
+          mobile: 4,
+        },
         headerName: "Actions",
         important: true,
       },
@@ -334,5 +364,5 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
     [className, renderCaption, renderControls, renderUserTable]
   );
 
-  return <>{loading && renderPage}</>;
+  return <>{!loading && renderPage}</>;
 }

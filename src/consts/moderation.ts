@@ -3,13 +3,15 @@ import {
   DropdownSortOptionType,
   ReportCategoryOptionType,
   ReportCategoryType,
+  ReportNameType,
+  ReportType,
   UserGroupFilterType,
   UserType,
 } from "@/types";
 
-export const REPORT_CATEGORY: Record<
-  ReportCategoryType,
-  ReportCategoryOptionType
+export const MODERATION_REPORT_CATEGORY: Omit<
+  Record<ReportCategoryType, ReportCategoryOptionType>,
+  "all"
 > = {
   fake: {
     name: "Fake",
@@ -24,6 +26,51 @@ export const REPORT_CATEGORY: Record<
     name: "Spam",
   },
 };
+
+export const MODERATION_REPORT_CONTENT_TYPE: Record<
+  ReportNameType,
+  ReportCategoryOptionType
+> = {
+  all: {
+    name: "All",
+  },
+  comment: {
+    name: "Comment",
+  },
+  event: {
+    name: "Event",
+  },
+};
+
+export const MODERATION_REPORT_FILTER_CATEGORY: Record<
+  ReportCategoryType,
+  ReportCategoryOptionType
+> = {
+  ...{
+    all: {
+      name: "All",
+    },
+  },
+  ...(MODERATION_REPORT_CATEGORY as Record<
+    ReportCategoryType,
+    ReportCategoryOptionType
+  >),
+};
+
+export const MODERATION_REPORT_SORT: DropdownSortOptionType<ReportType>[] = [
+  {
+    id: "oldest",
+    key: "date",
+    name: "Oldest",
+    descending: false,
+  },
+  {
+    id: "newest",
+    key: "date",
+    name: "Newest",
+    descending: true,
+  },
+];
 
 export const MODERATION_USER_TYPE_FILTERS: Record<
   UserGroupFilterType,

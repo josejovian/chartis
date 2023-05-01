@@ -24,15 +24,20 @@ export function StickyHeaderTable<X>({
   );
 
   return (
-    <div className="h-full overflow-hidden">
-      <div className="ManageUserTableTop pr-2">
+    <div
+      className={clsx(
+        "StickyHeaderTable h-full overflow-hidden",
+        type === "mobile" && "StickyHeaderTableMobile"
+      )}
+    >
+      <div className="StickyHeaderTableTop pr-2">
         <Table className="!h-fit !border-b-0 !m-0">
-          <Table.Header className="text-12px">
+          <Table.Header className="text-14px">
             <Table.Row>
               {visibleColumns.map((column) => (
                 <Table.HeaderCell
                   key={String(`Table_${name}_${column.headerName}`)}
-                  width={column.cellWidth}
+                  width={column.cellWidth[type]}
                 >
                   {column.headerName}
                 </Table.HeaderCell>
@@ -43,14 +48,13 @@ export function StickyHeaderTable<X>({
       </div>
       <div
         className={clsx(
-          "ManageUserTableBottom !border-l overflow-y-scroll",
-          data.length === 0 && "!h-full flex items-center",
-          type === "mobile" && "StickyHeaderTableMobile"
+          "StickyHeaderTableBottom !border-l overflow-y-scroll",
+          data.length === 0 && "!h-full flex items-center"
         )}
       >
         {data.length > 0 ? (
           <Table className=" !h-fit !border-b-0 !border-l-0">
-            <Table.Body className="text-12px">
+            <Table.Body className="text-14px">
               {data.map((datum, y) => (
                 <Table.Row key={String(`Table_${name}_Row${y}`)}>
                   {visibleColumns.map((column) => {
@@ -60,7 +64,7 @@ export function StickyHeaderTable<X>({
                         key={String(
                           `Table_${name}_Row${y}_${column.headerName}`
                         )}
-                        width={column.cellWidth}
+                        width={column.cellWidth[type]}
                         {...(cellProps ? cellProps(datum) : {})}
                       >
                         {cellElement ? cellElement(datum) : <>{datum[key]}</>}

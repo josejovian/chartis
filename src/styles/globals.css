@@ -207,29 +207,88 @@
   .h-full--4rem {
     height: calc(100% - 4rem);
   }
-  .ManageUserTableTop {
+  .StickyHeaderTableTop {
     background-color: #f9fafb;
     border: 1px solid rgba(34, 36, 38, 0.1);
     border-radius: 0.28571429rem 0.28571429rem 0 0 !important;
   }
-  .ManageUserTableTop :is(table, th, td) {
+  .StickyHeaderTableTop :is(table, th, td) {
     border: 0 !important;
     outline: 0 !important;
   }
-  .ManageUserTableBottom {
+  .StickyHeaderTableBottom {
     max-height: calc(100% - 3rem);
     border-bottom: 1px solid rgba(34, 36, 38, 0.1);
   }
 
-  .ManageUserTableBottom :is(table, tbody) {
+  .StickyHeaderTableBottom :is(table, tbody) {
     border-top: 0px !important;
     border-radius: 0 0 0.28571429rem 0.28571429rem !important;
   }
-  .StickyHeaderTableMobile {
-    max-height: calc(100% - 8rem) !important;
+  .StickyHeaderTableMobile > .StickyHeaderTableBottom {
+    max-height: calc(100% - 8.5rem) !important;
     border-bottom: 1px solid rgba(34, 36, 38, 0.1);
   }
+
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).one.wide {
+    hyphens: manual;
+    overflow-wrap: anywhere;
+    inline-size: 6.25%;
+    max-width: 6.25% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).two.wide {
+    hyphens: manual;
+    overflow-wrap: anywhere;
+    inline-size: 12.5%;
+    max-width: 12.5% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).three.wide {
+    hyphens: manual;
+    overflow-wrap: anywhere;
+    inline-size: 18.75%;
+    max-width: 18.75% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).four.wide {
+    hyphens: manual;
+    overflow-wrap: anywhere;
+    inline-size: 25%;
+    max-width: 25% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).five.wide {
+    hyphens: manual;
+    overflow-wrap: anywhere;
+    inline-size: 31.25%;
+    max-width: 31.25% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).six.wide {
+    hyphens: manual;
+    overflow-wrap: anywhere;
+    inline-size: 37.5%;
+    max-width: 37.5% !important;
+  }
+  @media only screen and (max-width: 1024px) {
+    .ui.table:not(.unstackable) tr {
+      padding-top: 1em;
+      padding-bottom: 1em;
+      box-shadow: 0 -1px 0 0 rgba(0, 0, 0, 0.1) inset !important;
+    }
+    .ui.table:not(.unstackable) tbody,
+    .ui.table:not(.unstackable) tr,
+    .ui.table:not(.unstackable) tr > td,
+    .ui.table:not(.unstackable) tr > th {
+      width: auto !important;
+      display: block !important;
+    }
+    .ui.table:not(.unstackable) tr > td,
+    .ui.table:not(.unstackable) tr > th {
+      background: 0 0;
+      border: none !important;
+      padding: 0.25em 0.75em !important;
+      box-shadow: none !important;
+    }
+  }
 }
+
 @tailwind components;
 @layer utilities {
   .text-10px {

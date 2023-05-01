@@ -23,7 +23,9 @@ export default function Notification() {
         LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]
       )}
     >
-      <PageManageUsers className="ui card !p-16" />
+      <PageManageUsers
+        className={clsx("ui card", type !== "mobile" ? "!p-16" : "!p-4")}
+      />
     </LayoutTemplateCard>
   );
 }

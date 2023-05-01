@@ -1,10 +1,11 @@
 import { ReactNode } from "react";
 import type { SemanticWIDTHS, StrictTableCellProps } from "semantic-ui-react";
 import { Either } from "./misc";
+import { ScreenSizeCategoryType } from "./layout";
 
 interface StickyHeaderTableColumnBaseProps<X> {
   headerName: string;
-  cellWidth: SemanticWIDTHS;
+  cellWidth: Record<ScreenSizeCategoryType, SemanticWIDTHS>;
   cellProps?: (data: X) => StrictTableCellProps;
   cellElement?: (data: X) => ReactNode;
   important?: boolean;
