@@ -64,22 +64,23 @@ export function PageManageReports({ className }: PageManageReportsProps) {
   );
   const stateSortDescending = useState(false);
 
-  const query = stateQuery[0];
-  const [reportStatus] = stateReportStatus;
-  const [reportType] = stateReportType;
-  const [sortBy] = stateSort;
-  const [sortDescending] = stateSortDescending;
+  const [query, setQuery] = stateQuery;
+  const [reportStatus, setReportStatus] = stateReportStatus;
+  const [reportType, setReportType] = stateReportType;
+  const [sortBy, setSortBy] = stateSort;
+  const [sortDescending, setSortDescending] = stateSortDescending;
 
   const filterCaption = useMemo(
     () => (
       <>
-        {(reportStatus !== "all" || reportType !== "all") && ", filtered by"}
+        {(reportStatus !== "all" || reportType !== "all") && "Filtered by "}
         {reportStatus !== "all" && (
           <b>&nbsp;{MODERATION_REPORT_STATUS_FILTER_TYPE[reportStatus].name}</b>
         )}
         {reportType !== "all" && (
           <b>&nbsp;{MODERATION_REPORT_CONTENT_TYPE[reportType].name}</b>
         )}
+        {reportStatus === "all" && reportType === "all" && "No filters active"}
       </>
     ),
     [reportStatus, reportType]
@@ -93,19 +94,22 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     ),
     [sortBy]
   );
-  const mainCaption = useMemo(() => `Searching for "${query}"`, [query]);
   const renderCaption = useMemo(
-    () =>
-      validateEventQuery(query) && query !== "" ? (
-        <>
-          {mainCaption}
-          {filterCaption}
-          {sortCaption}
-        </>
-      ) : (
-        `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters.`
-      ),
-    [filterCaption, mainCaption, query, sortCaption]
+    () => (
+      <>
+        {!validateEventQuery(query) &&
+          `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters. `}
+        {query !== "" ? (
+          <>
+            Searching for {query}.{filterCaption}
+          </>
+        ) : (
+          filterCaption
+        )}
+        {sortCaption}
+      </>
+    ),
+    [filterCaption, query, sortCaption]
   );
 
   const [data, setData] = useState<Record<string, ReportExtendedType>>({});
@@ -342,6 +346,58 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     }),
     []
   );
+
+  const queried = useRef(0);
+  const viewTypeString = useMemo(() => `query-manageReports`, []);
+
+  const handleUpdatePathQueries = useCallback(() => {
+    if (queried.current <= 1) return;
+
+    localStorage.setItem(
+      viewTypeString,
+      JSON.stringify({
+        reportStatus,
+        reportType,
+        query,
+        sortBy: sortBy.id,
+      })
+    );
+  }, [query, reportStatus, reportType, sortBy.id, viewTypeString]);
+
+  const handleGetPathQuery = useCallback(() => {
+    const rawQuery = localStorage.getItem(viewTypeString);
+
+    if (rawQuery && queried.current <= 1) {
+      const parsedQuery = JSON.parse(rawQuery);
+
+      const criteria = MODERATION_REPORT_SORT.filter(
+        ({ id }) => id === parsedQuery.sortBy
+      )[0];
+
+      setReportStatus(parsedQuery.reportStatus);
+      setReportType(parsedQuery.reportType);
+      setQuery(parsedQuery.query);
+      setSortBy(criteria);
+      setSortDescending(criteria.descending);
+    }
+
+    queried.current++;
+  }, [
+    setQuery,
+    setReportStatus,
+    setReportType,
+    setSortBy,
+    setSortDescending,
+    viewTypeString,
+  ]);
+
+  useEffect(() => {
+    handleUpdatePathQueries();
+  }, [stateQuery, stateSort, handleUpdatePathQueries]);
+
+  useEffect(() => {
+    handleGetPathQuery();
+  }, [handleGetPathQuery]);
 
   const renderControls = useMemo(
     () => (
