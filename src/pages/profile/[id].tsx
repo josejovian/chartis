@@ -6,7 +6,7 @@ import {
   PageSearchEventCard,
   ModalAuthInput,
 } from "@/components";
-import { useEvent, useScreen } from "@/hooks";
+import { useEvent, useScreen, useToast } from "@/hooks";
 import { getDateMonthYear } from "@/utils";
 import { useRouter } from "next/router";
 import { Button, Card } from "semantic-ui-react";
@@ -79,6 +79,7 @@ export default function Profile() {
   const [profile, setProfile] = stateUser;
   const [, setLoading] = useState(true);
   const [, setError] = useState(false);
+  const { addToast } = useToast();
   //const initialize = useRef(0);
   //const stateIdentification = useIdentification();
   //const { user } = stateIdentification[0];
@@ -146,6 +147,12 @@ export default function Profile() {
         updatePassword(user, newPass)
           .then(() => {
             // Password successfully updated
+            addToast({
+              title: "Password changed",
+              description: "Please login again",
+              variant: "success",
+            });
+            router.push("/");
           })
           .catch((error: any) => {
             // There was an error updating the user's password
