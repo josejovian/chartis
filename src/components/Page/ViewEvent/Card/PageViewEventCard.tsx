@@ -323,9 +323,14 @@ export function PageViewEventCard({
             />
           );
         case "updates":
-          return <PageViewEventCardUpdatesTab event={event} />;
+          return <PageViewEventCardUpdatesTab type={type} event={event} />;
         case "discussion":
-          return <PageViewEventCardDiscussionTab stateEvent={stateEvent} />;
+          return (
+            <PageViewEventCardDiscussionTab
+              type={type}
+              stateEvent={stateEvent}
+            />
+          );
       }
     },
     [activeTab, event, mode, stateEvent, stateTags, type]

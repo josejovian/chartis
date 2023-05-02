@@ -17,7 +17,8 @@ import {
   EventCardTabNameType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
-import { useReport } from "@/hooks";
+import { useAuthorization, useReport } from "@/hooks";
+import { getAuth } from "firebase/auth";
 
 export interface PageViewEventHeadProps {
   event: EventType;
@@ -53,6 +54,12 @@ export function PageViewEventHead({
   const identification = stateIdentification[0];
   const { user } = identification;
   const { showReportModal } = useReport();
+  const auth = getAuth();
+  const isAuthorized = useAuthorization({
+    auth,
+    stateIdentification,
+    permission: "admin",
+  });
 
   const crumb = useMemo(
     () =>
@@ -68,6 +75,7 @@ export function PageViewEventHead({
       {
         id: "detail",
         name: "Detail",
+        icon: "info circle",
         onClick: () => {
           setActiveTab("detail");
         },
@@ -75,6 +83,7 @@ export function PageViewEventHead({
       {
         id: "updates",
         name: "Updates",
+        icon: "history",
         onClick: () => {
           setActiveTab("updates");
         },
@@ -83,6 +92,7 @@ export function PageViewEventHead({
       {
         id: "discussion",
         name: "Discussion",
+        icon: "discussions",
         onClick: () => {
           setActiveTab("discussion");
         },
@@ -99,29 +109,37 @@ export function PageViewEventHead({
 
   const renderDetailTabs = useMemo(
     () => (
-      <div className="flex gap-4 px-4">
-        {tabs.map(({ id, name, onClick, count }) => (
-          <Button
-            key={`ModalViewEvent_Tab-${name}`}
-            className={clsx(
-              "!flex !items-center !rounded-none !m-0 !rounded-t-md !h-11",
-              activeTab === id &&
-                "!bg-white hover:!bg-gray-100 active:!bg-gray-200 focus:!bg-gray-200"
-            )}
-            size={type === "mobile" ? "tiny" : undefined}
-            onClick={onClick}
-          >
-            {name}
-            {count !== undefined && (
-              <Label className="!ml-2 !py-1.5" color="grey">
-                {count}
-              </Label>
-            )}
-          </Button>
-        ))}
+      <div className={clsx("flex gap-4 px-4")}>
+        {tabs
+          .filter(({ permission }) => !permission || isAuthorized)
+          .map(({ id, name, onClick, count }) => (
+            <Button
+              key={`ModalViewEvent_Tab-${name}`}
+              className={clsx(
+                "!relative !flex !items-center !rounded-none !m-0 !rounded-t-md !h-11",
+                activeTab === id &&
+                  "!bg-white hover:!bg-gray-100 active:!bg-gray-200 focus:!bg-gray-200"
+              )}
+              size={type === "mobile" ? "tiny" : undefined}
+              onClick={onClick}
+            >
+              {name}
+              {count !== undefined && (
+                <Label
+                  className={clsx(
+                    "!py-1.5",
+                    type === "mobile" ? "!ml-4" : "!ml-2"
+                  )}
+                  color="grey"
+                >
+                  {count}
+                </Label>
+              )}
+            </Button>
+          ))}
       </div>
     ),
-    [activeTab, tabs, type]
+    [activeTab, isAuthorized, tabs, type]
   );
 
   const renderActionTabs = useMemo(
@@ -146,7 +164,7 @@ export function PageViewEventHead({
           onDelete={onDelete}
           onReport={() =>
             showReportModal({
-              contentId: event.id,
+              eventId: event.id,
               authorId: event.authorId,
               contentType: "event",
               reportedBy: user ? user.uid : "",
@@ -192,27 +210,34 @@ export function PageViewEventHead({
   );
 
   return (
-    <div className="relative" style={{ height: "240px", minHeight: "240px" }}>
+    <div
+      className="relative"
+      style={{
+        height: type !== "mobile" ? "240px" : "320px",
+        minHeight: type !== "mobile" ? "240px" : "320px",
+      }}
+    >
       <EventThumbnail
         className="!absolute !left-0 !top-0"
         type="banner"
         src="/placeholder.png"
+        screenType={type}
       />
       <div
         className={clsx(
-          "absolute w-full h-60",
+          "absolute w-full h-full",
           "bg-gradient-to-t from-zinc-900 to-zinc-400",
           "opacity-60"
         )}
       ></div>
       <div
         className={clsx(
-          "absolute w-full h-60",
+          "absolute w-full h-full",
           "flex flex-col justify-between"
         )}
       >
         {mode === "view" && renderCrumb}
-        <div className="flex items-end h-20 justify-between">
+        <div className={clsx("flex items-end justify-between")}>
           {mode === "view" ? renderViewTabs : renderEditTabs}
         </div>
       </div>

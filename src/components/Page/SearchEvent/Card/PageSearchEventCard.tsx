@@ -59,20 +59,26 @@ export function PageSearchEventCard({
 
   const sortCaption = useMemo(() => ` , sorted by ${sortBy.name}.`, [sortBy]);
 
-  const mainCaption = useMemo(() => `Searching for "${query}" events`, [query]);
-
   const renderCaption = useMemo(
-    () =>
-      validateEventQuery(query) && query !== "" ? (
-        <>
-          {mainCaption}
-          {filters.length > 0 && filterCaption}
-          {sortCaption}
-        </>
-      ) : (
-        `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters.`
-      ),
-    [filterCaption, filters.length, mainCaption, query, sortCaption]
+    () => (
+      <>
+        {!validateEventQuery(query) &&
+          `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters. `}
+        {query !== "" ? (
+          <>
+            Searching for {query}
+            {filters.length > 0 && filterCaption}
+          </>
+        ) : (
+          <>
+            Filtering by{" "}
+            <b>{filters.length > 0 ? filters.join(", ") : "none"}</b>
+          </>
+        )}
+        {sortCaption}
+      </>
+    ),
+    [filterCaption, filters, query, sortCaption]
   );
 
   const renderEvents = useMemo(

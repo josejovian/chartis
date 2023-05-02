@@ -38,6 +38,7 @@ export interface PageViewEventCardDetailTabProps {
 export function PageViewEventCardDetailTab({
   event,
   mode,
+  type,
   stateTags,
   validateForm,
   setFieldValue,
@@ -269,7 +270,8 @@ export function PageViewEventCardDetailTab({
     <div
       className={clsx(
         EVENT_CARD_BODY_WRAPPER_STYLE,
-        mode !== "view" && "ui form div !h-full"
+        mode !== "view" && "ui form div !h-full",
+        type === "mobile" && "!px-6"
       )}
     >
       {renderEventCardContent}

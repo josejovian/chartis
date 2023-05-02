@@ -11,19 +11,24 @@ import clsx from "clsx";
 import { UserPicture } from "@/components";
 import { getTimeDifference, sleep } from "@/utils";
 import {
+  CommentReportType,
   CommentType,
   DatabaseCommentType,
   EventType,
+  ReportBaseType,
+  ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
 import { useReport, useToast } from "@/hooks";
 
 interface PageViewEventCardDiscussionTabProps {
   stateEvent: StateObject<EventType>;
+  type: ScreenSizeCategoryType;
 }
 
 export function PageViewEventCardDiscussionTab({
   stateEvent,
+  type,
 }: PageViewEventCardDiscussionTabProps) {
   const [event, setEvent] = stateEvent;
   const { commentCount, id } = event;
@@ -106,11 +111,12 @@ export function PageViewEventCardDiscussionTab({
         <div
           onClick={() =>
             showReportModal({
-              contentId: id,
+              commentId: comment.commentId,
+              eventId: id,
               authorId: comment.authorId,
               contentType: "comment",
               reportedBy: auth.currentUser ? auth.currentUser.uid : "invalid",
-            })
+            } as ReportBaseType & CommentReportType)
           }
           className={COMMENT_REPORT_STYLE}
         >
@@ -200,7 +206,12 @@ export function PageViewEventCardDiscussionTab({
   );
 
   return (
-    <div className={clsx(EVENT_CARD_BODY_WRAPPER_STYLE)}>
+    <div
+      className={clsx(
+        EVENT_CARD_BODY_WRAPPER_STYLE,
+        type === "mobile" && "!px-6"
+      )}
+    >
       {renderEventComments}
     </div>
   );

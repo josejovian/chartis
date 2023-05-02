@@ -1,5 +1,6 @@
 import { HTMLInputTypeAttribute, ReactNode } from "react";
 import type { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
+import { UserPermissionType } from "./auth";
 
 export interface EventType {
   id: string;
@@ -77,8 +78,10 @@ export type EventThumbnailDisplayType =
 export interface EventCardTabType {
   id: EventCardTabNameType;
   name: string;
+  icon: SemanticICONS;
   onClick?: () => void;
   count?: number;
+  permission?: UserPermissionType;
 }
 
 export interface EventSortType {
