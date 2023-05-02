@@ -1,4 +1,9 @@
-import { UserType, EventType } from "@/types";
+import {
+  type UserType,
+  EventType,
+  EventUpdateArrayType,
+  DatabaseCommentType,
+} from "@/types";
 import pushid from "pushid";
 import {
   type DocumentData,
@@ -13,10 +18,18 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { fs } from "./config";
+import {
+  FIREBASE_COLLECTION_COMMENTS,
+  FIREBASE_COLLECTION_EVENTS,
+  FIREBASE_COLLECTION_UPDATES,
+  FIREBASE_COLLECTION_USERS,
+} from "@/consts";
 
 type FIREBASE_COLLECTION = {
-  users: UserType;
-  events: EventType;
+  [FIREBASE_COLLECTION_USERS]: UserType;
+  [FIREBASE_COLLECTION_EVENTS]: EventType;
+  [FIREBASE_COLLECTION_UPDATES]: EventUpdateArrayType;
+  [FIREBASE_COLLECTION_COMMENTS]: DatabaseCommentType;
 };
 
 export async function createData<
@@ -24,11 +37,12 @@ export async function createData<
 >(
   group: COLLECTION_NAME,
   data: FIREBASE_COLLECTION[COLLECTION_NAME],
-  id?: string
+  id?: string,
+  merge = false
 ): Promise<void> {
   const autoId = pushid();
 
-  return setDoc(doc(fs, group, id ?? autoId), data);
+  return setDoc(doc(fs, group, id ?? autoId), data, { merge: merge });
 }
 
 export async function readData<

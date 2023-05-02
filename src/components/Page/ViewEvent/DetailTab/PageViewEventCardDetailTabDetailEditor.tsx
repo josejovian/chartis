@@ -5,17 +5,18 @@ import clsx from "clsx";
 import { FormErrorMessage } from "@/components";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface PageViewEventCardDetailEditorProps extends Omit<InputProps, "name"> {
+interface PageViewEventCardDetailTabDetailEditorProps
+  extends Omit<InputProps, "name"> {
   name: string;
   validate?: (value: unknown) => string | null;
 }
 
-export function PageViewEventCardDetailEditor({
+export function PageViewEventCardDetailTabDetailEditor({
   name,
   validate,
   className,
   ...props
-}: PageViewEventCardDetailEditorProps) {
+}: PageViewEventCardDetailTabDetailEditorProps) {
   return (
     <Field name={name} validate={validate}>
       {({ field, meta }: any) => (

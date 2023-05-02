@@ -4,7 +4,9 @@ import { USER_TYPES } from "@/consts";
 export interface UserType {
   name: string;
   email?: string;
-  subscribedEvents?: string[];
+  subscribedEvents?: Record<string, number>;
+  unseenEvents?: Record<string, boolean>;
+  notificationCount?: number;
 }
 
 export type UserObjectType = User | null;

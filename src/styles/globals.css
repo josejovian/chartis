@@ -45,6 +45,9 @@
   pre {
     white-space: pre-wrap;
   }
+  p {
+    @apply text-slate-800;
+  }
 }
 @tailwind base;
 @layer components {
@@ -188,6 +191,14 @@
       @apply !p-1;
       padding: 1rem !important;
     }
+  }
+
+  .NotificationCard ul {
+    list-style-type: disc;
+  }
+
+  .NotificationCard:hover :is(p, li) {
+    text-decoration: underline;
   }
 }
 @tailwind components;

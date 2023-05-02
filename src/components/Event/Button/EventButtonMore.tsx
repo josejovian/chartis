@@ -43,6 +43,7 @@ export function EventButtonMore({
         onConfirm={onDelete}
         stateOpen={stateModalDelete}
         stateLoading={stateDeleting}
+        color="red"
         modalText="Are you sure you want to delete this event? This cannot be undone later."
         confirmText="Delete"
       />

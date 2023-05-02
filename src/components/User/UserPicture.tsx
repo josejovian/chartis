@@ -39,7 +39,7 @@ export function UserPicture({
       }
       className={clsx(
         "flex items-center justify-center",
-        "rounded-full bg-red-700 overflow-hidden"
+        "rounded-full text-white bg-red-700 overflow-hidden z-10"
       )}
     >
       {pictureUrl ? (

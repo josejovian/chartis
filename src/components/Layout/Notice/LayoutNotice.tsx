@@ -34,7 +34,9 @@ export function LayoutNotice(rawProps: LayoutNoticeProps) {
       descriptionElement ? (
         <div className="mt-4">{descriptionElement}</div>
       ) : (
-        <span className="mt-1 text-16px text-slate-500">{description}</span>
+        <span className="mt-1 text-16px text-center text-slate-500">
+          {description}
+        </span>
       ),
     [description, descriptionElement]
   );

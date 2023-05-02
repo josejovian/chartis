@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import _ from "lodash";
-import { deleteData, readData } from "@/firebase";
 import { EVENT_SORT_CRITERIA } from "@/consts";
 import {
   EventSearchType,
@@ -11,6 +10,7 @@ import {
 import { sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
 import { QueryConstraint, orderBy, where } from "firebase/firestore";
+import { deleteData, readData } from "@/firebase";
 
 interface useEventProps {
   type?: EventSearchType;
@@ -26,7 +26,7 @@ export function useEvent({ type }: useEventProps) {
   const sortDescending = stateSortDescending[0];
   const stateUserQuery = useState("");
   const userQuery = stateUserQuery[0];
-  const stateIdentification = useIdentification();
+  const { stateIdentification } = useIdentification();
   const [identification] = stateIdentification;
   const { user } = identification;
 
@@ -135,7 +135,7 @@ export function useEvent({ type }: useEventProps) {
       const subscribedEventIds =
         user && user.uid
           ? identification.users[user.uid].subscribedEvents
-          : Object.keys(JSON.parse(localStorage.getItem("subscribe") ?? "{}"));
+          : JSON.parse(localStorage.getItem("subscribe") ?? "{}");
 
       let eventArray = [] as EventType[];
       if (!events) {
@@ -143,9 +143,7 @@ export function useEvent({ type }: useEventProps) {
           where("id", "in", subscribedEventIds),
         ]);
       } else {
-        eventArray = events.filter((event) =>
-          subscribedEventIds?.includes(event.id)
-        );
+        eventArray = events.filter((event) => subscribedEventIds[event.id]);
       }
 
       return eventArray;

@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Field } from "formik";
 import { Dropdown, Input, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventTags,
   FormErrorMessage,
-  PageViewEventCardDetail,
+  PageViewEventCardDetailTabDetail,
 } from "@/components";
-import { getTimeDifference, strDateTime } from "@/utils";
+import { useIdentification } from "@/hooks";
+import { getLocalTimeInISO, getTimeDifference, strDateTime } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
 import {
   EventDetailType,
@@ -19,23 +20,29 @@ import {
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
-import { useIdentification } from "@/hooks";
 
-export interface PageViewEventBodyProps {
+export interface PageViewEventCardDetailTabProps {
   event: EventType;
   mode: EventModeType;
   stateTags: StateObject<EventTagObjectType>;
   type: ScreenSizeCategoryType;
   validateForm?: () => void;
+  setFieldValue?: (
+    field: string,
+    value: any,
+    shouldValidate?: boolean | undefined
+  ) => void;
 }
 
-export function PageViewEventBody({
+export function PageViewEventCardDetailTab({
   event,
   mode,
   stateTags,
   validateForm,
-}: PageViewEventBodyProps) {
-  const { users } = useIdentification()[0];
+  setFieldValue,
+}: PageViewEventCardDetailTabProps) {
+  const { stateIdentification } = useIdentification();
+  const { users } = stateIdentification[0];
   const {
     location,
     authorId,
@@ -149,15 +156,15 @@ export function PageViewEventBody({
         icon: "calendar",
         id: "startDate",
         name: "START",
-        rawValue: startDate,
-        moddedValue: startDate && strDateTime(new Date(startDate)),
+        rawValue: undefined,
+        moddedValue: strDateTime(new Date(startDate)),
         inputType: "datetime-local",
       },
       {
         icon: "calendar",
         id: "endDate",
         name: "END",
-        rawValue: endDate,
+        rawValue: endDate ? getLocalTimeInISO(endDate) : undefined,
         moddedValue: endDate && strDateTime(new Date(endDate)),
         inputType: "datetime-local",
       },
@@ -209,7 +216,7 @@ export function PageViewEventBody({
   );
 
   const renderEventDetails = useMemo(
-    () => <PageViewEventCardDetail details={details} mode={mode} />,
+    () => <PageViewEventCardDetailTabDetail details={details} mode={mode} />,
     [details, mode]
   );
 
@@ -262,6 +269,16 @@ export function PageViewEventBody({
       renderEventName,
     ]
   );
+
+  const handleUpdateDate = useCallback(() => {
+    if (!setFieldValue) return;
+    if (startDate) setFieldValue("startDate", getLocalTimeInISO(startDate));
+    if (endDate) setFieldValue("endDate", getLocalTimeInISO(endDate));
+  }, [endDate, setFieldValue, startDate]);
+
+  useEffect(() => {
+    handleUpdateDate();
+  }, [startDate, endDate, handleUpdateDate]);
 
   return (
     <div
