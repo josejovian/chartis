@@ -223,7 +223,7 @@ export function EventCard({
           onEdit={handleEditEvent}
           onReport={() =>
             showReportModal({
-              contentId: id,
+              eventId: id,
               contentType: "event",
               authorId,
               reportedBy: user ? user.uid : "invalid",

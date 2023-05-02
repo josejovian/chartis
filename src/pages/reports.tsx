@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
+import clsx from "clsx";
 import { LayoutTemplateCard, PageManageReports } from "@/components";
 import { useScreen } from "@/hooks";
 import { ResponsiveStyleType } from "@/types";
-import clsx from "clsx";
 
 export default function Notification() {
   const router = useRouter();
@@ -10,7 +10,7 @@ export default function Notification() {
 
   return (
     <LayoutTemplateCard
-      title="Users"
+      title="Reports"
       leftButton={{
         icon: "arrow left",
         onClick: () => {

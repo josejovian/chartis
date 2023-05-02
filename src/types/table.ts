@@ -1,5 +1,9 @@
 import { ReactNode } from "react";
-import type { SemanticWIDTHS, StrictTableCellProps } from "semantic-ui-react";
+import type {
+  SemanticWIDTHS,
+  StrictTableCellProps,
+  StrictTableRowProps,
+} from "semantic-ui-react";
 import { Either } from "./misc";
 import { ScreenSizeCategoryType } from "./layout";
 
@@ -21,3 +25,5 @@ export type StickyHeaderTableColumnProps<X> =
         cellElement: (data: X) => ReactNode;
       }
     >;
+
+export type StickyHeaderTableRowProps<X> = (data: X) => StrictTableRowProps;

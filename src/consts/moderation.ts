@@ -1,9 +1,12 @@
 import {
   DropdownOptionType,
   DropdownSortOptionType,
+  ReportCategoryFilterType,
   ReportCategoryOptionType,
   ReportCategoryType,
+  ReportNameFilterType,
   ReportNameType,
+  ReportStatusFilterType,
   ReportType,
   UserGroupFilterType,
   UserType,
@@ -27,13 +30,20 @@ export const MODERATION_REPORT_CATEGORY: Omit<
   },
 };
 
-export const MODERATION_REPORT_CONTENT_TYPE: Record<
-  ReportNameType,
+export const MODERATION_REPORT_CATEGORY_FILTER: Record<
+  ReportCategoryFilterType,
   ReportCategoryOptionType
 > = {
   all: {
     name: "All",
   },
+  ...MODERATION_REPORT_CATEGORY,
+};
+
+export const MODERATION_REPORT_CONTENT_TYPE: Record<
+  ReportNameType,
+  ReportCategoryOptionType
+> = {
   comment: {
     name: "Comment",
   },
@@ -42,19 +52,14 @@ export const MODERATION_REPORT_CONTENT_TYPE: Record<
   },
 };
 
-export const MODERATION_REPORT_FILTER_CATEGORY: Record<
-  ReportCategoryType,
+export const MODERATION_REPORT_CONTENT_TYPE_FILTER: Record<
+  ReportNameFilterType,
   ReportCategoryOptionType
 > = {
-  ...{
-    all: {
-      name: "All",
-    },
+  all: {
+    name: "All",
   },
-  ...(MODERATION_REPORT_CATEGORY as Record<
-    ReportCategoryType,
-    ReportCategoryOptionType
-  >),
+  ...MODERATION_REPORT_CONTENT_TYPE,
 };
 
 export const MODERATION_REPORT_SORT: DropdownSortOptionType<ReportType>[] = [
@@ -116,3 +121,18 @@ export const MODERATION_USER_SORT: DropdownSortOptionType<UserType>[] = [
     descending: true,
   },
 ];
+
+export const MODERATION_REPORT_STATUS_FILTER_TYPE: Record<
+  ReportStatusFilterType,
+  ReportCategoryOptionType
+> = {
+  all: {
+    name: "All",
+  },
+  open: {
+    name: "Open",
+  },
+  resolved: {
+    name: "Resolved",
+  },
+};

@@ -4,7 +4,12 @@ import { createData } from "@/firebase";
 import { FormErrorMessage, FormInputDropdown } from "@/components";
 import { useModal, useScreen, useToast } from "@/hooks";
 import { SchemaReport, sleep } from "@/utils";
-import { ReportCategoryType, ReportType, ResponsiveStyleType } from "@/types";
+import {
+  CommentReportType,
+  ReportCategoryType,
+  ReportType,
+  ResponsiveStyleType,
+} from "@/types";
 import { Field, Formik } from "formik";
 import { Button, Form, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
@@ -13,23 +18,27 @@ import pushid from "pushid";
 
 export type ModalReportProps = Omit<ReportType, "category" | "reason">;
 
-export default function ModalReport({
-  contentType,
-  contentId,
-  contentAuthor,
-  reportedBy,
-}: ModalReportProps) {
+export default function ModalReport(props: ModalReportProps) {
+  const { authorId, reportedBy, contentType, eventId } = props;
+
   const { clearModal } = useModal();
   const { addToast, addToastPreset } = useToast();
   const { type } = useScreen();
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<ReportType>({
     status: "open",
-    contentId,
-    contentAuthor,
-    contentType,
+    authorId,
     reportedBy,
+    eventId,
     reason: "",
+    ...(contentType === "comment"
+      ? {
+          contentType: "comment",
+          commentId: (props as unknown as CommentReportType).commentId,
+        }
+      : {
+          contentType: "event",
+        }),
   });
 
   const labelStyle = useMemo(

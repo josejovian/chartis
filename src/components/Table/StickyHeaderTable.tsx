@@ -1,12 +1,17 @@
 import { ReactNode, useMemo } from "react";
 import { Table } from "semantic-ui-react";
 import clsx from "clsx";
-import { ScreenSizeCategoryType, StickyHeaderTableColumnProps } from "@/types";
+import {
+  ScreenSizeCategoryType,
+  StickyHeaderTableColumnProps,
+  StickyHeaderTableRowProps,
+} from "@/types";
 
 interface StickyHeaderTableProps<X> {
   name: string;
   emptyElement?: ReactNode;
   columns: StickyHeaderTableColumnProps<X>[];
+  rowProps?: StickyHeaderTableRowProps<X>;
   data: X[];
   type: ScreenSizeCategoryType;
 }
@@ -15,6 +20,7 @@ export function StickyHeaderTable<X>({
   name,
   emptyElement,
   columns,
+  rowProps,
   data,
   type,
 }: StickyHeaderTableProps<X>) {
@@ -54,9 +60,12 @@ export function StickyHeaderTable<X>({
       >
         {data.length > 0 ? (
           <Table className=" !h-fit !border-b-0 !border-l-0">
-            <Table.Body className="text-14px">
+            <Table.Body className="text-14px text-secondary-7">
               {data.map((datum, y) => (
-                <Table.Row key={String(`Table_${name}_Row${y}`)}>
+                <Table.Row
+                  key={String(`Table_${name}_Row${y}`)}
+                  {...(rowProps ? rowProps(datum) : {})}
+                >
                   {visibleColumns.map((column) => {
                     const { cellProps, cellElement, key } = column;
                     return (

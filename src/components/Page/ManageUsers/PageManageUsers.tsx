@@ -26,6 +26,7 @@ import {
 import {
   DropdownSortOptionType,
   StickyHeaderTableColumnProps,
+  StickyHeaderTableRowProps,
   UserGroupFilterType,
   UserType,
 } from "@/types";
@@ -45,7 +46,7 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
     auth,
     stateIdentification,
     onFail: () => {
-      router.push("/");
+      router.replace("/");
     },
     permission: "admin",
   });
@@ -59,10 +60,10 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
   );
   const stateSortDescending = useState(false);
 
-  const query = stateQuery[0];
-  const userType = stateUserType[0];
-  const sortBy = stateSort[0];
-  const sortDescending = stateSortDescending[0];
+  const [query, setQuery] = stateQuery;
+  const [userType, setUserType] = stateUserType;
+  const [sortBy, setSortBy] = stateSort;
+  const [sortDescending, setSortDescending] = stateSortDescending;
 
   const filterCaption = useMemo(
     () => (
@@ -81,19 +82,26 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
     ),
     [sortBy]
   );
-  const mainCaption = useMemo(() => `Searching for "${query}" `, [query]);
+
   const renderCaption = useMemo(
-    () =>
-      validateEventQuery(query) && query !== "" ? (
-        <>
-          {mainCaption}
-          {userType !== "all" && filterCaption}
-          {sortCaption}
-        </>
-      ) : (
-        `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters.`
-      ),
-    [filterCaption, mainCaption, query, sortCaption, userType]
+    () => (
+      <>
+        {!validateEventQuery(query) &&
+          `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters. `}
+        {query !== "" ? (
+          <>
+            Searching for {query}
+            {userType !== "all" && filterCaption}
+          </>
+        ) : (
+          <>
+            Filtering by <b>{MODERATION_USER_TYPE_FILTERS[userType].name}</b>
+          </>
+        )}
+        {sortCaption}
+      </>
+    ),
+    [filterCaption, query, sortCaption, userType]
   );
 
   const [data, setData] = useState<Record<string, UserType>>({});
@@ -200,6 +208,49 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
     setLoading(false);
   }, [isAuthorized]);
 
+  const queried = useRef(0);
+  const viewTypeString = useMemo(() => `query-manageUser`, []);
+
+  const handleUpdatePathQueries = useCallback(() => {
+    if (queried.current <= 1) return;
+
+    localStorage.setItem(
+      viewTypeString,
+      JSON.stringify({
+        userType,
+        query,
+        sortBy: sortBy.id,
+      })
+    );
+  }, [query, sortBy.id, userType, viewTypeString]);
+
+  const handleGetPathQuery = useCallback(() => {
+    const rawQuery = localStorage.getItem(viewTypeString);
+
+    if (rawQuery && queried.current <= 1) {
+      const parsedQuery = JSON.parse(rawQuery);
+
+      const criteria = MODERATION_USER_SORT.filter(
+        ({ id }) => id === parsedQuery.sortBy
+      )[0];
+
+      setUserType(parsedQuery.userType);
+      setQuery(parsedQuery.query);
+      setSortBy(criteria);
+      setSortDescending(criteria.descending);
+    }
+
+    queried.current++;
+  }, [setQuery, setSortBy, setSortDescending, setUserType, viewTypeString]);
+
+  useEffect(() => {
+    handleUpdatePathQueries();
+  }, [stateQuery, stateSort, handleUpdatePathQueries]);
+
+  useEffect(() => {
+    handleGetPathQuery();
+  }, [handleGetPathQuery]);
+
   useEffect(() => {
     handleGetUsers();
   }, [handleGetUsers]);
@@ -221,15 +272,18 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
           mobile: 4,
         },
         cellProps: (data) => ({
-          className: clsx(data.role === "admin" && "font-bold text-blue-600"),
+          className: clsx(
+            data.role === "admin" && "font-black text-blue-600",
+            data.ban && "font-black text-red-600"
+          ),
         }),
         headerName: "Name",
         important: true,
       },
       {
         cellWidth: {
-          desktop_lg: 3,
-          desktop_sm: 3,
+          desktop_lg: 4,
+          desktop_sm: 4,
           mobile: 4,
         },
         headerName: "E-mail",
@@ -240,27 +294,12 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
         cellElement: (data) => strDateTime(new Date(data.joinDate ?? 0)),
 
         cellWidth: {
-          desktop_lg: 3,
-          desktop_sm: 3,
+          desktop_lg: 4,
+          desktop_sm: 4,
           mobile: 4,
         },
         headerName: "Join Date",
         important: true,
-      },
-      {
-        cellElement: (data) => <>{data.ban ? "Banned" : "Active"}</>,
-        cellProps: (data) => ({
-          className: clsx(
-            "font-black",
-            data.ban ? "text-red-600" : "text-green-600"
-          ),
-        }),
-        cellWidth: {
-          desktop_lg: 3,
-          desktop_sm: 3,
-          mobile: 4,
-        },
-        headerName: "Status",
       },
       {
         cellElement: (data) => (
@@ -292,8 +331,8 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
           </>
         ),
         cellWidth: {
-          desktop_lg: 3,
-          desktop_sm: 3,
+          desktop_lg: 4,
+          desktop_sm: 4,
           mobile: 4,
         },
         headerName: "Actions",
@@ -301,6 +340,13 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
       },
     ],
     [handleToggleBanUser]
+  );
+
+  const manageUserTableRows = useCallback<StickyHeaderTableRowProps<UserType>>(
+    (datum) => ({
+      className: clsx(datum.ban && "bg-red-50"),
+    }),
+    []
   );
 
   const renderControls = useMemo(
@@ -348,9 +394,10 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
         type={type}
         data={filteredData}
         columns={manageUserTableColumns}
+        rowProps={manageUserTableRows}
       />
     ),
-    [filteredData, manageUserTableColumns, type]
+    [filteredData, manageUserTableColumns, manageUserTableRows, type]
   );
 
   const renderPage = useMemo(
