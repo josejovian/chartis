@@ -3,6 +3,7 @@ import { USER_TYPES } from "@/consts";
 
 export interface UserType {
   name: string;
+  email: string;
   subscribedEvents?: string[];
 }
 
