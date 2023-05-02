@@ -27,7 +27,7 @@ const FieldOldPassword: FormCustomFieldProps = {
   id: "oldPassword",
   initial: "",
   name: "Password",
-  placeholder: "Enter your old password",
+  placeholder: "Enter your current password",
   type: "password",
   iconLabel: "key",
 };
@@ -45,7 +45,7 @@ const FieldConfirmPassword: FormCustomFieldProps = {
   id: "confirmPassword",
   initial: "",
   name: "Password",
-  placeholder: "Enter your old password",
+  placeholder: "Enter your new password again",
   type: "password",
   iconLabel: "key",
 };
