@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "semantic-ui-react";
+import { useCallback, useMemo } from "react";
+import { Button, Label } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventThumbnail,
@@ -7,41 +7,51 @@ import {
   EventButtonMore,
 } from "@/components";
 import {
-  EventModalTabType,
   EventModeType,
   EventType,
   ScreenSizeCategoryType,
   StateObject,
   IdentificationType,
   EventTagNameType,
+  EventCardTabType,
+  EventCardTabNameType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
 
 export interface PageViewEventHeadProps {
   event: EventType;
-  identification: IdentificationType;
+  stateIdentification: StateObject<IdentificationType>;
   onDelete: () => void;
+  stateActiveTab: StateObject<EventCardTabNameType>;
   stateDeleting?: StateObject<boolean>;
   stateModalDelete: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
+  updateUserSubscribedEventClientSide: (
+    userId: string,
+    eventId: string,
+    version?: number
+  ) => void;
 }
 
 export function PageViewEventHead({
+  stateActiveTab,
   event,
-  identification,
+  stateIdentification,
   onDelete,
   stateDeleting,
   stateModalDelete,
   stateMode,
   type,
   updateEvent,
+  updateUserSubscribedEventClientSide,
 }: PageViewEventHeadProps) {
-  const stateActiveTab = useState(0);
-  const activeTab = stateActiveTab[0];
+  const [activeTab, setActiveTab] = stateActiveTab;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mode, setMode] = stateMode;
+
+  const identification = stateIdentification[0];
 
   const crumb = useMemo(
     () =>
@@ -52,34 +62,60 @@ export function PageViewEventHead({
     [event.name, event.tags]
   );
 
-  const tabs = useMemo<EventModalTabType[]>(
+  const tabs = useMemo<EventCardTabType[]>(
     () => [
       {
-        name: "Details",
+        id: "detail",
+        name: "Detail",
+        onClick: () => {
+          setActiveTab("detail");
+        },
+      },
+      {
+        id: "updates",
+        name: "Updates",
+        onClick: () => {
+          setActiveTab("updates");
+        },
+        count: event.version ?? 0,
+      },
+      {
+        id: "discussion",
+        name: "Discussion",
+        onClick: () => {
+          setActiveTab("discussion");
+        },
+        count: event.commentCount ?? 0,
       },
     ],
-    []
+    [event.commentCount, event.version, setActiveTab]
   );
 
   const handleEdit = useCallback(() => {
+    setActiveTab("detail");
     setMode("edit");
-  }, [setMode]);
+  }, [setActiveTab, setMode]);
 
   const renderDetailTabs = useMemo(
     () => (
       <div className="flex gap-4 px-4">
-        {tabs.map(({ name, onClick }, idx) => (
+        {tabs.map(({ id, name, onClick, count }) => (
           <Button
             key={`ModalViewEvent_Tab-${name}`}
             className={clsx(
-              "!rounded-none !m-0 !rounded-t-md !h-fit",
-              activeTab === idx &&
+              "!flex !items-center !rounded-none !m-0 !rounded-t-md !h-11",
+              activeTab === id &&
                 "!bg-white hover:!bg-gray-100 active:!bg-gray-200 focus:!bg-gray-200"
             )}
             size={type === "mobile" ? "tiny" : undefined}
             onClick={onClick}
           >
             {name}
+            {count !== undefined && (
+              <Label className="!ml-2 !py-1.5" color="grey">
+                {count}
+              </Label>
+            )}
           </Button>
         ))}
       </div>
@@ -93,6 +129,9 @@ export function PageViewEventHead({
         <EventButtonFollow
           event={event}
           identification={identification}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
           size={type === "mobile" ? "tiny" : undefined}
           updateEvent={updateEvent}
         />
@@ -110,6 +149,7 @@ export function PageViewEventHead({
     [
       event,
       identification,
+      updateUserSubscribedEventClientSide,
       type,
       updateEvent,
       handleEdit,
