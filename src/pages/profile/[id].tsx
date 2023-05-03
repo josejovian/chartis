@@ -75,6 +75,7 @@ export default function Profile() {
   const stateUser = useState<UserType>({
     name: "jeff jeffry",
     email: "jeff@email.com",
+    joinDate: 0,
   });
   const [profile, setProfile] = stateUser;
   const [, setLoading] = useState(true);
