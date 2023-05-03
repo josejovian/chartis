@@ -5,7 +5,7 @@ export type UserRoleType = "admin" | "user";
 
 export interface UserDatabaseType {
   name: string;
-  email: string;
+  email?: string;
   joinDate: number;
   subscribedEvents?: Record<string, number>;
   unseenEvents?: Record<string, boolean>;
