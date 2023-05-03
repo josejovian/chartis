@@ -357,9 +357,6 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
             name="Filter"
             stateActive={stateUserType}
             options={MODERATION_USER_TYPE_FILTERS}
-            onSelectOption={(option) => {
-              setUserType(option);
-            }}
             size={type === "mobile" ? "tiny" : undefined}
             type="single"
           />
@@ -367,16 +364,13 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
             name="Sort"
             options={MODERATION_USER_SORT}
             stateActive={stateSort}
-            onSelectOption={(option) => {
-              setSort(option);
-            }}
             size={type === "mobile" ? "tiny" : undefined}
             type="single"
           />
         </div>
       </div>
     ),
-    [setSort, setUserType, stateQuery, stateSort, stateUserType, type]
+    [stateQuery, stateSort, stateUserType, type]
   );
 
   const renderUserTable = useMemo(

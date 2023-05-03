@@ -17,7 +17,6 @@ export interface ButtonDropdownSelectProps<X extends string> {
   name: string;
   options: Record<X, DropdownOptionType>;
   size?: SemanticSIZES;
-  onSelectOption?: (option: X) => void;
 }
 
 export type ButtonDropdownSelectType<X extends string> =
@@ -31,7 +30,6 @@ export function ButtonDropdownSelect<X extends string>({
   options,
   size,
   type,
-  onSelectOption,
 }: ButtonDropdownSelectType<X>) {
   const [active, setActive] = stateActive;
   const [open, setOpen] = useState(false);
@@ -65,7 +63,6 @@ export function ButtonDropdownSelect<X extends string>({
                 if (type === "single") {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   setActive(id as any);
-                  // onSelectOption && onSelectOption(id);
                 } else {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   setActive((prev: any) =>

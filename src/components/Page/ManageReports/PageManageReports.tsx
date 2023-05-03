@@ -408,9 +408,6 @@ export function PageManageReports({ className }: PageManageReportsProps) {
             options={MODERATION_REPORT_STATUS_FILTER_TYPE}
             size={type === "mobile" ? "tiny" : undefined}
             type="single"
-            onSelectOption={(option) => {
-              setReportStatus(option);
-            }}
           />
           <ButtonDropdownSelect
             name="Content Type"
@@ -418,33 +415,18 @@ export function PageManageReports({ className }: PageManageReportsProps) {
             options={MODERATION_REPORT_CONTENT_TYPE_FILTER}
             size={type === "mobile" ? "tiny" : undefined}
             type="single"
-            onSelectOption={(option) => {
-              setReportType(option);
-            }}
           />
           <ButtonDropdownSelect
             name="Sort"
             options={MODERATION_REPORT_SORT}
             type="single"
-            onSelectOption={(option) => {
-              setSort(option);
-            }}
             stateActive={stateSort}
             size={type === "mobile" ? "tiny" : undefined}
           />
         </div>
       </div>
     ),
-    [
-      type,
-      stateQuery,
-      stateReportStatus,
-      stateReportType,
-      stateSort,
-      setReportStatus,
-      setReportType,
-      setSort,
-    ]
+    [type, stateQuery, stateReportStatus, stateReportType, stateSort]
   );
 
   const renderUserTable = useMemo(
