@@ -5,7 +5,7 @@ import {
   PageSearchEventCardHead,
 } from "@/components";
 import {
-  EventSortType,
+  EventSortNameType,
   EventTagNameType,
   EventType,
   ScreenSizeCategoryType,
@@ -19,6 +19,7 @@ import {
   ASSET_CALENDAR,
   ASSET_NO_CONTENT,
   EVENT_QUERY_LENGTH_CONSTRAINTS,
+  EVENT_SORT_CRITERIA,
 } from "@/consts";
 
 export interface PageSearchEventCardProps {
@@ -27,8 +28,7 @@ export interface PageSearchEventCardProps {
   type: ScreenSizeCategoryType;
   stateQuery: StateObject<string>;
   stateFilters: StateObject<EventTagNameType[]>;
-  stateSortBy: StateObject<EventSortType>;
-  stateSortDescending: StateObject<boolean>;
+  stateSort: StateObject<EventSortNameType>;
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
@@ -38,12 +38,12 @@ export function PageSearchEventCard({
   type,
   stateQuery,
   stateFilters,
-  stateSortBy,
-  stateSortDescending,
+  stateSort,
   updateEvent,
 }: PageSearchEventCardProps) {
   const query = stateQuery[0];
-  const sortBy = stateSortBy[0];
+  const sort = stateSort[0];
+  const sortBy = useMemo(() => EVENT_SORT_CRITERIA[sort], [sort]);
   const filters = stateFilters[0];
   const { stateIdentification, updateUserSubscribedEventClientSide } =
     useIdentification();
@@ -57,7 +57,10 @@ export function PageSearchEventCard({
     [filters]
   );
 
-  const sortCaption = useMemo(() => ` , sorted by ${sortBy.name}.`, [sortBy]);
+  const sortCaption = useMemo(
+    () => ` , sorted by ${sortBy.name}.`,
+    [sortBy.name]
+  );
 
   const renderCaption = useMemo(
     () => (
@@ -112,7 +115,7 @@ export function PageSearchEventCard({
         description={
           query !== ""
             ? "No events found with such query."
-            : "Type in any key word."
+            : "Select a filter or type in any key word."
         }
       />
     ),
@@ -130,8 +133,7 @@ export function PageSearchEventCard({
         type={type}
         stateQuery={stateQuery}
         stateFilters={stateFilters}
-        stateSortBy={stateSortBy}
-        stateSortDescending={stateSortDescending}
+        stateSort={stateSort}
       />
       <div className="mt-4 mb-6 pl-4">{renderCaption}</div>
       <div

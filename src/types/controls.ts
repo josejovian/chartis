@@ -6,7 +6,6 @@ export interface DropdownOptionType {
 }
 
 export interface DropdownSortOptionType<X> extends DropdownOptionType {
-  id: string;
   key: keyof X;
   descending: boolean;
 }
