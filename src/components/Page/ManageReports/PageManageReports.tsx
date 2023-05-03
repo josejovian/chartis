@@ -258,13 +258,13 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         important: true,
       },
       {
+        cellElement: ({ authorId }) => <>{authorId ?? "Unknown User"}</>,
         cellWidth: {
           desktop_lg: 2,
           desktop_sm: 2,
           mobile: 5,
         },
         headerName: "Author",
-        key: "authorId",
         important: true,
       },
       {
@@ -285,13 +285,19 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         important: true,
       },
       {
+        cellElement: ({ reportedBy }) => (
+          <>
+            {type === "mobile" && <b>Reported by: </b>}
+            {reportedBy ?? "Unknown User"}
+          </>
+        ),
         cellWidth: {
           desktop_lg: 2,
           desktop_sm: 2,
           mobile: 4,
         },
         headerName: "Reported By",
-        key: "reportedBy",
+        important: true,
       },
       {
         cellElement: (data) => strDateTime(new Date(data.date ?? 0)),

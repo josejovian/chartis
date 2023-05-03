@@ -226,43 +226,36 @@
     border-radius: 0 0 0.28571429rem 0.28571429rem !important;
   }
   .StickyHeaderTableMobile > .StickyHeaderTableBottom {
-    max-height: calc(100% - 8.5rem) !important;
+    max-height: 100% !important;
+    border-radius: 0.28571429rem !important;
+    border-top: 1px solid rgba(34, 36, 38, 0.1);
     border-bottom: 1px solid rgba(34, 36, 38, 0.1);
   }
-
-  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).one.wide {
+  .ui.table :is(td, th) {
     hyphens: manual;
     overflow-wrap: anywhere;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).one.wide {
     inline-size: 6.25%;
     max-width: 6.25% !important;
   }
   :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).two.wide {
-    hyphens: manual;
-    overflow-wrap: anywhere;
     inline-size: 12.5%;
     max-width: 12.5% !important;
   }
   :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).three.wide {
-    hyphens: manual;
-    overflow-wrap: anywhere;
     inline-size: 18.75%;
     max-width: 18.75% !important;
   }
   :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).four.wide {
-    hyphens: manual;
-    overflow-wrap: anywhere;
     inline-size: 25%;
     max-width: 25% !important;
   }
   :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).five.wide {
-    hyphens: manual;
-    overflow-wrap: anywhere;
     inline-size: 31.25%;
     max-width: 31.25% !important;
   }
   :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).six.wide {
-    hyphens: manual;
-    overflow-wrap: anywhere;
     inline-size: 37.5%;
     max-width: 37.5% !important;
   }
