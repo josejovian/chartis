@@ -7,7 +7,6 @@ import {
   LayoutCard,
   TemplateSearchInput,
   ButtonDropdownSelect,
-  ButtonDropdownSort,
   StickyHeaderTable,
   LayoutNotice,
 } from "@/components";
@@ -24,10 +23,10 @@ import {
   EVENT_QUERY_LENGTH_CONSTRAINTS,
 } from "@/consts";
 import {
-  DropdownSortOptionType,
   StickyHeaderTableColumnProps,
   StickyHeaderTableRowProps,
   UserGroupFilterType,
+  UserSortType,
   UserType,
 } from "@/types";
 import { getAuth } from "firebase/auth";
@@ -55,15 +54,12 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
   const [loading, setLoading] = useState(true);
   const stateQuery = useState("");
   const stateUserType = useState<UserGroupFilterType>("all");
-  const stateSort = useState<DropdownSortOptionType<UserType>>(
-    MODERATION_USER_SORT[0]
-  );
-  const stateSortDescending = useState(false);
+  const stateSort = useState<UserSortType>("newest");
 
   const [query, setQuery] = stateQuery;
   const [userType, setUserType] = stateUserType;
-  const [sortBy, setSortBy] = stateSort;
-  const [sortDescending, setSortDescending] = stateSortDescending;
+  const [sort, setSort] = stateSort;
+  const sortBy = useMemo(() => MODERATION_USER_SORT[sort], [sort]);
 
   const filterCaption = useMemo(
     () => (
@@ -123,19 +119,19 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
           const left = a[sortBy.key] ?? 0;
           const right = b[sortBy.key] ?? 0;
           if (typeof left === "number" && typeof right === "number")
-            return (left - right) * (sortDescending ? -1 : 1);
+            return (left - right) * (sortBy.descending ? -1 : 1);
 
           if (typeof a[sortBy.key] === "string") {
             if (a.name.toLowerCase() < b.name.toLowerCase()) {
-              return -1 * (sortDescending ? -1 : 1);
+              return -1 * (sortBy.descending ? -1 : 1);
             }
             if (a.name.toLowerCase() > b.name.toLowerCase()) {
-              return 1 * (sortDescending ? -1 : 1);
+              return 1 * (sortBy.descending ? -1 : 1);
             }
           }
           return 0;
         }),
-    [data, query, userType, sortBy.key, sortDescending]
+    [data, query, userType, sortBy.key, sortBy.descending]
   );
 
   const handleToggleBanUser = useCallback(
@@ -219,10 +215,10 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
       JSON.stringify({
         userType,
         query,
-        sortBy: sortBy.id,
+        sort,
       })
     );
-  }, [query, sortBy.id, userType, viewTypeString]);
+  }, [query, sort, userType, viewTypeString]);
 
   const handleGetPathQuery = useCallback(() => {
     const rawQuery = localStorage.getItem(viewTypeString);
@@ -230,18 +226,13 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
     if (rawQuery && queried.current <= 1) {
       const parsedQuery = JSON.parse(rawQuery);
 
-      const criteria = MODERATION_USER_SORT.filter(
-        ({ id }) => id === parsedQuery.sortBy
-      )[0];
-
       setUserType(parsedQuery.userType);
       setQuery(parsedQuery.query);
-      setSortBy(criteria);
-      setSortDescending(criteria.descending);
+      setSort(parsedQuery.criteria);
     }
 
     queried.current++;
-  }, [setQuery, setSortBy, setSortDescending, setUserType, viewTypeString]);
+  }, [setQuery, setSort, setUserType, viewTypeString]);
 
   useEffect(() => {
     handleUpdatePathQueries();
@@ -366,18 +357,26 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
             name="Filter"
             stateActive={stateUserType}
             options={MODERATION_USER_TYPE_FILTERS}
+            onSelectOption={(option) => {
+              setUserType(option);
+            }}
             size={type === "mobile" ? "tiny" : undefined}
             type="single"
           />
-          <ButtonDropdownSort
+          <ButtonDropdownSelect
+            name="Sort"
             options={MODERATION_USER_SORT}
-            stateSortBy={stateSort}
-            stateSortDescending={stateSortDescending}
+            stateActive={stateSort}
+            onSelectOption={(option) => {
+              setSort(option);
+            }}
+            size={type === "mobile" ? "tiny" : undefined}
+            type="single"
           />
         </div>
       </div>
     ),
-    [stateQuery, stateSort, stateSortDescending, stateUserType, type]
+    [setSort, setUserType, stateQuery, stateSort, stateUserType, type]
   );
 
   const renderUserTable = useMemo(

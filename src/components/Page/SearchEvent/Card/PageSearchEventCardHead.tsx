@@ -1,19 +1,18 @@
 import clsx from "clsx";
 import { PageSearchEventInput } from "@/components";
 import {
-  EventSortType,
+  EventSortNameType,
   EventTagNameType,
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
-import { ButtonDropdownSelect, ButtonDropdownSort } from "@/components/Button";
+import { ButtonDropdownSelect } from "@/components/Button";
 import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
 
 export interface PageSearchEventHeadProps {
   stateQuery: StateObject<string>;
   stateFilters: StateObject<EventTagNameType[]>;
-  stateSortBy: StateObject<EventSortType>;
-  stateSortDescending: StateObject<boolean>;
+  stateSort: StateObject<EventSortNameType>;
   type?: ScreenSizeCategoryType;
 }
 
@@ -21,8 +20,7 @@ export function PageSearchEventCardHead({
   type,
   stateQuery,
   stateFilters,
-  stateSortBy,
-  stateSortDescending,
+  stateSort,
 }: PageSearchEventHeadProps) {
   return (
     <div
@@ -40,11 +38,12 @@ export function PageSearchEventCardHead({
           size={type === "mobile" ? "tiny" : undefined}
           type="multiple"
         />
-        <ButtonDropdownSort
-          stateSortBy={stateSortBy}
-          stateSortDescending={stateSortDescending}
-          size={type === "mobile" ? "tiny" : undefined}
+        <ButtonDropdownSelect
+          name="Sort"
+          stateActive={stateSort}
           options={EVENT_SORT_CRITERIA}
+          size={type === "mobile" ? "tiny" : undefined}
+          type="single"
         />
       </div>
     </div>

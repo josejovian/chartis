@@ -17,6 +17,7 @@ export interface ButtonDropdownSelectProps<X extends string> {
   name: string;
   options: Record<X, DropdownOptionType>;
   size?: SemanticSIZES;
+  onSelectOption?: (option: X) => void;
 }
 
 export type ButtonDropdownSelectType<X extends string> =
@@ -30,6 +31,7 @@ export function ButtonDropdownSelect<X extends string>({
   options,
   size,
   type,
+  onSelectOption,
 }: ButtonDropdownSelectType<X>) {
   const [active, setActive] = stateActive;
   const [open, setOpen] = useState(false);
@@ -41,7 +43,7 @@ export function ButtonDropdownSelect<X extends string>({
       (Object.entries(options) as [X, DropdownOptionType][]).map(
         ([id, { name, color }]) => {
           const isActive =
-            type === "single" ? active === id : active.includes(id);
+            type === "single" ? active === id : (active as X[]).includes(id);
           return (
             <Dropdown.Item
               key={name}
@@ -54,7 +56,7 @@ export function ButtonDropdownSelect<X extends string>({
                         : "InactiveDropdownSelect",
                     ]
                   : [
-                      active.includes(id)
+                      (active as X[]).includes(id)
                         ? "ActiveDropdownSelect"
                         : "InactiveDropdownSelect",
                     ]
@@ -63,6 +65,7 @@ export function ButtonDropdownSelect<X extends string>({
                 if (type === "single") {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   setActive(id as any);
+                  // onSelectOption && onSelectOption(id);
                 } else {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   setActive((prev: any) =>
@@ -83,7 +86,7 @@ export function ButtonDropdownSelect<X extends string>({
           );
         }
       ),
-    [active, setActive, options, type]
+    [options, type, active, setActive]
   );
 
   const renderClearDropdownSelect = useMemo(
@@ -91,7 +94,10 @@ export function ButtonDropdownSelect<X extends string>({
       <Dropdown.Item
         key="_all"
         value="_all"
-        disabled={Object.values(active).filter((x) => x).length === 0}
+        disabled={
+          type === "multiple" &&
+          Object.values(active as X[]).filter((x) => x).length === 0
+        }
         onClick={() => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           setActive([] as any);
@@ -101,7 +107,7 @@ export function ButtonDropdownSelect<X extends string>({
         <span>Clear Options</span>
       </Dropdown.Item>
     ),
-    [active, setActive]
+    [active, setActive, type]
   );
 
   const handleMaintainDropdownState = useCallback(

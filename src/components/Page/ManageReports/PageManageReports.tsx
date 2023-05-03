@@ -6,7 +6,6 @@ import {
   LayoutCard,
   TemplateSearchInput,
   ButtonDropdownSelect,
-  ButtonDropdownSort,
   StickyHeaderTable,
   LayoutNotice,
   ModalConfirmation,
@@ -22,9 +21,9 @@ import {
   MODERATION_REPORT_STATUS_FILTER_TYPE,
 } from "@/consts";
 import {
-  DropdownSortOptionType,
   ReportExtendedType,
   ReportNameFilterType,
+  ReportSortType,
   ReportStatusFilterType,
   ReportStatusType,
   ReportType,
@@ -59,16 +58,13 @@ export function PageManageReports({ className }: PageManageReportsProps) {
   const stateQuery = useState("");
   const stateReportStatus = useState<ReportStatusFilterType>("all");
   const stateReportType = useState<ReportNameFilterType>("all");
-  const stateSort = useState<DropdownSortOptionType<ReportType>>(
-    MODERATION_REPORT_SORT[0]
-  );
-  const stateSortDescending = useState(false);
+  const stateSort = useState<ReportSortType>("newest");
 
   const [query, setQuery] = stateQuery;
   const [reportStatus, setReportStatus] = stateReportStatus;
   const [reportType, setReportType] = stateReportType;
-  const [sortBy, setSortBy] = stateSort;
-  const [sortDescending, setSortDescending] = stateSortDescending;
+  const [sort, setSort] = stateSort;
+  const sortBy = useMemo(() => MODERATION_REPORT_SORT[sort], [sort]);
 
   const filterCaption = useMemo(
     () => (
@@ -92,7 +88,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         , sorted by <b>{sortBy.name}</b>.
       </>
     ),
-    [sortBy]
+    [sortBy.name]
   );
   const renderCaption = useMemo(
     () => (
@@ -129,11 +125,11 @@ export function PageManageReports({ className }: PageManageReportsProps) {
           const left = a[sortBy.key as keyof ReportExtendedType] ?? 0;
           const right = b[sortBy.key as keyof ReportExtendedType] ?? 0;
           if (typeof left === "number" && typeof right === "number")
-            return (left - right) * (sortDescending ? -1 : 1);
+            return (left - right) * (sortBy.descending ? -1 : 1);
 
           return 0;
         }),
-    [data, reportStatus, reportType, sortBy.key, sortDescending]
+    [data, reportType, reportStatus, sortBy.key, sortBy.descending]
   );
 
   const handleGetReports = useCallback(async () => {
@@ -365,10 +361,10 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         reportStatus,
         reportType,
         query,
-        sortBy: sortBy.id,
+        sort,
       })
     );
-  }, [query, reportStatus, reportType, sortBy.id, viewTypeString]);
+  }, [query, reportStatus, reportType, sort, viewTypeString]);
 
   const handleGetPathQuery = useCallback(() => {
     const rawQuery = localStorage.getItem(viewTypeString);
@@ -376,26 +372,14 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     if (rawQuery && queried.current <= 1) {
       const parsedQuery = JSON.parse(rawQuery);
 
-      const criteria = MODERATION_REPORT_SORT.filter(
-        ({ id }) => id === parsedQuery.sortBy
-      )[0];
-
       setReportStatus(parsedQuery.reportStatus);
       setReportType(parsedQuery.reportType);
       setQuery(parsedQuery.query);
-      setSortBy(criteria);
-      setSortDescending(criteria.descending);
+      setSort(parsedQuery.sort);
     }
 
     queried.current++;
-  }, [
-    setQuery,
-    setReportStatus,
-    setReportType,
-    setSortBy,
-    setSortDescending,
-    viewTypeString,
-  ]);
+  }, [setQuery, setReportStatus, setReportType, setSort, viewTypeString]);
 
   useEffect(() => {
     handleUpdatePathQueries();
@@ -424,6 +408,9 @@ export function PageManageReports({ className }: PageManageReportsProps) {
             options={MODERATION_REPORT_STATUS_FILTER_TYPE}
             size={type === "mobile" ? "tiny" : undefined}
             type="single"
+            onSelectOption={(option) => {
+              setReportStatus(option);
+            }}
           />
           <ButtonDropdownSelect
             name="Content Type"
@@ -431,11 +418,18 @@ export function PageManageReports({ className }: PageManageReportsProps) {
             options={MODERATION_REPORT_CONTENT_TYPE_FILTER}
             size={type === "mobile" ? "tiny" : undefined}
             type="single"
+            onSelectOption={(option) => {
+              setReportType(option);
+            }}
           />
-          <ButtonDropdownSort
+          <ButtonDropdownSelect
+            name="Sort"
             options={MODERATION_REPORT_SORT}
-            stateSortBy={stateSort}
-            stateSortDescending={stateSortDescending}
+            type="single"
+            onSelectOption={(option) => {
+              setSort(option);
+            }}
+            stateActive={stateSort}
             size={type === "mobile" ? "tiny" : undefined}
           />
         </div>
@@ -447,7 +441,9 @@ export function PageManageReports({ className }: PageManageReportsProps) {
       stateReportStatus,
       stateReportType,
       stateSort,
-      stateSortDescending,
+      setReportStatus,
+      setReportType,
+      setSort,
     ]
   );
 

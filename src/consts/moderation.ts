@@ -6,9 +6,11 @@ import {
   ReportCategoryType,
   ReportNameFilterType,
   ReportNameType,
+  ReportSortType,
   ReportStatusFilterType,
   ReportType,
   UserGroupFilterType,
+  UserSortType,
   UserType,
 } from "@/types";
 
@@ -62,20 +64,21 @@ export const MODERATION_REPORT_CONTENT_TYPE_FILTER: Record<
   ...MODERATION_REPORT_CONTENT_TYPE,
 };
 
-export const MODERATION_REPORT_SORT: DropdownSortOptionType<ReportType>[] = [
-  {
-    id: "oldest",
+export const MODERATION_REPORT_SORT: Record<
+  ReportSortType,
+  DropdownSortOptionType<ReportType>
+> = {
+  oldest: {
     key: "date",
     name: "Oldest",
     descending: false,
   },
-  {
-    id: "newest",
+  newest: {
     key: "date",
     name: "Newest",
     descending: true,
   },
-];
+};
 
 export const MODERATION_USER_TYPE_FILTERS: Record<
   UserGroupFilterType,
@@ -95,32 +98,31 @@ export const MODERATION_USER_TYPE_FILTERS: Record<
   },
 };
 
-export const MODERATION_USER_SORT: DropdownSortOptionType<UserType>[] = [
-  {
-    id: "oldest",
+export const MODERATION_USER_SORT: Record<
+  UserSortType,
+  DropdownSortOptionType<UserType>
+> = {
+  oldest: {
     key: "joinDate",
     name: "Join Date (Oldest)",
     descending: false,
   },
-  {
-    id: "newest",
+  newest: {
     key: "joinDate",
     name: "Join Date (Newest)",
     descending: true,
   },
-  {
-    id: "a-z",
+  "a-z": {
     key: "name",
     name: "Name (A to Z)",
     descending: false,
   },
-  {
-    id: "z-a",
+  "z-a": {
     key: "name",
     name: "Name (Z to A)",
     descending: true,
   },
-];
+};
 
 export const MODERATION_REPORT_STATUS_FILTER_TYPE: Record<
   ReportStatusFilterType,

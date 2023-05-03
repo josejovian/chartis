@@ -91,6 +91,12 @@ export interface EventSortType {
   descending: boolean;
 }
 
+export type EventSortNameType =
+  | "oldest"
+  | "newest"
+  | "leastFollowers"
+  | "mostFollowers";
+
 export interface EventSortDirectionType {
   value: boolean;
   name: string;

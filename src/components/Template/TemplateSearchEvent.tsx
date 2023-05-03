@@ -4,7 +4,6 @@ import { LayoutTemplateCard, PageSearchEventCard } from "@/components";
 import { populateEvents } from "@/utils";
 import { useIdentification, useScreen, useEvent } from "@/hooks";
 import { EventSearchType, ResponsiveStyleType } from "@/types";
-import { EVENT_SORT_CRITERIA } from "@/consts";
 import { db } from "@/firebase";
 import { ref, update } from "firebase/database";
 
@@ -23,13 +22,11 @@ export function TemplateSearchEvent({
     handleUpdateEvent,
     stateFilters,
     stateQuery,
-    stateSortBy,
-    stateSortDescending,
+    stateSort,
   } = useEvent({ type: viewType });
   const [filters, setFilters] = stateFilters;
   const [query, setQuery] = stateQuery;
-  const [sortBy, setSortBy] = stateSortBy;
-  const setSortDescending = stateSortDescending[1];
+  const [sort, setSort] = stateSort;
   const router = useRouter();
   const { type } = useScreen();
 
@@ -48,10 +45,10 @@ export function TemplateSearchEvent({
       JSON.stringify({
         filters,
         query,
-        sortBy: sortBy.id,
+        sort,
       })
     );
-  }, [filters, query, sortBy.id, viewTypeString]);
+  }, [filters, query, sort, viewTypeString]);
 
   const handleGetPathQuery = useCallback(() => {
     const rawQuery = localStorage.getItem(viewTypeString);
@@ -61,22 +58,17 @@ export function TemplateSearchEvent({
 
       const parsedFilters = parsedQuery.filters;
 
-      const criteria = EVENT_SORT_CRITERIA.filter(
-        ({ id }) => id === parsedQuery.sortBy
-      )[0];
-
       setFilters(parsedFilters);
       setQuery(parsedQuery.query);
-      setSortBy(criteria);
-      setSortDescending(criteria.descending);
+      setSort(parsedQuery.sort);
     }
 
     queried.current++;
-  }, [setFilters, setQuery, setSortBy, setSortDescending, viewTypeString]);
+  }, [setFilters, setQuery, setSort, viewTypeString]);
 
   useEffect(() => {
     handleUpdatePathQueries();
-  }, [stateFilters, stateQuery, stateSortBy, handleUpdatePathQueries]);
+  }, [stateFilters, stateQuery, stateSort, handleUpdatePathQueries]);
 
   useEffect(() => {
     handleGetPathQuery();
@@ -117,8 +109,7 @@ export function TemplateSearchEvent({
         type={type}
         stateQuery={stateQuery}
         stateFilters={stateFilters}
-        stateSortBy={stateSortBy}
-        stateSortDescending={stateSortDescending}
+        stateSort={stateSort}
         updateEvent={handleUpdateEvent}
       />
     </LayoutTemplateCard>

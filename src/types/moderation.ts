@@ -59,3 +59,5 @@ export interface ReportCategoryOptionType {
 export type UserGroupFilterType = "admin" | "banned" | "user" | "all";
 
 export type UserSortType = "oldest" | "newest" | "a-z" | "z-a";
+
+export type ReportSortType = "oldest" | "newest";
