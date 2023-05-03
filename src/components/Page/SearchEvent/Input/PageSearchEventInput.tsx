@@ -31,14 +31,6 @@ export function PageSearchEventInput({ stateQuery }: SearchEventInputProps) {
     [setQuery]
   );
 
-  const handleFocusUponLoad = useCallback(() => {
-    if (inputRef.current) inputRef.current.focus();
-  }, [inputRef]);
-
-  useEffect(() => {
-    handleFocusUponLoad();
-  }, [handleFocusUponLoad]);
-
   useEffect(() => {
     return () => {
       clearTimeout(timeoutRef.current);
