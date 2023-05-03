@@ -226,6 +226,8 @@ export default function Profile() {
                 onSubmit={(values) => {
                   updateData(FIREBASE_COLLECTION_USERS, id as string, {
                     name: values.name,
+                  }).then(() => {
+                    router.reload();
                   });
                 }}
                 validate={(values) => {
