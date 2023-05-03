@@ -81,9 +81,6 @@ export default function Profile() {
   const [, setLoading] = useState(true);
   const [, setError] = useState(false);
   const { addToast } = useToast();
-  //const initialize = useRef(0);
-  //const stateIdentification = useIdentification();
-  //const { user } = stateIdentification[0];
 
   const handleGetProfile = useCallback(async () => {
     if (!id) return;
@@ -110,8 +107,7 @@ export default function Profile() {
     handleUpdateEvent,
     stateFilters,
     stateQuery,
-    stateSortBy,
-    stateSortDescending,
+    stateSort,
   } = useEvent({});
 
   //const auth = getAuth();
@@ -341,8 +337,7 @@ export default function Profile() {
           className="PageSearchEventCard !bg-sky-50 p-4 !pb-0 !h-full !mx-0"
           stateQuery={stateQuery}
           stateFilters={stateFilters}
-          stateSortBy={stateSortBy}
-          stateSortDescending={stateSortDescending}
+          stateSort={stateSort}
           events={filteredEvents}
           type={type}
           updateEvent={handleUpdateEvent}
