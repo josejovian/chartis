@@ -36,7 +36,12 @@ export function StickyHeaderTable<X>({
         type === "mobile" && "StickyHeaderTableMobile"
       )}
     >
-      <div className="StickyHeaderTableTop pr-2">
+      <div
+        className={clsx(
+          "StickyHeaderTableTop pr-2",
+          type === "mobile" && "hidden"
+        )}
+      >
         <Table className="!h-fit !border-b-0 !m-0">
           <Table.Header className="text-14px">
             <Table.Row>
