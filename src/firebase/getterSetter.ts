@@ -1,5 +1,5 @@
 import {
-  UserType,
+  type UserType,
   EventType,
   EventUpdateArrayType,
   DatabaseCommentType,
