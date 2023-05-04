@@ -21,7 +21,6 @@ interface NotificationCardProps {
 export function NotificationCard({
   update,
   handleReadNotification,
-  handleReadAndViewNotification,
 }: NotificationCardProps) {
   const { authorId, eventId, updates, date, id } = update;
   const { type } = useScreen();
@@ -56,7 +55,7 @@ export function NotificationCard({
   const renderUpdateDetail = useMemo(
     () => (
       <div className="break-words w-full pr-8">
-        <Link href="#" onClick={() => handleReadAndViewNotification()}>
+        <Link href={`/event/${eventId}`}>
           <p className="text-16px mb-2 pr-8">
             <b>{authorId}</b> updated <b>{eventId}</b>.
           </p>
@@ -65,7 +64,7 @@ export function NotificationCard({
         </Link>
       </div>
     ),
-    [authorId, date, eventId, handleReadAndViewNotification, renderChangeList]
+    [authorId, date, eventId, renderChangeList]
   );
 
   return (

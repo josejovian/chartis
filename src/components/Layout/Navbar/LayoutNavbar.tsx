@@ -38,12 +38,13 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [navBar, setNavBar] = stateNavBar;
   const { type } = useScreen();
   const { stateIdentification } = useIdentification();
-  const { user } = stateIdentification[0];
+  const { user, users } = stateIdentification[0];
 
-  const permission = useMemo<UserPermissionType>(
-    () => (user ? "user" : "guest"),
-    [user]
-  );
+  const permission = useMemo<UserPermissionType>(() => {
+    if (user && users[user.uid].role === "admin") return "admin";
+    if (user) return "user";
+    return "guest";
+  }, [user, users]);
 
   const links = useMemo<Record<string, LayoutNavbarItemProps[]>>(
     () => ({
@@ -55,9 +56,16 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           href: "/",
         },
         {
-          name: "Updates",
+          name: "Followed Events",
+          icon: "calendar check",
+          permission: "guest",
+          href: "/event/subscribed",
+        },
+        {
+          name: "Notifications",
           icon: "bell",
-          href: "/updates",
+          permission: "user",
+          href: "/notifications",
         },
         {
           name: "Profile",
@@ -79,16 +87,25 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           permission: "user",
           href: "/event/created",
         },
-      ],
-      Following: [
         {
           name: "Followed Events",
           icon: "calendar check",
+          permission: "user",
           href: "/event/subscribed",
         },
+      ],
+      Admin: [
         {
-          name: "Followed Tags",
-          icon: "tags",
+          name: "Manage Users",
+          icon: "users",
+          href: "/users",
+          permission: "admin",
+        },
+        {
+          name: "Manage Reports",
+          icon: "clipboard list",
+          href: "/reports",
+          permission: "admin",
         },
       ],
     }),

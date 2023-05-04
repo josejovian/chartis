@@ -5,7 +5,8 @@ export type ToastPresetType =
   | "get-fail"
   | "post-fail"
   | "follow"
-  | "unfollow";
+  | "unfollow"
+  | "no-permission";
 
 export type ToastFunctionType = (toast: ToastLiveType[]) => ToastLiveType[];
 
