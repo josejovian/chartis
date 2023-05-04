@@ -6,9 +6,14 @@ import { useMemo } from "react";
 export interface UserPictureProps {
   fullName: string;
   pictureUrl?: string;
+  size?: "small" | "big";
 }
 
-export function UserPicture({ fullName, pictureUrl }: UserPictureProps) {
+export function UserPicture({
+  fullName,
+  pictureUrl,
+  size = "small",
+}: UserPictureProps) {
   const initials = useMemo(
     () => getNameInitials(fullName).slice(0, 2),
     [fullName]
@@ -16,16 +21,26 @@ export function UserPicture({ fullName, pictureUrl }: UserPictureProps) {
 
   return (
     <div
+      style={
+        size === "small"
+          ? {
+              width: "2rem",
+              height: "2rem",
+              minWidth: "2rem",
+              minHeight: "2rem",
+            }
+          : {
+              width: "8rem",
+              height: "8rem",
+              minWidth: "8rem",
+              minHeight: "8rem",
+              fontSize: "4rem",
+            }
+      }
       className={clsx(
         "flex items-center justify-center",
         "rounded-full text-white bg-red-700 overflow-hidden z-10"
       )}
-      style={{
-        width: "2rem",
-        height: "2rem",
-        minWidth: "2rem",
-        minHeight: "2rem",
-      }}
     >
       {pictureUrl ? (
         <Image
