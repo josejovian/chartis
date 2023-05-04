@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { fs, readData, updateData } from "@/firebase";
+import { deleteData, fs, readData, updateData } from "@/firebase";
 import clsx from "clsx";
 import {
   LayoutCard,
@@ -10,8 +10,13 @@ import {
   LayoutNotice,
   ModalConfirmation,
 } from "@/components";
-import { useAuthorization, useIdentification, useScreen } from "@/hooks";
-import { strDateTime, validateEventQuery } from "@/utils";
+import {
+  useAuthorization,
+  useIdentification,
+  useScreen,
+  useToast,
+} from "@/hooks";
+import { sleep, strDateTime, validateEventQuery } from "@/utils";
 import {
   EVENT_QUERY_LENGTH_CONSTRAINTS,
   MODERATION_REPORT_SORT,
@@ -40,6 +45,7 @@ export interface PageManageReportsProps {
 }
 
 export function PageManageReports({ className }: PageManageReportsProps) {
+  const { addToast, addToastPreset } = useToast();
   const { stateIdentification } = useIdentification();
   const auth = getAuth();
   const router = useRouter();
@@ -54,6 +60,10 @@ export function PageManageReports({ className }: PageManageReportsProps) {
   const { type } = useScreen();
 
   const stateModalDelete = useState(false);
+  const setModalDelete = stateModalDelete[1];
+  const stateDeleteLoading = useState(false);
+  const setDeleteLoading = stateDeleteLoading[1];
+  const deletedReport = useRef<string>();
   const [loading, setLoading] = useState(true);
   const stateQuery = useState("");
   const stateReportStatus = useState<ReportStatusFilterType>("all");
@@ -209,20 +219,67 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     [isAuthorized]
   );
 
+  const handleDeleteReport = useCallback(async () => {
+    if (!isAuthorized && initialize.current) return;
+
+    if (!deletedReport.current) return;
+
+    setDeleteLoading(true);
+
+    const id = deletedReport.current;
+
+    const report = data[id];
+
+    setData((prev) => {
+      const temp = { ...prev };
+      delete temp[id];
+      return temp;
+    });
+
+    await sleep(200);
+
+    return deleteData("reports", id)
+      .then(async () => {
+        await sleep(200);
+        setDeleteLoading(false);
+        addToast({
+          title: "Report Deleted",
+          description: "Report successfully deletd.",
+          variant: "success",
+        });
+        return true;
+      })
+      .catch(() => {
+        setDeleteLoading(false);
+        addToastPreset("post-fail");
+        setData((prev) => ({
+          ...prev,
+          [id]: report,
+        }));
+        return false;
+      });
+  }, [addToast, addToastPreset, data, isAuthorized, setDeleteLoading]);
+
   useEffect(() => {
     handleGetReports();
   }, [handleGetReports]);
 
-  const modalDelete = useMemo(
+  const renderModalDelete = useMemo(
     () => (
       <ModalConfirmation
         trigger={<span></span>}
         stateOpen={stateModalDelete}
+        stateLoading={stateDeleteLoading}
         modalText="Are you sure you want to perform this action? This cannot be undone later."
         confirmText="Delete"
+        onConfirm={async () => {
+          const status = await handleDeleteReport();
+
+          if (status) setModalDelete(false);
+        }}
       />
     ),
-    [stateModalDelete]
+    [handleDeleteReport, setModalDelete, stateDeleteLoading, stateModalDelete]
   );
 
   const manageReportTableColumns = useMemo<
@@ -323,7 +380,16 @@ export function PageManageReports({ className }: PageManageReportsProps) {
             >
               {data.status === "resolved" ? "Reopen" : "Resolve"}
             </Button>
-            <Button size="mini" color="red" icon={type !== "mobile"}>
+            <Button
+              basic
+              size="mini"
+              color="red"
+              icon={type !== "mobile"}
+              onClick={() => {
+                deletedReport.current = data.id;
+                setModalDelete(true);
+              }}
+            >
               <Icon name="trash" /> {type === "mobile" && "Delete"}
             </Button>
           </div>
@@ -337,7 +403,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         important: true,
       },
     ],
-    [handleUpdateReportStatus, type]
+    [handleUpdateReportStatus, setModalDelete, type]
   );
 
   const manageReportTableRows = useCallback<
@@ -452,13 +518,19 @@ export function PageManageReports({ className }: PageManageReportsProps) {
   const renderPage = useMemo(
     () => (
       <LayoutCard className={className}>
-        {modalDelete}
+        {renderModalDelete}
         {renderControls}
         <div className="my-6">{renderCaption}</div>
         {renderUserTable}
       </LayoutCard>
     ),
-    [className, modalDelete, renderCaption, renderControls, renderUserTable]
+    [
+      className,
+      renderModalDelete,
+      renderCaption,
+      renderControls,
+      renderUserTable,
+    ]
   );
 
   return <>{!loading && renderPage}</>;
