@@ -5,7 +5,7 @@ import {
   type UserCredential,
 } from "firebase/auth";
 import { auth } from "./config";
-import { FieldConfirmPass, FieldPassword } from "@/utils";
+//import { FieldConfirmPass, FieldPassword } from "@/utils";
 
 export interface loginParams {
   email: string;
@@ -49,20 +49,27 @@ export async function register({
   onFail,
 }: registerParams) {
   return await new Promise((res, rej) => {
-    if(FieldPassword === FieldConfirmPass){
-      createUserWithEmailAndPassword(auth, email, password)
-      .then((cred) => {
-        onSuccess && onSuccess(cred);
-        res(null);
-      })
-      .catch((error) => {
-        onFail && onFail();
-        rej(error);
-      });
-    }
-    else{
-      throw Error("Password doesn't macth. Try Again!")
-    }
+    createUserWithEmailAndPassword(auth, email, password).then((cred) => {
+      onSuccess && onSuccess(cred);
+      res(null)
+    }).catch((error) => {
+      onFail && onFail();
+      rej(error);
+    });
+    // if(FieldPassword === FieldConfirmPass){
+    //   createUserWithEmailAndPassword(auth, email, password)
+    //   .then((cred) => {
+    //     onSuccess && onSuccess(cred);
+    //     res(null);
+    //   })
+    //   .catch((error) => {
+    //     onFail && onFail();
+    //     rej(error);
+    //   });
+    // }
+    // else{
+    //   throw Error("Password doesn't macth. Try Again!")
+    // }
   });
 }
 
