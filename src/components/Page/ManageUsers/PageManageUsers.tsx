@@ -228,7 +228,7 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
 
       setUserType(parsedQuery.userType);
       setQuery(parsedQuery.query);
-      setSort(parsedQuery.criteria);
+      setSort(parsedQuery.sort);
     }
 
     queried.current++;
