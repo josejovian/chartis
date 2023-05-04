@@ -421,7 +421,6 @@ export function PageManageReports({ className }: PageManageReportsProps) {
 
     if (rawQuery && queried.current <= 1) {
       const parsedQuery = JSON.parse(rawQuery);
-
       setReportStatus(parsedQuery.reportStatus);
       setReportType(parsedQuery.reportType);
       setQuery(parsedQuery.query);
