@@ -40,7 +40,7 @@ export function TemplateSearchEvent({
   const handleUpdatePathQueries = useCallback(() => {
     if (queried.current <= 1) return;
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       viewTypeString,
       JSON.stringify({
         filters,
@@ -51,7 +51,7 @@ export function TemplateSearchEvent({
   }, [filters, query, sort, viewTypeString]);
 
   const handleGetPathQuery = useCallback(() => {
-    const rawQuery = localStorage.getItem(viewTypeString);
+    const rawQuery = sessionStorage.getItem(viewTypeString);
 
     if (rawQuery && queried.current <= 1) {
       const parsedQuery = JSON.parse(rawQuery);

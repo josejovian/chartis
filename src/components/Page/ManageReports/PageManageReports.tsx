@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { deleteData, fs, readData, updateData } from "@/firebase";
 import clsx from "clsx";
 import {
   LayoutCard,
@@ -13,6 +11,7 @@ import {
 import {
   useAuthorization,
   useIdentification,
+  useReport,
   useScreen,
   useToast,
 } from "@/hooks";
@@ -31,7 +30,6 @@ import {
   ReportSortType,
   ReportStatusFilterType,
   ReportStatusType,
-  ReportType,
   StickyHeaderTableColumnProps,
   StickyHeaderTableRowProps,
 } from "@/types";
@@ -42,6 +40,12 @@ import Link from "next/link";
 
 export interface PageManageReportsProps {
   className?: string;
+}
+
+interface PageManageReportLoading {
+  page: boolean;
+  edit: boolean;
+  delete: boolean;
 }
 
 export function PageManageReports({ className }: PageManageReportsProps) {
@@ -58,13 +62,17 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     permission: "admin",
   });
   const { type } = useScreen();
+  const { deleteReport, getReports, updateReportStatus } = useReport();
 
   const stateModalDelete = useState(false);
   const setModalDelete = stateModalDelete[1];
-  const stateDeleteLoading = useState(false);
-  const setDeleteLoading = stateDeleteLoading[1];
   const deletedReport = useRef<string>();
-  const [loading, setLoading] = useState(true);
+  const stateLoading = useState<PageManageReportLoading>({
+    page: true,
+    edit: false,
+    delete: false,
+  });
+  const [loading, setLoading] = stateLoading;
   const stateQuery = useState("");
   const stateReportStatus = useState<ReportStatusFilterType>("all");
   const stateReportType = useState<ReportNameFilterType>("all");
@@ -75,6 +83,16 @@ export function PageManageReports({ className }: PageManageReportsProps) {
   const [reportType, setReportType] = stateReportType;
   const [sort, setSort] = stateSort;
   const sortBy = useMemo(() => MODERATION_REPORT_SORT[sort], [sort]);
+
+  const setLoadingState = useCallback(
+    (name: keyof PageManageReportLoading, state: boolean) => {
+      setLoading((prev) => ({
+        ...prev,
+        [name]: state,
+      }));
+    },
+    [setLoading]
+  );
 
   const filterCaption = useMemo(
     () => (
@@ -145,91 +163,63 @@ export function PageManageReports({ className }: PageManageReportsProps) {
   const handleGetReports = useCallback(async () => {
     if (!isAuthorized && initialize.current) return;
 
-    const docs = await getDocs(collection(fs, "reports"));
-    const results: Record<string, ReportExtendedType> = {};
-
-    const arrayDocs: ReportType[] = [];
-
-    docs.forEach((doc) => {
-      const result = doc.data();
-
-      if (result)
-        arrayDocs.push({
-          ...result,
-          id: doc.id,
-        } as ReportType);
+    const results = await getReports({
+      onSuccess: () => {
+        initialize.current = true;
+        setLoadingState("page", false);
+      },
+      onFail: () => {
+        addToastPreset("get-fail");
+      },
     });
 
-    for (const doc of arrayDocs) {
-      const { id, eventId, contentType } = doc;
-      if (id) {
-        let content = null;
-
-        if (contentType === "comment") {
-          const { commentId } = doc;
-          await readData("comments", eventId).then((res) => {
-            if (res) {
-              content = res[commentId].text;
-            }
-          });
-        } else if (contentType === "event") {
-          await readData("events", eventId).then((res) => {
-            if (res) content = res;
-          });
-        }
-
-        if (content) {
-          results[id] = {
-            ...doc,
-            content,
-          };
-        }
-      }
-    }
-
-    initialize.current = true;
-    setLoading(false);
     setData(results);
-  }, [isAuthorized]);
+  }, [addToastPreset, getReports, isAuthorized, setLoadingState]);
 
-  const handleUpdateReportStatus = useCallback(
+  useEffect(() => {
+    handleGetReports();
+  }, [handleGetReports]);
+
+  const handleUpdateReport = useCallback(
     async (id: string, status: ReportStatusType) => {
       if (!isAuthorized && initialize.current) return;
 
-      setData((prev) => ({
-        ...prev,
-        [id]: {
-          ...prev[id],
-          status,
+      setLoadingState("edit", true);
+      await sleep(200);
+      updateReportStatus({
+        id,
+        status: status === "resolved" ? "open" : "resolved",
+        onSuccess: async () => {
+          await sleep(200);
+          setLoadingState("edit", false);
+          addToast({
+            title: "Report Updated",
+            description: `Report is successfully marked as ${status}.`,
+            variant: "success",
+          });
         },
-      }));
-
-      await updateData("reports", id, {
-        status,
-      }).catch(() => {
-        setData((prev) => ({
-          ...prev,
-          [id]: {
-            ...prev[id],
-            status: status === "open" ? "resolved" : "open",
-          },
-        }));
+        onFail: () => {
+          setLoadingState("edit", false);
+          addToastPreset("post-fail");
+        },
       });
     },
-    [isAuthorized]
+    [
+      addToast,
+      addToastPreset,
+      isAuthorized,
+      setLoadingState,
+      updateReportStatus,
+    ]
   );
 
   const handleDeleteReport = useCallback(async () => {
     if (!isAuthorized && initialize.current) return;
 
-    if (!deletedReport.current) return;
-
-    setDeleteLoading(true);
-
     const id = deletedReport.current;
+    if (!id) return;
 
-    const report = data[id];
-
+    setLoadingState("delete", true);
     setData((prev) => {
       const temp = { ...prev };
       delete temp[id];
@@ -237,49 +227,44 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     });
 
     await sleep(200);
-
-    return deleteData("reports", id)
-      .then(async () => {
+    await deleteReport({
+      id,
+      onSuccess: async () => {
         await sleep(200);
-        setDeleteLoading(false);
+        setLoadingState("delete", false);
+        setModalDelete(false);
         addToast({
           title: "Report Deleted",
-          description: "Report successfully deletd.",
+          description: "Report is successfully deleted.",
           variant: "success",
         });
-        return true;
-      })
-      .catch(() => {
-        setDeleteLoading(false);
+      },
+      onFail: () => {
+        setLoadingState("delete", false);
         addToastPreset("post-fail");
-        setData((prev) => ({
-          ...prev,
-          [id]: report,
-        }));
-        return false;
-      });
-  }, [addToast, addToastPreset, data, isAuthorized, setDeleteLoading]);
-
-  useEffect(() => {
-    handleGetReports();
-  }, [handleGetReports]);
+      },
+    });
+  }, [
+    isAuthorized,
+    setLoadingState,
+    deleteReport,
+    setModalDelete,
+    addToast,
+    addToastPreset,
+  ]);
 
   const renderModalDelete = useMemo(
     () => (
       <ModalConfirmation
         trigger={<span></span>}
         stateOpen={stateModalDelete}
-        stateLoading={stateDeleteLoading}
+        loading={loading.delete}
         modalText="Are you sure you want to perform this action? This cannot be undone later."
         confirmText="Delete"
-        onConfirm={async () => {
-          const status = await handleDeleteReport();
-
-          if (status) setModalDelete(false);
-        }}
+        onConfirm={handleDeleteReport}
       />
     ),
-    [handleDeleteReport, setModalDelete, stateDeleteLoading, stateModalDelete]
+    [handleDeleteReport, loading.delete, stateModalDelete]
   );
 
   const manageReportTableColumns = useMemo<
@@ -369,14 +354,13 @@ export function PageManageReports({ className }: PageManageReportsProps) {
               size="mini"
               color={data.status === "resolved" ? "yellow" : "green"}
               icon={type !== "mobile"}
-              onClick={() => {
-                const reportId = data.id;
-                if (reportId)
-                  handleUpdateReportStatus(
-                    reportId,
-                    data.status === "resolved" ? "open" : "resolved"
-                  );
-              }}
+              onClick={() =>
+                data.id &&
+                handleUpdateReport(
+                  data.id,
+                  data.status === "resolved" ? "open" : "resolved"
+                )
+              }
             >
               {data.status === "resolved" ? "Reopen" : "Resolve"}
             </Button>
@@ -403,7 +387,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         important: true,
       },
     ],
-    [handleUpdateReportStatus, setModalDelete, type]
+    [handleUpdateReport, setModalDelete, type]
   );
 
   const manageReportTableRows = useCallback<
@@ -421,7 +405,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
   const handleUpdatePathQueries = useCallback(() => {
     if (queried.current <= 1) return;
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       viewTypeString,
       JSON.stringify({
         reportStatus,
@@ -433,7 +417,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
   }, [query, reportStatus, reportType, sort, viewTypeString]);
 
   const handleGetPathQuery = useCallback(() => {
-    const rawQuery = localStorage.getItem(viewTypeString);
+    const rawQuery = sessionStorage.getItem(viewTypeString);
 
     if (rawQuery && queried.current <= 1) {
       const parsedQuery = JSON.parse(rawQuery);
@@ -533,5 +517,5 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     ]
   );
 
-  return <>{!loading && renderPage}</>;
+  return <>{!loading.page && renderPage}</>;
 }

@@ -210,7 +210,7 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
   const handleUpdatePathQueries = useCallback(() => {
     if (queried.current <= 1) return;
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       viewTypeString,
       JSON.stringify({
         userType,
@@ -221,7 +221,7 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
   }, [query, sort, userType, viewTypeString]);
 
   const handleGetPathQuery = useCallback(() => {
-    const rawQuery = localStorage.getItem(viewTypeString);
+    const rawQuery = sessionStorage.getItem(viewTypeString);
 
     if (rawQuery && queried.current <= 1) {
       const parsedQuery = JSON.parse(rawQuery);
