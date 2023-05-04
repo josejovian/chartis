@@ -185,10 +185,17 @@ export function PageManageReports({ className }: PageManageReportsProps) {
       if (!isAuthorized && initialize.current) return;
 
       setLoadingState("edit", true);
+      setData((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          status,
+        },
+      }));
       await sleep(200);
-      updateReportStatus({
+      await updateReportStatus({
         id,
-        status: status === "resolved" ? "open" : "resolved",
+        status,
         onSuccess: async () => {
           await sleep(200);
           setLoadingState("edit", false);
@@ -199,6 +206,13 @@ export function PageManageReports({ className }: PageManageReportsProps) {
           });
         },
         onFail: () => {
+          setData((prev) => ({
+            ...prev,
+            [id]: {
+              ...prev[id],
+              status: status === "resolved" ? "open" : "resolved",
+            },
+          }));
           setLoadingState("edit", false);
           addToastPreset("post-fail");
         },
