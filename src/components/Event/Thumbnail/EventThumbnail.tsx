@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
-import { EventThumbnailDisplayType } from "@/types";
+import { EventThumbnailDisplayType, ScreenSizeCategoryType } from "@/types";
 
 export interface EventThumbnailProps {
   className?: string;
   src?: string;
+  screenType?: ScreenSizeCategoryType;
   type?: EventThumbnailDisplayType;
 }
 
 export function EventThumbnail({
   className,
   src,
+  screenType,
   type = "thumbnail-fixed-width",
 }: EventThumbnailProps) {
   const [loaded, setLoaded] = useState(false);
@@ -25,7 +27,7 @@ export function EventThumbnail({
       case "banner":
         return {
           width: "100%",
-          height: "240px",
+          height: screenType !== "mobile" ? "240px" : "320px",
         };
       case "thumbnail-fixed-height":
         return {
@@ -35,7 +37,7 @@ export function EventThumbnail({
       default:
         return undefined;
     }
-  }, [type]);
+  }, [screenType, type]);
 
   const renderImage = useMemo(
     () =>

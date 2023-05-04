@@ -4,7 +4,7 @@ import {
   LayoutTemplateCard,
   PageViewEventCard,
 } from "@/components";
-import { EVENT_DUMMY_1 } from "@/consts";
+import { ASSET_NO_CONTENT, EVENT_DUMMY_1 } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIdentification, useScreen, useEvent } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
@@ -77,6 +77,7 @@ export default function ViewEvent() {
     if (error)
       return (
         <LayoutNotice
+          illustration={ASSET_NO_CONTENT}
           title="This event does not exist."
           descriptionElement={
             <Button color="yellow" onClick={() => router.push("/")}>

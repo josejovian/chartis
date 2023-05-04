@@ -1,8 +1,9 @@
 import {
-  type UserType,
+  UserType,
   EventType,
   DatabaseCommentType,
   DatabaseUpdateChangesType,
+  ReportType,
 } from "@/types";
 import pushid from "pushid";
 import {
@@ -22,6 +23,7 @@ import { fs } from "./config";
 import {
   FIREBASE_COLLECTION_COMMENTS,
   FIREBASE_COLLECTION_EVENTS,
+  FIREBASE_COLLECTION_REPORTS,
   FIREBASE_COLLECTION_UPDATES,
   FIREBASE_COLLECTION_USERS,
 } from "@/consts";
@@ -31,6 +33,7 @@ type FIREBASE_COLLECTION = {
   [FIREBASE_COLLECTION_EVENTS]: EventType;
   [FIREBASE_COLLECTION_UPDATES]: DatabaseUpdateChangesType;
   [FIREBASE_COLLECTION_COMMENTS]: DatabaseCommentType;
+  [FIREBASE_COLLECTION_REPORTS]: ReportType;
 };
 
 type OPERATION_TYPE = {

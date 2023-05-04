@@ -13,6 +13,7 @@ const IDENTIFICATION_CONTEXT_DEFAULT: StateObject<IdentificationType> = [
     user: null,
     users: {},
     permission: "guest",
+    initialized: false,
   },
   () => {},
 ];

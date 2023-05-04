@@ -6,7 +6,7 @@ export interface ConfirmationModalProps {
   trigger: ReactNode;
   onConfirm?: () => void;
   stateOpen?: StateObject<boolean>;
-  stateLoading?: StateObject<boolean>;
+  loading?: boolean;
   modalHeader?: string;
   modalText?: string;
   confirmText?: string;
@@ -18,7 +18,7 @@ export function ModalConfirmation({
   trigger,
   onConfirm,
   stateOpen,
-  stateLoading,
+  loading = false,
   modalHeader = "Are you sure?",
   modalText = "Are you sure?",
   confirmText = "Confirm",
@@ -27,7 +27,6 @@ export function ModalConfirmation({
 }: ConfirmationModalProps) {
   const stateSelf = useState(false);
   const [open, setOpen] = stateOpen ?? stateSelf;
-  const loading = stateLoading && stateLoading[0];
 
   return (
     <Modal

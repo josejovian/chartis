@@ -69,7 +69,7 @@
     @apply !m-0;
     margin: 0 !important;
   }
-  .PageSearchEventCard i.dropdown.icon {
+  :is(.PageSearchEventCard, .dropdown) i.dropdown.icon {
     display: none !important;
   }
   [role="listbox"] .ui.label.empty {
@@ -129,8 +129,7 @@
       .ui.floating.dropdown .visible.menu
     ) {
     min-width: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
+    border-top: none !important;
   }
   .ui.dropdown > .visible.menu > .scrolling.menu {
     min-width: 0 !important;
@@ -200,7 +199,98 @@
   .NotificationCard:hover :is(p, li) {
     text-decoration: underline;
   }
+
+  .h-full-1rem {
+    height: calc(100% + 1rem);
+  }
+
+  .h-full--4rem {
+    height: calc(100% - 4rem);
+  }
+  .StickyHeaderTableTop {
+    background-color: #f9fafb;
+    border: 1px solid rgba(34, 36, 38, 0.1);
+    border-radius: 0.28571429rem 0.28571429rem 0 0 !important;
+  }
+  .StickyHeaderTableTop :is(table, th, td) {
+    border: 0 !important;
+    outline: 0 !important;
+  }
+  .StickyHeaderTable :is(th, td) button.ui.red.button {
+    box-shadow: none !important;
+  }
+  .StickyHeaderTable
+    :is(th, td)
+    button.ui.red.button:is(:hover, :focus, :active) {
+    box-shadow: none !important;
+    @apply !bg-red-200;
+  }
+  .StickyHeaderTableBottom {
+    max-height: calc(100% - 3rem);
+    border-bottom: 1px solid rgba(34, 36, 38, 0.1);
+  }
+
+  .StickyHeaderTableBottom :is(table, tbody) {
+    border-top: 0px !important;
+    border-radius: 0 0 0.28571429rem 0.28571429rem !important;
+  }
+  .StickyHeaderTableMobile > .StickyHeaderTableBottom {
+    max-height: 100% !important;
+    border-radius: 0.28571429rem !important;
+    border-top: 1px solid rgba(34, 36, 38, 0.1);
+    border-bottom: 1px solid rgba(34, 36, 38, 0.1);
+  }
+  .ui.table :is(td, th) {
+    hyphens: manual;
+    overflow-wrap: anywhere;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).one.wide {
+    inline-size: 6.25%;
+    max-width: 6.25% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).two.wide {
+    inline-size: 12.5%;
+    max-width: 12.5% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).three.wide {
+    inline-size: 18.75%;
+    max-width: 18.75% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).four.wide {
+    inline-size: 25%;
+    max-width: 25% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).five.wide {
+    inline-size: 31.25%;
+    max-width: 31.25% !important;
+  }
+  :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).six.wide {
+    inline-size: 37.5%;
+    max-width: 37.5% !important;
+  }
+  @media only screen and (max-width: 1024px) {
+    .ui.table:not(.unstackable) tr {
+      padding-top: 1em;
+      padding-bottom: 1em;
+      box-shadow: 0 -1px 0 0 rgba(0, 0, 0, 0.1) inset !important;
+    }
+    .ui.table:not(.unstackable) tbody,
+    .ui.table:not(.unstackable) tr,
+    .ui.table:not(.unstackable) tr > td,
+    .ui.table:not(.unstackable) tr > th {
+      width: auto !important;
+      display: block !important;
+    }
+    .ui.table:not(.unstackable) tr > td,
+    .ui.table:not(.unstackable) tr > th {
+      background: 0 0;
+      border: none !important;
+      padding: 0.25em 0.75em !important;
+      box-shadow: none !important;
+    }
+  }
 }
+
 @tailwind components;
 @layer utilities {
   .text-10px {

@@ -24,7 +24,7 @@ export function Modal({ content }: ModalProps) {
 
 const MODAL_WRAPPER_BASE_STYLE = clsx(
   "fixed flex flex-col p-8",
-  "bg-white z-40 overflow-hidden"
+  "bg-white z-40 overflow-visible"
 );
 
 const MODAL_WRAPPER_DESKTOP_STYLE = clsx(

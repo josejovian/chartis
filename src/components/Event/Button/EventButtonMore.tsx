@@ -25,6 +25,7 @@ export function EventButtonMore({
   onEdit,
   onReport,
 }: EventButtonMoreProps) {
+  const deleting = stateDeleting && stateDeleting[0];
   const [open, setOpen] = useState(false);
   const { authorId } = event;
   const { permission, user } = identification;
@@ -42,13 +43,13 @@ export function EventButtonMore({
         }
         onConfirm={onDelete}
         stateOpen={stateModalDelete}
-        stateLoading={stateDeleting}
+        loading={deleting}
         color="red"
         modalText="Are you sure you want to delete this event? This cannot be undone later."
         confirmText="Delete"
       />
     ),
-    [onDelete, stateDeleting, stateModalDelete]
+    [deleting, onDelete, stateModalDelete]
   );
 
   const renderDropdownItems = useMemo(() => {

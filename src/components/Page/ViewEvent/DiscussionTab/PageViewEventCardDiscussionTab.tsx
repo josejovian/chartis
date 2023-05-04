@@ -9,20 +9,35 @@ import pushid from "pushid";
 import { Button, Form, Icon, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import { UserPicture } from "@/components";
-import { getTimeDifference } from "@/utils";
-import { CommentType, DatabaseCommentType, EventType } from "@/types";
+import { getTimeDifference, sleep } from "@/utils";
+import {
+  CommentReportType,
+  CommentType,
+  DatabaseCommentType,
+  EventType,
+  ReportBaseType,
+  ScreenSizeCategoryType,
+  StateObject,
+} from "@/types";
+import { useReport, useToast } from "@/hooks";
 
 interface PageViewEventCardDiscussionTabProps {
-  event: EventType;
+  stateEvent: StateObject<EventType>;
+  type: ScreenSizeCategoryType;
 }
 
 export function PageViewEventCardDiscussionTab({
-  event,
+  stateEvent,
+  type,
 }: PageViewEventCardDiscussionTabProps) {
+  const [event, setEvent] = stateEvent;
   const { commentCount, id } = event;
-  const [comments, setComments] = useState<CommentType[]>();
+  const [comments, setComments] = useState<CommentType[]>([]);
   const auth = getAuth();
   const isLoggedIn = useMemo(() => auth.currentUser, [auth]);
+  const [loading, setLoading] = useState(false);
+  const { addToastPreset } = useToast();
+  const { showReportModal } = useReport();
 
   const handleGetEventUpdates = useCallback(async () => {
     if (commentCount === 0) return;
@@ -42,20 +57,36 @@ export function PageViewEventCardDiscussionTab({
     async (values: any) => {
       const poster = auth.currentUser;
       const commentId = pushid();
-      const newComment = {} as DatabaseCommentType;
-      newComment[commentId] = {
+      const newCommentObject = {} as DatabaseCommentType;
+      const newComment = {
         commentId: commentId,
         authorId: poster?.uid as string,
         authorName: poster?.displayName as string,
         postDate: new Date().getTime(),
         text: values.comment,
       };
+      newCommentObject[commentId] = newComment;
+      setLoading(true);
+      await sleep(200);
 
-      createData(`comments`, newComment, id, true).then(() => {
-        updateData("events", id, { commentCount: increment(1) as any });
-      });
+      createData(`comments`, newCommentObject, id, true)
+        .then(async () => {
+          await updateData("events", id, { commentCount: increment(1) as any });
+          setComments((prev) => [newComment, ...prev]);
+          setEvent((prev) => ({
+            ...prev,
+            commentCount: (prev.commentCount ?? 0) + 1,
+          }));
+
+          await sleep(100);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+          addToastPreset("post-fail");
+        });
     },
-    [auth.currentUser, id]
+    [addToastPreset, auth.currentUser, id, setEvent]
   );
 
   useEffect(() => {
@@ -63,31 +94,37 @@ export function PageViewEventCardDiscussionTab({
   }, [handleGetEventUpdates]);
 
   const renderCommentCard = useCallback(
-    (comment: CommentType) => (
-      <div
-        className="grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4"
-        key={comment.commentId}
-      >
+    (comment: CommentType, last?: boolean) => (
+      <div className={COMMENT_WRAPPER_STYLE} key={comment.commentId}>
         <div
-          className={clsx(
-            "z-10 relative flex justify-center row-span-3 after:-z-2 text-white",
-            "after:content-[''] after:absolute after:top-0 after:right-1/2",
-            "after:h-full after:w-px after:translate-x-1/2 after:bg-slate-400"
-          )}
+          className={clsx(COMMENT_ICON_STYLE, !last && COMMENT_SIDELINE_STYLE)}
         >
           <UserPicture fullName={comment.authorName} />
         </div>
         <div className="flex gap-2.5 items-center h-8">
-          <div className="font-semibold text-xl">{comment.authorName}</div>
-          <div className="text-slate-400 text-[0.7rem] flex self-end pb-[0.15rem]">
+          <span className="font-semibold text-16px">{comment.authorName}</span>
+          <span className="flex pt-1 text-slate-400 text-12px">
             {getTimeDifference(comment.postDate)}
-          </div>
+          </span>
         </div>
         <div className="flex items-center">{comment.text}</div>
-        <div className="flex items-center text-slate-400 text-sm">Report</div>
+        <div
+          onClick={() =>
+            showReportModal({
+              commentId: comment.commentId,
+              eventId: id,
+              authorId: comment.authorId,
+              contentType: "comment",
+              reportedBy: auth.currentUser ? auth.currentUser.uid : "invalid",
+            } as ReportBaseType & CommentReportType)
+          }
+          className={COMMENT_REPORT_STYLE}
+        >
+          Report
+        </div>
       </div>
     ),
-    []
+    [auth.currentUser, id, showReportModal]
   );
 
   const renderCommentInput = useMemo(
@@ -106,13 +143,13 @@ export function PageViewEventCardDiscussionTab({
             .required("Required"),
         })}
       >
-        {({ isSubmitting, submitForm, isValid, dirty, errors, values }) => (
-          <Form className="form flex flex-col items-end gap-2">
+        {({ submitForm, values, errors }) => (
+          <Form className="form flex flex-col items-end gap-4">
             <Field name="comment">
-              {({ form: { touched, errors }, field, meta }: any) => (
+              {({ field }: any) => (
                 <TextArea
                   name="ui comment"
-                  className="!text-14px !w-full"
+                  className="!text-16px !w-full"
                   style={{
                     resize: "none",
                     lineHeight: "1.25rem",
@@ -130,7 +167,7 @@ export function PageViewEventCardDiscussionTab({
               )}
             </Field>
             <div className="flex justify-between w-full">
-              <span className="-mt-5 ml-2 bg-white font-semibold text-red-500 text-12px">
+              <span className="ml-2 bg-white text-red-500 text-16px">
                 {errors.comment !== "Required" ? errors.comment : ""}
               </span>
               <Button
@@ -139,7 +176,8 @@ export function PageViewEventCardDiscussionTab({
                 type="submit"
                 onClick={submitForm}
                 color="yellow"
-                loading={isSubmitting}
+                loading={loading}
+                disabled={values.comment === ""}
               >
                 <Icon name="paper plane" className="pr-6" />
                 Post
@@ -149,7 +187,7 @@ export function PageViewEventCardDiscussionTab({
         )}
       </Formik>
     ),
-    [handlePostComment]
+    [handlePostComment, loading]
   );
 
   const renderEventComments = useMemo(
@@ -157,20 +195,39 @@ export function PageViewEventCardDiscussionTab({
       <div className="flex flex-col gap-8 pt-6 w-full">
         {isLoggedIn && renderCommentInput}
         <div className="flex flex-col gap-4 w-full">
-          {comments && comments.map(renderCommentCard)}
+          {comments &&
+            comments.map((comment, id) =>
+              renderCommentCard(comment, id === comments.length - 1)
+            )}
         </div>
       </div>
     ),
     [comments, isLoggedIn, renderCommentCard, renderCommentInput]
   );
 
-  // return <div className="pt-8 px-16 overflow-y">{renderEventComments}</div>;
-
   return (
-    <div className={clsx(EVENT_CARD_BODY_WRAPPER_STYLE)}>
+    <div
+      className={clsx(
+        EVENT_CARD_BODY_WRAPPER_STYLE,
+        type === "mobile" && "!px-6"
+      )}
+    >
       {renderEventComments}
     </div>
   );
 }
 
 const EVENT_CARD_BODY_WRAPPER_STYLE = "px-12 pt-6 pb-6 overflow-y-auto";
+
+const COMMENT_ICON_STYLE =
+  "z-10 relative flex justify-center row-span-3 after:-z-2 text-white";
+
+const COMMENT_SIDELINE_STYLE = [
+  "after:content-[''] after:absolute after:top-0 after:right-1/2",
+  "after:h-full-1rem after:w-px after:translate-x-1/2 after:bg-slate-400",
+];
+
+const COMMENT_WRAPPER_STYLE = "grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4";
+
+const COMMENT_REPORT_STYLE =
+  "flex items-center text-slate-400 hover:text-slate-600 text-16px cursor-pointer";
