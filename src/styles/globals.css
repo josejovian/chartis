@@ -216,6 +216,15 @@
     border: 0 !important;
     outline: 0 !important;
   }
+  .StickyHeaderTable :is(th, td) button.ui.red.button {
+    box-shadow: none !important;
+  }
+  .StickyHeaderTable
+    :is(th, td)
+    button.ui.red.button:is(:hover, :focus, :active) {
+    box-shadow: none !important;
+    @apply !bg-red-200;
+  }
   .StickyHeaderTableBottom {
     max-height: calc(100% - 3rem);
     border-bottom: 1px solid rgba(34, 36, 38, 0.1);
