@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo } from "react";
 import { Field } from "formik";
-import { Dropdown, Input, TextArea } from "semantic-ui-react";
+import { Input, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventTags,
   FormErrorMessage,
+  FormInputDropdown,
   PageViewEventCardDetailTabDetail,
 } from "@/components";
 import { useIdentification } from "@/hooks";
@@ -37,6 +38,7 @@ export interface PageViewEventCardDetailTabProps {
 export function PageViewEventCardDetailTab({
   event,
   mode,
+  type,
   stateTags,
   validateForm,
   setFieldValue,
@@ -88,41 +90,25 @@ export function PageViewEventCardDetailTab({
 
   const renderEditEventTags = useMemo(
     () => (
-      <>
-        <Dropdown
-          placeholder="Enter event tags"
-          className="!border-0 !min-h-0 !py-0"
-          fluid
-          search
-          selection
-          multiple
-          transparent
-          defaultValue={Object.keys(tags)}
-          onChange={(_, { value }) =>
-            handleUpdateTagJSON(value as EventTagNameType[])
-          }
-          onMouseDown={() => validateForm && validateForm()}
-          onBlur={() => validateForm && validateForm()}
-          options={Object.entries(EVENT_TAGS).map(([id, { name }]) => ({
-            key: `SelectTag_${id}`,
-            text: name,
-            value: id,
-          }))}
-        />
-        <Field name="tags">
-          {({ field, meta }: any) => (
-            <div className="">
-              <Input
-                className="EventInput !hidden"
-                size="big"
-                transparent
-                {...field}
-              />
-              <FormErrorMessage meta={meta} className="!z-10" overlap />
-            </div>
-          )}
-        </Field>
-      </>
+      <FormInputDropdown
+        fieldName="tags"
+        placeholder="Enter event tags"
+        defaultValue={Object.keys(tags)}
+        options={Object.entries(EVENT_TAGS).map(([id, { name }]) => ({
+          key: `SelectTag_${id}`,
+          text: name,
+          value: id,
+        }))}
+        onChange={(_, { value }) =>
+          handleUpdateTagJSON(value as EventTagNameType[])
+        }
+        validateForm={validateForm}
+        formErrorMessageProps={{
+          icon: true,
+          overlap: true,
+        }}
+        multiple
+      />
     ),
     [handleUpdateTagJSON, tags, validateForm]
   );
@@ -207,7 +193,7 @@ export function PageViewEventCardDetailTab({
                 transparent
                 {...field}
               />
-              <FormErrorMessage meta={meta} className="mt-2" />
+              <FormErrorMessage icon meta={meta} className="mt-2" />
             </div>
           )}
         </Field>
@@ -245,7 +231,7 @@ export function PageViewEventCardDetailTab({
                 placeholder="Enter event description (8 - 256 characters long)."
                 {...field}
               />
-              <FormErrorMessage meta={meta} className="mt-2" />
+              <FormErrorMessage icon meta={meta} className="mt-2" />
             </div>
           )}
         </Field>
@@ -284,7 +270,8 @@ export function PageViewEventCardDetailTab({
     <div
       className={clsx(
         EVENT_CARD_BODY_WRAPPER_STYLE,
-        mode !== "view" && "ui form div !h-full"
+        mode !== "view" && "ui form div !h-full",
+        type === "mobile" && "!px-6"
       )}
     >
       {renderEventCardContent}

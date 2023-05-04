@@ -7,8 +7,7 @@ import { useScreen } from "@/hooks";
 import { getTimeDifference } from "@/utils";
 import { EVENT_UPDATE_TERM } from "@/consts";
 import { UpdateNameType, UpdateChangedValueType } from "@/types";
-import { NotificationData } from "@/pages/updates";
-import router from "next/router";
+import { NotificationData } from "@/pages/notifications";
 
 interface NotificationCardProps {
   udpateData: NotificationData;
@@ -63,7 +62,7 @@ export function NotificationCard({
   const renderUpdateCard = useMemo(
     () => (
       <div className="break-words w-full pr-8">
-        <Link href="#" onClick={() => router.push(`/event/${eventId}`)}>
+        <Link href={`/event/${eventId}`}>
           <p className="text-16px mb-2 pr-8">
             <b>{authorName}</b> updated <b>{eventName}</b>.
           </p>

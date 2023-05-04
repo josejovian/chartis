@@ -2,14 +2,21 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { readData } from "@/firebase";
 import clsx from "clsx";
 import { EventUpdate } from "@/components";
-import { EventType, UpdateNameType, UpdateVersion } from "@/types";
+import {
+  EventType,
+  UpdateNameType,
+  ScreenSizeCategoryType,
+  UpdateVersion,
+} from "@/types";
 
 interface PageViewEventCardUpdatesTabProps {
   event: EventType;
+  type: ScreenSizeCategoryType;
 }
 
 export function PageViewEventCardUpdatesTab({
   event,
+  type,
 }: PageViewEventCardUpdatesTabProps) {
   const [updates, setUpdates] = useState<UpdateVersion[]>();
 
@@ -53,7 +60,12 @@ export function PageViewEventCardUpdatesTab({
   );
 
   return (
-    <div className={clsx(EVENT_CARD_BODY_WRAPPER_STYLE)}>
+    <div
+      className={clsx(
+        EVENT_CARD_BODY_WRAPPER_STYLE,
+        type === "mobile" && "!px-6"
+      )}
+    >
       {renderEventUpdates}
     </div>
   );

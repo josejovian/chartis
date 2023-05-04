@@ -1,37 +1,20 @@
 import { EventTagObjectType } from "@/types";
 import * as Yup from "yup";
 
-const RuleName = Yup.string()
-  .min(3, "Name is too short!")
-  .max(50, "Name is too long!")
+export const RuleName = Yup.string()
+  .min(3, "Name is too short! (min. 3 chars)")
+  .max(50, "Name is too long! (max. 50 chars)")
   .required("Name is required.");
 
-const RuleEmail = Yup.string()
-  .email("Email is invalid.")
-  .required("Email is required.");
-
-const RulePassword = Yup.string().required("Password is required.");
-
-const RuleDescription = Yup.string()
-  .min(8, "Description is too short!")
-  .max(5000, "Description is too long!")
+export const RuleDescription = Yup.string()
+  .min(8, "Description is too short! (min. 8 chars)")
+  .max(5000, "Description is too long! (max. 100 chars)")
   .required("Description is required.");
 
-export const SchemaRegister = Yup.object().shape({
-  name: RuleName,
-  email: RuleEmail,
-  password: RulePassword,
-});
-
-export const SchemaLogin = Yup.object().shape({
-  email: RuleEmail,
-  password: RulePassword,
-});
-
-export const SchemaEvent = Yup.object().shape({
-  name: RuleName,
-  description: RuleDescription,
-});
+export const RuleReason = Yup.string()
+  .min(8, "Reason is too short! (min. 8 chars)")
+  .max(100, "Reason is too long! (max. 100 chars)")
+  .required("Reason is required.");
 
 export function validateStartDate(start?: number) {
   if (!start) return "Start date is required.";

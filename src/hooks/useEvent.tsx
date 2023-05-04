@@ -8,7 +8,7 @@ import {
 } from "@/consts";
 import {
   EventSearchType,
-  EventSortType,
+  EventSortNameType,
   EventTagNameType,
   EventType,
 } from "@/types";
@@ -40,10 +40,10 @@ export function useEvent({ type }: useEventProps) {
   const stateFilters = useState<EventTagNameType[]>([]);
   const filters = stateFilters[0];
   const atLeastOneFilter = useMemo(() => filters.length > 0, [filters.length]);
-  const stateSortBy = useState<EventSortType>(EVENT_SORT_CRITERIA[0]);
-  const sortBy = stateSortBy[0];
+  const stateSort = useState<EventSortNameType>("newest");
+  const sort = stateSort[0];
+  const sortBy = EVENT_SORT_CRITERIA[sort];
   const stateSortDescending = useState(false);
-  const sortDescending = stateSortDescending[0];
   const stateUserQuery = useState("");
   const userQuery = stateUserQuery[0];
   const { stateIdentification } = useIdentification();
@@ -87,13 +87,13 @@ export function useEvent({ type }: useEventProps) {
           return reg.test(name) && extraValidation;
         })
         .sort((a, b) => {
-          const left = a[sortBy.id] ?? 0;
-          const right = b[sortBy.id] ?? 0;
+          const left = a[sortBy.key] ?? 0;
+          const right = b[sortBy.key] ?? 0;
           if (typeof left === "number" && typeof right === "number")
-            return (left - right) * (sortDescending ? -1 : 1);
+            return (left - right) * (sortBy.descending ? -1 : 1);
           return 0;
         }),
-    [validatedEvents, type, user, userQuery, sortBy.id, sortDescending]
+    [validatedEvents, type, user, userQuery, sortBy.key, sortBy.descending]
   );
 
   const filterByMethod = useMemo(
@@ -425,7 +425,7 @@ export function useEvent({ type }: useEventProps) {
       stateQuery: stateUserQuery,
       stateEvents,
       stateFilters,
-      stateSortBy,
+      stateSort,
       stateSortDescending,
       stateModalDelete,
     }),
@@ -443,7 +443,7 @@ export function useEvent({ type }: useEventProps) {
       stateUserQuery,
       stateEvents,
       stateFilters,
-      stateSortBy,
+      stateSort,
       stateSortDescending,
       stateModalDelete,
     ]

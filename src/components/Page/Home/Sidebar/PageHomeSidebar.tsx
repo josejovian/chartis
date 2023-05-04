@@ -10,6 +10,7 @@ import {
 } from "@/types";
 import { parseFromDateMonthYear, strDate } from "@/utils";
 import { useIdentification, useScreen } from "@/hooks";
+import { ASSET_NO_CONTENT } from "@/consts";
 
 export interface PageHomeSideBarProps {
   focusDate: FocusDateType;
@@ -88,6 +89,7 @@ export function PageHomeSideBar({
   const renderEmpty = useMemo(
     () => (
       <LayoutNotice
+        illustration={ASSET_NO_CONTENT}
         title="It's Empty"
         description="There are no events on this date."
       />

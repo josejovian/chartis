@@ -5,13 +5,14 @@ import {
   LayoutNoticeUnionProps,
   LAYOUT_NOTICE_PRESETS,
 } from "@/components";
+import { ASSET_CALENDAR } from "@/consts";
 
 export function LayoutNotice(rawProps: LayoutNoticeProps) {
   const {
     title,
     description,
     descriptionElement,
-    illustration = "/no-events.png",
+    illustration = ASSET_CALENDAR,
     illustrationElement,
   } = useMemo(
     () =>

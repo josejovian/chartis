@@ -80,7 +80,7 @@ export function LayoutNavbarMain({
       <>
         {Object.entries(links).map(([category, links], idx) => {
           const allowedLinks = links.filter((link) =>
-            hasPermission(permission, link.permission ?? "guest")
+            hasPermission(permission, link.permission)
           );
 
           return (

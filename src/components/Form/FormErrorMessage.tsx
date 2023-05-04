@@ -9,29 +9,34 @@ export interface FormErrorMessageProps {
   };
   className?: string;
   overlap?: boolean;
+  icon?: boolean;
 }
 
 export function FormErrorMessage({
   meta,
   className,
   overlap,
+  icon = false,
 }: FormErrorMessageProps) {
   return (
-    meta.touched &&
-    meta.error && (
+    ((meta.touched && meta.error) || !overlap) && (
       <div
         className={clsx(
-          "text-red-500 font-bold text-12px",
-          overlap &&
-            "absolute -bottom-2 p-0.5 bg-white mx-3 border-secondary-2",
+          "text-red-500",
+          overlap
+            ? [
+                "absolute -bottom-2 p-0.5 bg-white mx-3",
+                "border-secondary-2 font-bold text-12px",
+              ]
+            : "text-16px h-4",
           className
         )}
         style={{
           lineHeight: "12px",
         }}
       >
-        <Icon name="warning sign" />
-        {meta.error}
+        {overlap && <Icon name="warning sign" />}
+        {meta.error || overlap ? meta.error : ""}
       </div>
     )
   );
