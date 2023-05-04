@@ -1,8 +1,8 @@
 import {
-  EventSortDirectionType,
-  EventSortType,
+  DropdownOptionType,
+  DropdownSortOptionType,
+  EventSortNameType,
   EventTagNameType,
-  EventTagType,
   EventType,
   EventUpdateNameType,
 } from "@/types";
@@ -45,7 +45,7 @@ export const EVENT_DUMMY_2: EventType = {
   tags: {},
 };
 
-export const EVENT_TAGS: Record<EventTagNameType, EventTagType> = {
+export const EVENT_TAGS: Record<EventTagNameType, DropdownOptionType> = {
   seminar: {
     name: "Seminar",
     color: "blue",
@@ -68,15 +68,23 @@ export const EVENT_TAGS: Record<EventTagNameType, EventTagType> = {
   },
 };
 
-export const EVENT_SORT_CRITERIA: EventSortType[] = [
-  { id: "postDate", name: "Post Date" },
-  { id: "subscriberCount", name: "Followers" },
-];
-
-export const EVENT_SORT_TYPE: EventSortDirectionType[] = [
-  { value: false, name: "Ascending" },
-  { value: true, name: "Descending" },
-];
+export const EVENT_SORT_CRITERIA: Record<
+  EventSortNameType,
+  DropdownSortOptionType<EventType>
+> = {
+  oldest: { key: "postDate", name: "Oldest", descending: false },
+  newest: { key: "postDate", name: "Newest", descending: true },
+  leastFollowers: {
+    key: "subscriberCount",
+    name: "Least Followers",
+    descending: false,
+  },
+  mostFollowers: {
+    key: "subscriberCount",
+    name: "Most Followers",
+    descending: true,
+  },
+};
 
 export const EVENT_QUERY_LENGTH_CONSTRAINTS = [3, 20]; //[min, max]
 

@@ -4,7 +4,6 @@ import { LayoutTemplateCard, PageSearchEventCard } from "@/components";
 import { populateEvents } from "@/utils";
 import { useIdentification, useScreen, useEvent } from "@/hooks";
 import { EventSearchType, ResponsiveStyleType } from "@/types";
-import { EVENT_SORT_CRITERIA } from "@/consts";
 import { db } from "@/firebase";
 import { ref, update } from "firebase/database";
 
@@ -23,66 +22,61 @@ export function TemplateSearchEvent({
     handleUpdateEvent,
     stateFilters,
     stateQuery,
-    stateSortBy,
-    stateSortDescending,
+    stateSort,
   } = useEvent({ type: viewType });
   const [filters, setFilters] = stateFilters;
   const [query, setQuery] = stateQuery;
-  const [sortBy, setSortBy] = stateSortBy;
-  const [sortDescending, setSortDescending] = stateSortDescending;
+  const [sort, setSort] = stateSort;
   const router = useRouter();
   const { type } = useScreen();
 
   const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
+
   const queried = useRef(0);
   const viewTypeString = useMemo(() => `query-${viewType}`, [viewType]);
 
   const handleUpdatePathQueries = useCallback(() => {
     if (queried.current <= 1) return;
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       viewTypeString,
       JSON.stringify({
         filters,
         query,
-        sortBy: sortBy.id,
-        sortDescending,
+        sort,
       })
     );
-  }, [filters, query, sortBy.id, sortDescending, viewTypeString]);
+  }, [filters, query, sort, viewTypeString]);
 
   const handleGetPathQuery = useCallback(() => {
-    const rawQuery = localStorage.getItem(viewTypeString);
+    const rawQuery = sessionStorage.getItem(viewTypeString);
 
     if (rawQuery && queried.current <= 1) {
       const parsedQuery = JSON.parse(rawQuery);
 
-      const parsedFilters = JSON.parse(parsedQuery.filters);
+      const parsedFilters = parsedQuery.filters;
 
       setFilters(parsedFilters);
       setQuery(parsedQuery.query);
-      setSortBy(
-        EVENT_SORT_CRITERIA.filter(({ id }) => id === parsedQuery.sortBy)[0]
-      );
-      setSortDescending(parsedQuery.sortDescending);
+      setSort(parsedQuery.sort);
     }
 
     queried.current++;
-  }, [setFilters, setQuery, setSortBy, setSortDescending, viewTypeString]);
+  }, [setFilters, setQuery, setSort, viewTypeString]);
 
   useEffect(() => {
-    // handleUpdatePathQueries();
-  }, [handleUpdatePathQueries]);
+    handleUpdatePathQueries();
+  }, [stateFilters, stateQuery, stateSort, handleUpdatePathQueries]);
+
+  useEffect(() => {
+    handleGetPathQuery();
+  }, [handleGetPathQuery]);
 
   useEffect(() => {
     getEvents();
   }, [getEvents]);
-
-  useEffect(() => {
-    // handleGetPathQuery();
-  }, [handleGetPathQuery]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handlePopulateDatabaseEvents = useCallback(async () => {
@@ -115,8 +109,7 @@ export function TemplateSearchEvent({
         type={type}
         stateQuery={stateQuery}
         stateFilters={stateFilters}
-        stateSortBy={stateSortBy}
-        stateSortDescending={stateSortDescending}
+        stateSort={stateSort}
         updateEvent={handleUpdateEvent}
       />
     </LayoutTemplateCard>
