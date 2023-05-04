@@ -7,6 +7,7 @@ export interface FormCustomFieldProps {
   name: string;
   type: string;
   placeholder: string;
+  defaultValue?: string;
 }
 
 export interface FormLoginProps {

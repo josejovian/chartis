@@ -63,6 +63,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           name: "Profile",
           icon: "user",
           permission: "user",
+          href: `/profile/${user?.uid}`,
         },
       ],
       Events: [
@@ -91,7 +92,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         },
       ],
     }),
-    []
+    [user?.uid]
   );
 
   const renderNavBarToggle = useMemo(
