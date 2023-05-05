@@ -7,7 +7,7 @@ import {
   UpdateNameType,
   UpdateChangedValueType,
   ResponsiveStyleType,
-  UpdateChangesType,
+  NotificationData,
 } from "@/types";
 import clsx from "clsx";
 import { useCallback, useEffect, useState } from "react";
@@ -23,15 +23,6 @@ import {
   FIREBASE_COLLECTION_USERS,
 } from "@/consts";
 import { documentId, where } from "firebase/firestore";
-
-export type NotificationData = {
-  eventId: string;
-  eventVersion: number;
-  authorName: string;
-  eventName: string;
-  lastUpdatedAt: number;
-  changes: UpdateChangesType;
-};
 
 export default function Notification() {
   const { stateIdentification } = useIdentification();

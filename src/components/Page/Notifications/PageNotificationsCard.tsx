@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { LayoutCard, LayoutNotice, NotificationCard } from "@/components";
 import { Button, Loader } from "semantic-ui-react";
 import { useMemo } from "react";
-import { NotificationData } from "@/pages/notifications";
+import { NotificationData } from "@/types";
 
 export interface PageNotificationsCardProps {
   className?: string;

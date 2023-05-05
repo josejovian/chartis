@@ -6,8 +6,11 @@ import { UserPicture } from "@/components";
 import { useScreen } from "@/hooks";
 import { getTimeDifference } from "@/utils";
 import { EVENT_UPDATE_TERM } from "@/consts";
-import { UpdateNameType, UpdateChangedValueType } from "@/types";
-import { NotificationData } from "@/pages/notifications";
+import {
+  UpdateNameType,
+  UpdateChangedValueType,
+  NotificationData,
+} from "@/types";
 
 interface NotificationCardProps {
   udpateData: NotificationData;

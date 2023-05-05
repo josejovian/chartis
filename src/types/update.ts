@@ -38,3 +38,12 @@ export interface EventUpdateArrayType {
   eventId: string;
   updates: EventUpdateBatchType[];
 }
+
+export type NotificationData = {
+  eventId: string;
+  eventVersion: number;
+  authorName: string;
+  eventName: string;
+  lastUpdatedAt: number;
+  changes: UpdateChangesType;
+};
