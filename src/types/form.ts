@@ -19,4 +19,5 @@ export interface FormRegisterProps {
   name: string;
   email: string;
   password: string;
+  confirm: string;
 }
