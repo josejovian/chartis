@@ -21,6 +21,7 @@ export interface EventType {
   version?: number;
   commentCount?: number;
   tags: EventTagObjectType;
+  hide?: boolean;
 }
 
 export interface EventDetailBaseType {
