@@ -83,7 +83,7 @@ export function PageViewEventCardDiscussionTab({
         })
         .catch(() => {
           setLoading(false);
-          addToastPreset("post-fail");
+          addToastPreset("fail-post");
         });
     },
     [addToastPreset, auth.currentUser, id, setEvent]

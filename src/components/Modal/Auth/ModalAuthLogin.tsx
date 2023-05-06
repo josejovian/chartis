@@ -9,7 +9,7 @@ import { FormLoginProps } from "@/types";
 export function ModalAuthLogin() {
   const [loading, setLoading] = useState(false);
   const { setModal, clearModal } = useModal();
-  const { addToast, addToastPreset } = useToast();
+  const { addToastPreset } = useToast();
   const router = useRouter();
 
   const handleShowRegisterModal = useCallback(() => {
@@ -22,22 +22,18 @@ export function ModalAuthLogin() {
       await login({
         ...(values as FormLoginProps),
         onSuccess: () => {
-          addToast({
-            title: "Login Success",
-            description: "Welcome!",
-            variant: "success",
-          });
+          addToastPreset("auth-login");
           setLoading(false);
           clearModal();
           router.replace(router.asPath);
         },
         onFail: () => {
-          addToastPreset("generic-fail");
+          addToastPreset("fail-generic");
           setLoading(false);
         },
       });
     },
-    [addToast, addToastPreset, clearModal, router]
+    [addToastPreset, clearModal, router]
   );
 
   const renderFormHead = useMemo(

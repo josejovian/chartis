@@ -10,7 +10,7 @@ export interface loginParams {
   email: string;
   password: string;
   onSuccess?: (cred: UserCredential) => void;
-  onFail?: () => void;
+  onFail?: (error: unknown) => void;
 }
 
 export interface registerParams {
@@ -34,7 +34,7 @@ export async function login({
         res(null);
       })
       .catch((error) => {
-        onFail && onFail();
+        onFail && onFail(error);
         rej(error.code);
       });
   });

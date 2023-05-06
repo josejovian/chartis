@@ -59,7 +59,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     onFail: () => {
       router.replace("/");
     },
-    permission: "admin",
+    minPermission: "admin",
   });
   const { type } = useScreen();
   const { deleteReport, getReports, updateReportStatus } = useReport();
@@ -169,7 +169,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         setLoadingState("page", false);
       },
       onFail: () => {
-        addToastPreset("get-fail");
+        addToastPreset("fail-get");
       },
     });
 
@@ -214,7 +214,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
             },
           }));
           setLoadingState("edit", false);
-          addToastPreset("post-fail");
+          addToastPreset("fail-post");
         },
       });
     },
@@ -247,15 +247,11 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         await sleep(200);
         setLoadingState("delete", false);
         setModalDelete(false);
-        addToast({
-          title: "Report Deleted",
-          description: "Report is successfully deleted.",
-          variant: "success",
-        });
+        addToastPreset("feat-report-create");
       },
       onFail: () => {
         setLoadingState("delete", false);
-        addToastPreset("post-fail");
+        addToastPreset("fail-post");
       },
     });
   }, [
@@ -263,7 +259,6 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     setLoadingState,
     deleteReport,
     setModalDelete,
-    addToast,
     addToastPreset,
   ]);
 

@@ -10,9 +10,9 @@ import {
 
 const IDENTIFICATION_CONTEXT_DEFAULT: StateObject<IdentificationType> = [
   {
+    authUser: null,
     user: null,
     users: {},
-    permission: "guest",
     initialized: false,
   },
   () => {},

@@ -43,13 +43,13 @@ export default function App({ Component, pageProps }: AppProps) {
   const stateModal = useState<ReactNode>(null);
   const [modal, setModal] = stateModal;
   const stateIdentification = useState<IdentificationType>({
+    authUser: null,
     user: null,
     users: {},
-    permission: "guest",
     initialized: false,
   });
   const [identification, setIdentification] = stateIdentification;
-  const { user, users } = identification;
+  const { user } = identification;
   const [screen, setScreen] = useState<ScreenSizeType>({
     width: 0,
     type: "mobile",
@@ -99,25 +99,30 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const handleUpdateLoggedInUserData = useCallback(async () => {
     onAuthStateChanged(auth, async (user) => {
-      let userData = null;
+      let userData: UserType | undefined;
       let newUsers = {};
 
       if (user) {
-        userData = await readData(FIREBASE_COLLECTION_USERS, user.uid).catch(
-          () => null
-        );
+        userData = await readData(FIREBASE_COLLECTION_USERS, user.uid);
 
         if (userData) {
+          userData = {
+            ...userData,
+            id: user.uid,
+          };
           newUsers = {
-            [user.uid]: userData,
+            [user.uid]: {
+              ...userData,
+              id: user.uid,
+            },
           };
         }
       }
 
       setIdentification((prev) => ({
         ...prev,
-        user,
-        permission: user ? "user" : "guest",
+        authUser: user,
+        user: userData,
         users: {
           ...prev.users,
           ...newUsers,
@@ -128,15 +133,15 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [auth, setIdentification]);
 
   const handleUpdateNotifications = useCallback(() => {
-    if (!user || initializeListener.current) return null;
+    if (!user || !user.id || initializeListener.current) return null;
 
     initializeListener.current = true;
 
-    const { subscribedEvents = {} } = users[user.uid];
+    const { subscribedEvents = {} } = user;
     const subscribedEventIds = Object.keys(subscribedEvents);
 
     return onSnapshot(
-      doc(fs, FIREBASE_COLLECTION_USERS, user.uid),
+      doc(fs, FIREBASE_COLLECTION_USERS, user.id),
       async (doc) => {
         const userDoc = doc.data();
 
@@ -218,7 +223,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }
       }
     );
-  }, [setUpdates, user, users]);
+  }, [setUpdates, user]);
 
   const handleInitialize = useCallback(() => {
     if (initialize.current) return;

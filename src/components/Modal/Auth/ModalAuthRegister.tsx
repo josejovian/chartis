@@ -11,7 +11,7 @@ import { FIREBASE_COLLECTION_USERS } from "@/consts";
 export function ModalAuthRegister() {
   const [loading, setLoading] = useState(false);
   const { setModal, clearModal } = useModal();
-  const { addToast, addToastPreset } = useToast();
+  const { addToastPreset } = useToast();
   const router = useRouter();
 
   const handleShowLoginModal = useCallback(() => {
@@ -26,7 +26,8 @@ export function ModalAuthRegister() {
           name: data.name,
           email: data.email,
           joinDate: new Date().getTime(),
-        },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
         cred.user.uid
       )
         .then(async () => {
@@ -38,20 +39,16 @@ export function ModalAuthRegister() {
           } else throw Error("Auth somehow doesn't have currentUser.");
         })
         .then(() => {
-          addToast({
-            title: "Register Success",
-            description: "Welcome!",
-            variant: "success",
-          });
+          addToastPreset("auth-login");
           setLoading(false);
           clearModal();
           router.replace(router.asPath);
         })
         .catch(() => {
-          addToastPreset("generic-fail");
+          addToastPreset("fail-generic");
         });
     },
-    [addToast, addToastPreset, clearModal, router]
+    [addToastPreset, clearModal, router]
   );
 
   const handleRegister = useCallback(
@@ -62,7 +59,7 @@ export function ModalAuthRegister() {
         ...data,
         onSuccess: (cred) => handleStoreUserData(data, cred),
         onFail: () => {
-          addToastPreset("generic-fail");
+          addToastPreset("fail-generic");
         },
       });
     },

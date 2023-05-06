@@ -79,8 +79,8 @@ export function LayoutNavbarMain({
     () => (
       <>
         {Object.entries(links).map(([category, links], idx) => {
-          const allowedLinks = links.filter((link) =>
-            hasPermission(permission, link.permission)
+          const allowedLinks = links.filter(
+            (link) => hasPermission(permission, link.permission) && !link.hidden
           );
 
           return (

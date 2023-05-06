@@ -38,13 +38,13 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [navBar, setNavBar] = stateNavBar;
   const { type } = useScreen();
   const { stateIdentification } = useIdentification();
-  const { user, users } = stateIdentification[0];
+  const { user } = stateIdentification[0];
 
   const permission = useMemo<UserPermissionType>(() => {
-    if (user && users[user.uid].role === "admin") return "admin";
+    if (user && user.role === "admin") return "admin";
     if (user) return "user";
     return "guest";
-  }, [user, users]);
+  }, [user]);
 
   const links = useMemo<Record<string, LayoutNavbarItemProps[]>>(
     () => ({
@@ -71,7 +71,8 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           name: "Profile",
           icon: "user",
           permission: "user",
-          href: `/profile/${user?.uid}`,
+          href: `/profile/${user && user.id}`,
+          hidden: !user,
         },
       ],
       Events: [
@@ -80,6 +81,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           icon: "calendar plus",
           permission: "user",
           href: "/event/new",
+          hidden: user?.ban,
         },
         {
           name: "Your Events",
@@ -109,7 +111,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         },
       ],
     }),
-    [user?.uid]
+    [user]
   );
 
   const renderNavBarToggle = useMemo(
