@@ -114,7 +114,7 @@ export default function Notification() {
     notificationData.forEach((notification) => {
       batchOperations.push({
         collectionName: FIREBASE_COLLECTION_USERS,
-        documentId: user.uid,
+        documentId: user.id,
         operationType: "update",
         value: {
           [`subscribedEvents.${notification.eventId}`]:
@@ -137,7 +137,7 @@ export default function Notification() {
     async (targetEventId: string, targetEventVersion: number) => {
       if (!user) return;
 
-      return updateData(FIREBASE_COLLECTION_USERS, user.uid, {
+      return updateData(FIREBASE_COLLECTION_USERS, user.id, {
         [`subscribedEvents.${targetEventId}`]: targetEventVersion,
         [`unseenEvents.${targetEventId}`]: false,
       })
@@ -166,15 +166,13 @@ export default function Notification() {
       );
       if (updateEventId.length > 0) {
         setIsLoading(true);
-        getUpdateObject(updateEventId)
-          .then((notificationData) => {
-            setNotificationData(notificationData);
-          })
-          .finally(() => {
-            setIsLoading(false);
-          });
+        getUpdateObject(updateEventId).then((notificationData) => {
+          setNotificationData(notificationData);
+        });
       }
     }
+
+    setIsLoading(false);
   }, [getUpdateObject, userNotification]);
 
   return (

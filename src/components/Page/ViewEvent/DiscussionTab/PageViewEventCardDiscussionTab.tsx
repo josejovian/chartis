@@ -15,6 +15,7 @@ import {
   CommentType,
   DatabaseCommentType,
   EventType,
+  IdentificationType,
   ReportBaseType,
   ScreenSizeCategoryType,
   StateObject,
@@ -24,11 +25,13 @@ import { useReport, useToast } from "@/hooks";
 interface PageViewEventCardDiscussionTabProps {
   stateEvent: StateObject<EventType>;
   type: ScreenSizeCategoryType;
+  identification: IdentificationType;
 }
 
 export function PageViewEventCardDiscussionTab({
   stateEvent,
   type,
+  identification,
 }: PageViewEventCardDiscussionTabProps) {
   const [event, setEvent] = stateEvent;
   const { commentCount, id } = event;
@@ -38,6 +41,12 @@ export function PageViewEventCardDiscussionTab({
   const [loading, setLoading] = useState(false);
   const { addToastPreset } = useToast();
   const { showReportModal } = useReport();
+  const { user, initialized } = identification;
+  const authorized = useMemo(() => {
+    if (!initialized) return undefined;
+
+    return Boolean(user && !user.ban);
+  }, [initialized, user]);
 
   const handleGetEventUpdates = useCallback(async () => {
     if (commentCount === 0) return;
@@ -149,7 +158,10 @@ export function PageViewEventCardDiscussionTab({
               {({ field }: any) => (
                 <TextArea
                   name="ui comment"
-                  className="!text-16px !w-full"
+                  className={clsx(
+                    "!text-16px !w-full",
+                    !authorized && "cursor-not-allowed"
+                  )}
                   style={{
                     resize: "none",
                     lineHeight: "1.25rem",
@@ -163,6 +175,7 @@ export function PageViewEventCardDiscussionTab({
                   }}
                   placeholder="Discuss about the event here"
                   {...field}
+                  disabled={!authorized}
                 />
               )}
             </Field>
@@ -177,7 +190,7 @@ export function PageViewEventCardDiscussionTab({
                 onClick={submitForm}
                 color="yellow"
                 loading={loading}
-                disabled={values.comment === ""}
+                disabled={!authorized || values.comment === ""}
               >
                 <Icon name="paper plane" className="pr-6" />
                 Post
@@ -187,7 +200,7 @@ export function PageViewEventCardDiscussionTab({
         )}
       </Formik>
     ),
-    [handlePostComment, loading]
+    [authorized, handlePostComment, loading]
   );
 
   const renderEventComments = useMemo(

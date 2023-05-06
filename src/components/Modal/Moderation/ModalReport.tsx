@@ -2,7 +2,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { createData } from "@/firebase";
 import { FormErrorMessage, FormInputDropdown } from "@/components";
-import { useModal, useScreen, useToast } from "@/hooks";
+import { useIdentification, useModal, useScreen, useToast } from "@/hooks";
 import { SchemaReport, sleep } from "@/utils";
 import {
   CommentReportType,
@@ -40,6 +40,8 @@ export default function ModalReport(props: ModalReportProps) {
           contentType: "event",
         }),
   });
+  const { stateIdentification } = useIdentification();
+  const { initialized, user } = stateIdentification[0];
 
   const labelStyle = useMemo(
     () => clsx(INPUT_LABEL_BASE_STYLE, RESPONSIVE_WIDTH_STYLE[type]),
@@ -48,6 +50,8 @@ export default function ModalReport(props: ModalReportProps) {
 
   const handleSubmitReport = useCallback(
     async (values: unknown) => {
+      if (!initialized) return;
+
       const { reason } = values as ReportType;
 
       const finalReport: ReportType = {
@@ -67,11 +71,11 @@ export default function ModalReport(props: ModalReportProps) {
           addToastPreset("feat-report-create");
         })
         .catch(() => {
+          addToastPreset(user?.ban ? "fail-post-banned-user" : "fail-post");
           setLoading(false);
-          addToastPreset("fail-post");
         });
     },
-    [addToastPreset, clearModal, report]
+    [addToastPreset, clearModal, initialized, report, user?.ban]
   );
 
   const handleValidateCategory = useCallback(() => {
