@@ -11,6 +11,7 @@ export interface LayoutNavbarItemProps {
   onClick?: () => void;
   permission?: UserPermissionType;
   active?: boolean;
+  hidden?: boolean;
 }
 
 export function LayoutNavbarItem({

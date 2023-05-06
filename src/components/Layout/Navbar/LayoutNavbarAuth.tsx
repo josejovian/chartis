@@ -9,6 +9,7 @@ import {
 } from "@/components";
 import { useModal, useToast } from "@/hooks";
 import { User } from "@/components/User/User";
+import { useRouter } from "next/router";
 
 export interface LayoutNavbarAuthProps {
   name: string;
@@ -20,8 +21,9 @@ export interface LayoutNavbarAuthProps {
 
 export function LayoutNavbarAuth() {
   const user = auth.currentUser;
-  const { addToast } = useToast();
+  const { addToastPreset } = useToast();
   const { setModal } = useModal();
+  const router = useRouter();
 
   const handleShowLoginModal = useCallback(() => {
     setModal(<ModalAuthLogin />);
@@ -32,22 +34,16 @@ export function LayoutNavbarAuth() {
   }, [setModal]);
 
   const handleLogout = useCallback(async () => {
+    router.replace("/");
+
     await logout()
       .then(() => {
-        addToast({
-          title: "Logout Success",
-          description: "See you!",
-          variant: "success",
-        });
+        addToastPreset("auth-logout");
       })
       .catch(() => {
-        addToast({
-          title: "Logout Failed",
-          description: "Please try again later.",
-          variant: "danger",
-        });
+        addToastPreset("fail-generic");
       });
-  }, [addToast]);
+  }, [addToastPreset, router]);
 
   const renderUser = useMemo(
     () =>

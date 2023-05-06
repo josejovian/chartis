@@ -40,10 +40,10 @@ export function EventButtonFollow({
 
   const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
 
-  const { permission, user, users } = identification;
+  const { user, users } = identification;
 
   const isAuthor = useMemo(
-    () => Boolean(user && user.uid === authorId),
+    () => Boolean(user && user.id === authorId),
     [authorId, user]
   );
 
@@ -64,7 +64,7 @@ export function EventButtonFollow({
   const handleFollowEvent = useCallback(async () => {
     if (loading) return;
 
-    if (permission === "guest") {
+    if (!user) {
       const subscribe = JSON.parse(
         localStorage.getItem("subscribe") ?? "{}"
       ) as Record<string, number>;
@@ -106,13 +106,13 @@ export function EventButtonFollow({
           localStorage.setItem("subscribe", JSON.stringify(newSubscribe));
         })
         .catch(() => {
-          addToastPreset("post-fail");
+          addToastPreset("fail-post");
           setLoading(false);
           setSubscribed((prev) => !prev);
           handleUpdateSubscribeClientSide(subscribe[id] !== undefined);
         });
       setLoading(false);
-    } else if (user && user.uid && users[user.uid]) {
+    } else if (user && user.id) {
       const batch = writeBatch(fs);
 
       handleUpdateSubscribeClientSide(subscribed);
@@ -120,10 +120,10 @@ export function EventButtonFollow({
 
       // Event's subscribers
       const updatedSubscribedIds = subscribed
-        ? subscriberIds.filter((uid) => uid !== user.uid)
-        : [...subscriberIds.filter((uid) => uid !== user.uid), user.uid];
+        ? subscriberIds.filter((id) => id !== user.id)
+        : [...subscriberIds.filter((id) => id !== user.id), user.id];
 
-      const subscribedEvents = users[user.uid].subscribedEvents;
+      const subscribedEvents = users[user.id].subscribedEvents;
 
       // User's subscribed events
       const updatedSubscribedEvents = subscribed
@@ -141,7 +141,7 @@ export function EventButtonFollow({
       await sleep(200);
 
       const dbRef = doc(fs, FIREBASE_COLLECTION_EVENTS, id);
-      const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.uid);
+      const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.id);
 
       batch.update(dbRef, {
         subscriberIds: updatedSubscribedIds,
@@ -160,14 +160,14 @@ export function EventButtonFollow({
           updatedSubscribedIds.length + (guestSubscriberCount ?? 0),
       });
 
-      updateUserSubscribedEventClientSide(user.uid, id, event.version);
+      updateUserSubscribedEventClientSide(user.id, id, event.version);
 
       await batch.commit().catch(() => {
         updateEvent(id, {
           subscriberIds,
           subscriberCount,
         });
-        addToastPreset("post-fail");
+        addToastPreset("fail-post");
         setSubscribed((prev) => !prev);
       });
 
@@ -180,7 +180,6 @@ export function EventButtonFollow({
     handleUpdateSubscribeClientSide,
     id,
     loading,
-    permission,
     subscribed,
     subscriberCount,
     subscriberIds,
@@ -194,17 +193,17 @@ export function EventButtonFollow({
     if (initialized.current || typeof window === "undefined") return;
 
     let status = false;
-    if (permission === "guest") {
+    if (!user) {
       const subscribe = JSON.parse(
         localStorage.getItem("subscribe") ?? "{}"
       ) as Record<string, boolean>;
       status = subscribe[id];
-    } else if (user && user.uid && users[user.uid]) {
-      status = subscriberIds.includes(user.uid);
+    } else if (user && user.id && users[user.id]) {
+      status = subscriberIds.includes(user.id);
     }
     setSubscribed(status);
     initialized.current = true;
-  }, [id, permission, subscriberIds, user, users]);
+  }, [id, subscriberIds, user, users]);
 
   useEffect(() => {
     handleInitializeSubscribeState();

@@ -57,7 +57,7 @@ export default function ViewEvent() {
       router.query.mode === "edit" &&
       event &&
       user &&
-      user.uid === event.authorId
+      user.id === event.authorId
     ) {
       setMode("edit");
     }

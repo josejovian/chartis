@@ -32,7 +32,13 @@ export function User({ id, type }: UserProps) {
             ...prev,
             users: {
               ...prev.users,
-              [id]: result,
+              [id]: {
+                id,
+                name: result.name,
+                joinDate: result.joinDate,
+                ban: result.ban,
+                email: result.email,
+              },
             },
           }));
       });

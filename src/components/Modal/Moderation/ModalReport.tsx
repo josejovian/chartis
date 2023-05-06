@@ -22,7 +22,7 @@ export default function ModalReport(props: ModalReportProps) {
   const { authorId, reportedBy, contentType, eventId } = props;
 
   const { clearModal } = useModal();
-  const { addToast, addToastPreset } = useToast();
+  const { addToastPreset } = useToast();
   const { type } = useScreen();
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<ReportType>({
@@ -64,18 +64,14 @@ export default function ModalReport(props: ModalReportProps) {
         .then(async () => {
           await sleep(200);
           clearModal();
-          addToast({
-            title: "Report Submitted!",
-            description: "An admin will take care of it.",
-            variant: "success",
-          });
+          addToastPreset("feat-report-create");
         })
-        .catch((e) => {
+        .catch(() => {
           setLoading(false);
-          addToastPreset("post-fail");
+          addToastPreset("fail-post");
         });
     },
-    [addToast, addToastPreset, clearModal, report]
+    [addToastPreset, clearModal, report]
   );
 
   const handleValidateCategory = useCallback(() => {

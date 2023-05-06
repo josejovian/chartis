@@ -226,7 +226,7 @@ export function EventCard({
               eventId: id,
               contentType: "event",
               authorId,
-              reportedBy: user ? user.uid : "invalid",
+              reportedBy: user ? user.id : "invalid",
             })
           }
         />

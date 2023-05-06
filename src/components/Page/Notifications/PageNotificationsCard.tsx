@@ -33,7 +33,7 @@ export function PageNotificationsCard({
 
       if (!user || !version) return;
 
-      const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.uid);
+      const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.id);
 
       await runTransaction(fs, async (transaction) => {
         const userDoc = await transaction.get(userRef);
@@ -53,14 +53,14 @@ export function PageNotificationsCard({
           notificationCount: increment(-1),
         });
       }).catch(() => {
-        addToastPreset("post-fail");
+        addToastPreset("fail-post");
       });
 
       setUpdates((prev) =>
         prev.filter((instance) => instance.eventId !== eventId)
       );
 
-      updateUserSubscribedEventClientSide(user.uid, eventId, version);
+      updateUserSubscribedEventClientSide(user.id, eventId, version);
     },
     [addToastPreset, setUpdates, updateUserSubscribedEventClientSide, user]
   );
@@ -76,7 +76,7 @@ export function PageNotificationsCard({
   const handleReadAllNotification = useCallback(async () => {
     if (!user) return;
 
-    const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.uid);
+    const userRef = doc(fs, FIREBASE_COLLECTION_USERS, user.id);
 
     const lastSeenVersions = Object.entries(updates)
       .filter(([_, batch]) => batch.version !== undefined)
@@ -109,10 +109,10 @@ export function PageNotificationsCard({
         notificationCount: increment(-1 * updates.length),
       });
     }).catch(() => {
-      addToastPreset("post-fail");
+      addToastPreset("fail-post");
     });
 
-    updateUserSubscribedEventsClientSide(user.uid, lastSeenVersions);
+    updateUserSubscribedEventsClientSide(user.id, lastSeenVersions);
 
     setUpdates([]);
   }, [

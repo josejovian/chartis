@@ -73,8 +73,9 @@ export default function Profile() {
   const router = useRouter();
   const { id } = router.query;
   const stateUser = useState<UserType>({
-    name: "jeff jeffry",
-    email: "jeff@email.com",
+    id: "",
+    name: "",
+    email: "",
     joinDate: 0,
   });
   const [profile, setProfile] = stateUser;

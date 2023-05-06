@@ -97,7 +97,7 @@ export function PageViewEventCard({
 
     return object;
   }, [event, mode]);
-  const { addToast, addToastPreset } = useToast();
+  const { addToastPreset } = useToast();
   const { stateModalDelete, deleteEvent } = useEvent({});
 
   const { stateIdentification } = useIdentification();
@@ -122,8 +122,8 @@ export function PageViewEventCard({
         ...(event ?? defaultValues),
         ...(values as EventType),
         id: eventId,
-        authorId: user.uid,
-        authorName: user.displayName as string,
+        authorId: user.id,
+        authorName: user.name,
         version: (event.version ?? 0) + (mode === "edit" ? 1 : 0),
         tags,
       };
@@ -142,6 +142,17 @@ export function PageViewEventCard({
     },
     [event, mode, tags, user]
   );
+
+  const handleFailedSubmit = useCallback(() => {
+    if (!user) return;
+
+    if (user.ban) {
+      addToastPreset("fail-post-banned-user");
+    } else {
+      addToastPreset("fail-post");
+    }
+    setSubmitting(false);
+  }, [addToastPreset, setSubmitting, user]);
 
   const handleSubmitForm = useCallback(
     async (values: unknown) => {
@@ -163,18 +174,16 @@ export function PageViewEventCard({
         batch.set(updatesRef, {
           updates: [],
         });
-        await batch.commit().catch(() => {
-          addToastPreset("post-fail");
-          setSubmitting(false);
-        });
-
-        await sleep(200);
-        addToast({
-          title: "Event Created",
-          description: "",
-          variant: "success",
-        });
-        router.push(`/event/${eventId}`);
+        await batch
+          .commit()
+          .then(async () => {
+            await sleep(200);
+            addToastPreset("feat-event-create");
+            router.push(`/event/${eventId}`);
+          })
+          .catch(() => {
+            handleFailedSubmit();
+          });
       } else if (eventPreviousValues && eventPreviousValues.current) {
         const changes = compareEventValues(
           eventPreviousValues.current,
@@ -211,7 +220,7 @@ export function PageViewEventCard({
               ...updates,
               {
                 id: eventBatchUpdateId,
-                authorId: user.uid,
+                authorId: user.id,
                 date: new Date().getTime(),
                 updates: changes,
               },
@@ -223,11 +232,7 @@ export function PageViewEventCard({
           }).then(async () => {
             await sleep(200);
             router.replace(`/event/${event.id}/`);
-            addToast({
-              title: "Event Updated",
-              description: "",
-              variant: "success",
-            });
+            addToastPreset("feat-event-update");
             await sleep(200);
             setMode("view");
             setEvent((prev) => ({
@@ -240,17 +245,16 @@ export function PageViewEventCard({
               eventPreviousValues.current = newEvent;
           });
         } catch (e) {
-          addToastPreset("post-fail");
-          setSubmitting(false);
+          handleFailedSubmit();
         }
       }
     },
     [
-      addToast,
       addToastPreset,
       event,
       eventPreviousValues,
       handleConstructEventValues,
+      handleFailedSubmit,
       mode,
       router,
       setEvent,

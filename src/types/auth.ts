@@ -15,16 +15,14 @@ export interface UserDatabaseType {
 }
 
 export interface UserType extends UserDatabaseType {
-  id?: string;
+  id: string;
 }
-
-export type UserObjectType = User | null;
 
 export type UserPermissionType = (typeof USER_TYPES)[number];
 
 export interface IdentificationType {
-  user: UserObjectType;
+  authUser?: User | null;
+  user?: UserType | null;
   users: Record<string, UserType>;
-  permission: UserPermissionType;
   initialized: boolean;
 }
