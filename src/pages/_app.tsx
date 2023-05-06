@@ -31,8 +31,6 @@ import {
   ToastPresetType,
   UserType,
   EventUpdateBatchType,
-  EventUpdateNameType,
-  EventUpdateType,
 } from "@/types";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
@@ -57,8 +55,8 @@ export default function App({ Component, pageProps }: AppProps) {
   const initialize = useRef(false);
   const initializeListener = useRef(false);
   const [toasts, setToasts] = useState<ToastLiveType[]>([]);
-  const stateUpdates = useState<EventUpdateBatchType[]>([]);
-  const setUpdates = stateUpdates[1];
+  const stateNotification = useState<EventUpdateBatchType[]>([]);
+  const setNotification = stateNotification[1];
   const toastCount = useRef(0);
   const auth = getAuth();
 
@@ -132,99 +130,6 @@ export default function App({ Component, pageProps }: AppProps) {
     });
   }, [auth, setIdentification]);
 
-  const handleUpdateNotifications = useCallback(() => {
-    if (!user || !user.id || initializeListener.current) return null;
-
-    initializeListener.current = true;
-
-    const { subscribedEvents = {} } = user;
-    const subscribedEventIds = Object.keys(subscribedEvents);
-
-    return onSnapshot(
-      doc(fs, FIREBASE_COLLECTION_USERS, user.id),
-      async (doc) => {
-        const userDoc = doc.data();
-
-        if (userDoc) {
-          const { unseenEvents = {} } = userDoc as UserType;
-          const notificationUpdates: EventUpdateBatchType[] = [];
-
-          if (
-            Object.entries(unseenEvents).length > 0 &&
-            subscribedEventIds.length > 0
-          ) {
-            for (const eventId of Object.keys(unseenEvents)) {
-              const lastSeenVersion = subscribedEvents[eventId];
-              const newEvent = await readData("events", eventId);
-              if (
-                newEvent &&
-                newEvent.version &&
-                newEvent.version > lastSeenVersion
-              ) {
-                const eventUpdates = await readData("updates", eventId);
-
-                if (eventUpdates) {
-                  const unseenBatches =
-                    eventUpdates.updates.slice(lastSeenVersion);
-
-                  const unseenUpdates: Partial<
-                    Record<EventUpdateNameType, EventUpdateType>
-                  > = {};
-
-                  const lastBatch = unseenBatches[unseenBatches.length - 1];
-
-                  unseenBatches
-                    .map((batch) => batch.updates)
-                    .forEach((batchUpdate) => {
-                      (
-                        Object.entries(batchUpdate) as [
-                          EventUpdateNameType,
-                          EventUpdateType
-                        ][]
-                      ).forEach(([type, changes]) => {
-                        if (!unseenUpdates[type]) {
-                          unseenUpdates[type] = {
-                            ...changes,
-                          };
-                        } else {
-                          unseenUpdates[type] = {
-                            ...unseenUpdates[type],
-                            valueNew: changes.valueNew,
-                          };
-                        }
-                      });
-                    });
-
-                  notificationUpdates.push({
-                    ...lastBatch,
-                    eventId: newEvent.id,
-                    version: newEvent.version,
-                    updates: unseenUpdates as Record<
-                      EventUpdateNameType,
-                      EventUpdateType
-                    >,
-                  });
-                }
-              }
-            }
-
-            notificationUpdates.sort((a, b) => {
-              if (a.date > b.date) {
-                return -1;
-              }
-              if (a.date < b.date) {
-                return 1;
-              }
-              return 0;
-            });
-          }
-
-          setUpdates(notificationUpdates);
-        }
-      }
-    );
-  }, [setUpdates, user]);
-
   const handleInitialize = useCallback(() => {
     if (initialize.current) return;
     window.addEventListener("resize", handleUpdateScreen);
@@ -284,12 +189,37 @@ export default function App({ Component, pageProps }: AppProps) {
     handleInitialize();
   }, [handleInitialize]);
 
+  // notification listener
   useEffect(() => {
-    const notification = handleUpdateNotifications();
-    return () => {
-      if (notification) notification();
-    };
-  }, [identification, handleUpdateNotifications]);
+    if (user && !initializeListener.current) {
+      initializeListener.current = true;
+
+      const { subscribedEvents = {} } = user;
+      const subscribedEventIds = Object.keys(subscribedEvents);
+
+      return onSnapshot(
+        doc(fs, FIREBASE_COLLECTION_USERS, user.id),
+        async (doc) => {
+          if (doc.data()) {
+            const { unseenEvents = {} } = doc.data() as UserType;
+            if (
+              Object.entries(unseenEvents).length > 0 &&
+              subscribedEventIds.length > 0
+            ) {
+              const notifications = subscribedEventIds.map(
+                (id): EventUpdateBatchType => ({
+                  eventId: id,
+                  lastSeenVersion: subscribedEvents[id],
+                  unseen: unseenEvents[id],
+                })
+              );
+              setNotification(notifications);
+            }
+          }
+        }
+      );
+    }
+  }, [identification, setNotification, user]);
 
   useEffect(() => {
     handleAdjustNavbar();
@@ -314,7 +244,7 @@ export default function App({ Component, pageProps }: AppProps) {
           addToastPreset: handleAddToastPreset,
         }}
         notificationProps={{
-          stateUpdates,
+          stateUpdates: stateNotification,
         }}
       >
         <div id="App" className={clsx("flex flex-row w-full h-full")}>

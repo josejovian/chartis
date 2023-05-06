@@ -1,4 +1,4 @@
-import { EventUpdateBatchType } from "./event";
+import { EventUpdateBatchType } from "./update";
 import { StateObject } from "./misc";
 
 export interface NotificationType {

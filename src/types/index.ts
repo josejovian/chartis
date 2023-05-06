@@ -10,3 +10,4 @@ export * from "./misc";
 export * from "./moderation";
 export * from "./notifications";
 export * from "./toast";
+export * from "./update";

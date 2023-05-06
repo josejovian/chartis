@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import { LayoutTemplateCard, PageSearchEventCard } from "@/components";
-import { populateEvents } from "@/utils";
-import { useIdentification, useScreen, useEvent } from "@/hooks";
 import { EventSearchType, ResponsiveStyleType } from "@/types";
-import { db } from "@/firebase";
-import { ref, update } from "firebase/database";
+import { useEvent, useScreen } from "@/hooks";
 
 export interface TemplateSearchEventProps {
   viewType?: EventSearchType;
@@ -29,10 +26,6 @@ export function TemplateSearchEvent({
   const [sort, setSort] = stateSort;
   const router = useRouter();
   const { type } = useScreen();
-
-  const { stateIdentification } = useIdentification();
-  const identification = stateIdentification[0];
-  const { user } = identification;
 
   const queried = useRef(0);
   const viewTypeString = useMemo(() => `query-${viewType}`, [viewType]);
@@ -77,20 +70,6 @@ export function TemplateSearchEvent({
   useEffect(() => {
     getEvents();
   }, [getEvents]);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handlePopulateDatabaseEvents = useCallback(async () => {
-    if (!user || !user.uid) return;
-
-    const samples = populateEvents(40, "admin");
-
-    const updates: Record<string, unknown> = {};
-    for (const sample of samples) {
-      updates[`/events/${sample.id}`] = sample;
-    }
-
-    await update(ref(db), updates);
-  }, [user]);
 
   return (
     <LayoutTemplateCard

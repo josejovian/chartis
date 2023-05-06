@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { fs } from "@/firebase";
-import { doc, increment, runTransaction, writeBatch } from "firebase/firestore";
+import { doc, writeBatch } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { Formik } from "formik";
 import pushid from "pushid";
@@ -22,7 +22,6 @@ import {
 import { useIdentification, useEvent, useToast } from "@/hooks";
 import {
   SchemaEvent,
-  compareEventValues,
   getLocalTimeInISO,
   sleep,
   validateEndDate,
@@ -35,14 +34,11 @@ import {
   ScreenSizeCategoryType,
   StateObject,
   EventCardTabNameType,
-  EventUpdateArrayType,
-  EventUpdateBatchDatabaseType,
 } from "@/types";
 import {
   EVENT_EMPTY,
   FIREBASE_COLLECTION_EVENTS,
   FIREBASE_COLLECTION_UPDATES,
-  FIREBASE_COLLECTION_USERS,
 } from "@/consts";
 
 export interface ModalViewEventProps {
@@ -79,6 +75,7 @@ export function PageViewEventCard({
   const setDeleting = stateDeleting[1];
   const stateActiveTab = useState<EventCardTabNameType>("detail");
   const activeTab = stateActiveTab[0];
+  const { updateEventNew } = useEvent({});
   const initialEventData = useMemo(() => {
     if (!event || mode === "create") return EVENT_EMPTY;
 
@@ -185,51 +182,12 @@ export function PageViewEventCard({
             handleFailedSubmit();
           });
       } else if (eventPreviousValues && eventPreviousValues.current) {
-        const changes = compareEventValues(
+        updateEventNew(
+          eventPreviousValues.current.id,
           eventPreviousValues.current,
           newEvent
-        );
-
-        try {
-          const eventBatchUpdateId = pushid();
-
-          await runTransaction(fs, async (transaction) => {
-            const evtDoc = await transaction.get(eventRef);
-            const updatesDoc = await transaction.get(updatesRef);
-            const evt = evtDoc.exists() ? (evtDoc.data() as EventType) : event;
-            let updates: EventUpdateBatchDatabaseType[] = updatesDoc.exists()
-              ? (updatesDoc.data() as EventUpdateArrayType).updates
-              : [];
-
-            if (evt.subscriberIds)
-              evt.subscriberIds.forEach((userId) => {
-                const userRef = doc(fs, FIREBASE_COLLECTION_USERS, userId);
-
-                transaction.update(userRef, {
-                  [`unseenEvents.${evt.id}`]: true,
-                  notificationCount: increment(1),
-                });
-              });
-
-            transaction.update(eventRef, {
-              ...(newEvent as Partial<EventType>),
-              version: increment(1),
-            });
-
-            updates = [
-              ...updates,
-              {
-                id: eventBatchUpdateId,
-                authorId: user.id,
-                date: new Date().getTime(),
-                updates: changes,
-              },
-            ];
-
-            transaction.update(updatesRef, {
-              updates,
-            });
-          }).then(async () => {
+        )
+          .then(async () => {
             await sleep(200);
             router.replace(`/event/${event.id}/`);
             addToastPreset("feat-event-update");
@@ -243,15 +201,15 @@ export function PageViewEventCard({
             setSubmitting(false);
             if (eventPreviousValues && eventPreviousValues.current)
               eventPreviousValues.current = newEvent;
+          })
+          .catch((e) => {
+            handleFailedSubmit();
           });
-        } catch (e) {
-          handleFailedSubmit();
-        }
       }
     },
     [
       addToastPreset,
-      event,
+      event.id,
       eventPreviousValues,
       handleConstructEventValues,
       handleFailedSubmit,
@@ -261,6 +219,7 @@ export function PageViewEventCard({
       setMode,
       setSubmitting,
       updateEvent,
+      updateEventNew,
       user,
     ]
   );
