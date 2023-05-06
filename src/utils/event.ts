@@ -6,8 +6,8 @@ import {
 import {
   EventTagNameType,
   EventType,
-  EventUpdateNameType,
-  EventUpdateType,
+  UpdateNameType,
+  UpdateChangedValueType,
 } from "@/types";
 import { strDateTime } from "./date";
 
@@ -101,7 +101,7 @@ export function stringifyEventValue(event: EventType, key: keyof EventType) {
 }
 
 export function compareEventValues(before: EventType, after: EventType) {
-  const pairs: [keyof EventType, EventUpdateNameType][] = [
+  const pairs: [keyof EventType, UpdateNameType][] = [
     ["description", "update-description"],
     ["startDate", "update-start-date"],
     ["endDate", "update-end-date"],
@@ -111,15 +111,15 @@ export function compareEventValues(before: EventType, after: EventType) {
     ["name", "update-title"],
   ];
 
-  const updates: Partial<Record<EventUpdateNameType, EventUpdateType>> = {};
+  const updates: Partial<Record<UpdateNameType, UpdateChangedValueType>> = {};
 
-  pairs.forEach(([key, updateType]) => {
+  pairs.forEach(([key, UpdateChangesType]) => {
     const sameTags = Object.keys(before["tags"]).some((tag) =>
       Object.keys(after["tags"]).includes(tag)
     );
 
     if ((key === "tags" && !sameTags) || before[key] !== after[key]) {
-      updates[updateType] = {
+      updates[UpdateChangesType] = {
         valuePrevious: stringifyEventValue(before, key),
         valueNew: stringifyEventValue(after, key),
       };

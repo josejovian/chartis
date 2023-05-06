@@ -1,16 +1,36 @@
 import { useCallback, useMemo, useState } from "react";
 import _ from "lodash";
-import { EVENT_SORT_CRITERIA } from "@/consts";
+import {
+  EVENT_SORT_CRITERIA,
+  FIREBASE_COLLECTION_EVENTS,
+  FIREBASE_COLLECTION_UPDATES,
+  FIREBASE_COLLECTION_USERS,
+} from "@/consts";
 import {
   EventSearchType,
   EventSortNameType,
   EventTagNameType,
   EventType,
 } from "@/types";
-import { sleep } from "@/utils";
+import { compareEventValues, sleep } from "@/utils";
 import { useIdentification, useToast } from "@/hooks";
-import { QueryConstraint, orderBy, where } from "firebase/firestore";
-import { deleteData, readData } from "@/firebase";
+import {
+  QueryConstraint,
+  arrayRemove,
+  arrayUnion,
+  deleteField,
+  increment,
+  orderBy,
+  where,
+} from "firebase/firestore";
+import {
+  BatchOperationType,
+  deleteData,
+  readData,
+  updateData,
+  writeDataBatch,
+} from "@/firebase";
+import pushid from "pushid";
 
 interface useEventProps {
   type?: EventSearchType;
@@ -207,6 +227,140 @@ export function useEvent({ type }: useEventProps) {
     []
   );
 
+  const updateEventNew = useCallback(
+    async (eventId: string, previousValue: EventType, newValue: EventType) => {
+      const eventUpdateId = pushid();
+      const batchOperations: BatchOperationType[] = [];
+      const updateDocumentExists = await readData(
+        FIREBASE_COLLECTION_UPDATES,
+        eventId
+      );
+      const databaseEventData = (await readData(
+        FIREBASE_COLLECTION_EVENTS,
+        eventId
+      )) as EventType;
+
+      const changes = compareEventValues(previousValue, newValue);
+
+      if (!updateDocumentExists) {
+        batchOperations.push({
+          collectionName: FIREBASE_COLLECTION_UPDATES,
+          documentId: eventId,
+          operationType: "create",
+          value: {
+            eventId: eventId,
+            updates: [],
+          },
+        });
+      }
+
+      if (databaseEventData.subscriberIds) {
+        batchOperations.push(
+          ...databaseEventData.subscriberIds.map(
+            (userId) =>
+              ({
+                collectionName: FIREBASE_COLLECTION_USERS,
+                documentId: userId,
+                operationType: "update",
+                value: {
+                  [`unseenEvents.${eventId}`]: true,
+                },
+              } as BatchOperationType)
+          )
+        );
+      }
+
+      batchOperations.push({
+        collectionName: FIREBASE_COLLECTION_EVENTS,
+        documentId: eventId,
+        operationType: "update",
+        value: {
+          ...(newValue as Partial<EventType>),
+          version: increment(1),
+          lastUpdatedAt: new Date().getTime(),
+        },
+      });
+
+      batchOperations.push({
+        collectionName: FIREBASE_COLLECTION_UPDATES,
+        documentId: eventId,
+        operationType: "update",
+        value: {
+          eventId: eventId,
+          updates: arrayUnion({
+            updateId: eventUpdateId,
+            updates: changes,
+          }),
+        },
+      });
+
+      return writeDataBatch(batchOperations);
+    },
+    []
+  );
+
+  const toggleEventSubscription = useCallback(
+    async (
+      eventId: string,
+      eventVersion: number,
+      currentlySubscribed: boolean,
+      userId?: string
+    ): Promise<void> => {
+      // for guest
+      if (!userId) {
+        return updateData("events", eventId, {
+          guestSubscriberCount: (currentlySubscribed
+            ? increment(-1)
+            : increment(1)) as unknown as number,
+        }).then(() => {
+          const subscribe = JSON.parse(
+            localStorage.getItem("subscribe") ?? "{}"
+          ) as Record<string, number>;
+          const newSubscribe = currentlySubscribed
+            ? (() => {
+                const temp = { ...subscribe };
+                delete temp[eventId];
+                return temp;
+              })()
+            : {
+                ...subscribe,
+                [eventId]: eventVersion,
+              };
+          localStorage.setItem("subscribe", JSON.stringify(newSubscribe));
+        });
+      }
+
+      // for registered user
+      return writeDataBatch([
+        {
+          collectionName: FIREBASE_COLLECTION_USERS,
+          documentId: userId,
+          operationType: "update",
+          value: {
+            [`subscribedEvents.${eventId}`]: currentlySubscribed
+              ? deleteField()
+              : eventVersion,
+            [`unseenEvents.${eventId}`]: currentlySubscribed
+              ? deleteField()
+              : false,
+          },
+        },
+        {
+          collectionName: FIREBASE_COLLECTION_EVENTS,
+          documentId: eventId,
+          operationType: "update",
+          value: {
+            subscriberIds: currentlySubscribed
+              ? arrayRemove(userId)
+              : arrayUnion(userId),
+            subscriberCount: currentlySubscribed ? increment(-1) : increment(1),
+          },
+        },
+      ]);
+    },
+    []
+  );
+
   const handleUpdateEvent = useCallback(
     (id: string, newEvt: Partial<EventType>) => {
       setEvents((prev) => {
@@ -263,9 +417,11 @@ export function useEvent({ type }: useEventProps) {
       getEventsMonthly,
       getFollowedEvents,
       handleUpdateEvent,
+      updateEventNew,
       deleteEvent: handleDeleteEvent,
       sortEvents,
       filterEvents,
+      toggleEventSubscription,
       stateQuery: stateUserQuery,
       stateEvents,
       stateFilters,
@@ -279,9 +435,11 @@ export function useEvent({ type }: useEventProps) {
       getEventsMonthly,
       getFollowedEvents,
       handleUpdateEvent,
+      updateEventNew,
       handleDeleteEvent,
       sortEvents,
       filterEvents,
+      toggleEventSubscription,
       stateUserQuery,
       stateEvents,
       stateFilters,

@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getDatabase } from "firebase/database";
-import { getFirestore } from "firebase/firestore";
+import { connectAuthEmulator, getAuth } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_API_KEY,
@@ -10,7 +9,14 @@ const config = {
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
 };
 
-export const app = initializeApp(config);
-export const db = getDatabase(app);
-export const fs = getFirestore(app);
-export const auth = getAuth();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const app = initializeApp(config);
+const fs = getFirestore();
+const auth = getAuth();
+
+if (process.env.NEXT_PUBLIC_MODE === "development") {
+  connectFirestoreEmulator(fs, "localhost", 8080);
+  connectAuthEmulator(auth, "http://127.0.0.1:9099");
+}
+
+export { fs, auth };

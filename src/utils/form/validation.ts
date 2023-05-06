@@ -6,12 +6,6 @@ export const RuleName = Yup.string()
   .max(50, "Name is too long! (max. 50 chars)")
   .required("Name is required.");
 
-export const RuleEmail = Yup.string()
-  .email("Email is invalid.")
-  .required("Email is required.");
-
-export const RulePassword = Yup.string().required("Password is required.");
-
 export const RuleDescription = Yup.string()
   .min(8, "Description is too short! (min. 8 chars)")
   .max(5000, "Description is too long! (max. 100 chars)")

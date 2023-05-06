@@ -3,13 +3,13 @@ import clsx from "clsx";
 import { UserPicture } from "@/components";
 import { getTimeDifference } from "@/utils";
 import { EVENT_UPDATE_TERM } from "@/consts";
-import { EventUpdateNameType } from "@/types";
+import { UpdateNameType } from "@/types";
 
 export interface EventUpdateProps {
   authorId: string;
   eventId: string;
   date: number;
-  type: EventUpdateNameType;
+  type: UpdateNameType;
   valueNew?: string;
   valuePrevious?: string;
   last?: boolean;
