@@ -7,16 +7,18 @@ export interface UserPictureProps {
   fullName: string;
   pictureUrl?: string;
   size?: "small" | "big";
+  loading?: boolean;
 }
 
 export function UserPicture({
   fullName,
   pictureUrl,
   size = "small",
+  loading,
 }: UserPictureProps) {
   const initials = useMemo(
-    () => getNameInitials(fullName).slice(0, 2),
-    [fullName]
+    () => (loading ? "" : getNameInitials(fullName).slice(0, 2)),
+    [fullName, loading]
   );
 
   return (
@@ -39,7 +41,8 @@ export function UserPicture({
       }
       className={clsx(
         "flex items-center justify-center",
-        "rounded-full text-white bg-red-700 overflow-hidden z-10"
+        "rounded-full text-white overflow-hidden z-10",
+        loading ? "skeleton" : "bg-red-700"
       )}
     >
       {pictureUrl ? (

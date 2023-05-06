@@ -6,9 +6,9 @@ import {
   LayoutNavbarButton,
   ModalAuthLogin,
   ModalAuthRegister,
-  UserPicture,
 } from "@/components";
 import { useModal, useToast } from "@/hooks";
+import { User } from "@/components/User/User";
 
 export interface LayoutNavbarAuthProps {
   name: string;
@@ -50,20 +50,18 @@ export function LayoutNavbarAuth() {
   }, [addToast]);
 
   const renderUser = useMemo(
-    () => (
-      <>
-        <div className="flex items-center gap-4">
-          <UserPicture fullName={user?.displayName ?? "?"} />
-          <span>{user?.displayName ?? "Unknown User"}</span>
-        </div>
-        <LayoutNavbarButton
-          icon="log out"
-          className="text-red-200 hover:text-red-300 active:text-red-300 focus:text-red-300"
-          onClick={handleLogout}
-        />
-      </>
-    ),
-    [handleLogout, user?.displayName]
+    () =>
+      user && (
+        <>
+          <User id={user.uid} type="all" />
+          <LayoutNavbarButton
+            icon="log out"
+            className="text-red-200 hover:text-red-300 active:text-red-300 focus:text-red-300"
+            onClick={handleLogout}
+          />
+        </>
+      ),
+    [handleLogout, user]
   );
 
   const renderGuest = useMemo(
