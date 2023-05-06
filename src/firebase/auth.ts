@@ -48,15 +48,13 @@ export async function register({
   onFail,
 }: registerParams) {
   return await new Promise((res, rej) => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((cred) => {
-        onSuccess && onSuccess(cred);
-        res(null);
-      })
-      .catch((error) => {
-        onFail && onFail();
-        rej(error);
-      });
+    createUserWithEmailAndPassword(auth, email, password).then((cred) => {
+      onSuccess && onSuccess(cred);
+      res(null)
+    }).catch((error) => {
+      onFail && onFail();
+      rej(error);
+    });
   });
 }
 

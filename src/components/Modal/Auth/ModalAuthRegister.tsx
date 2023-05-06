@@ -90,6 +90,15 @@ export function ModalAuthRegister() {
       formSchema={SchemaRegister}
       onSubmit={handleRegister}
       loading={loading}
+      validate={(values) => {
+        const casted = values as FormRegisterProps;
+        const errors: Record<string, string> = {};
+
+        if (casted.password !== casted.confirm) {
+          errors.confirm = "Password doesn't match";
+        }
+        return errors;
+      }}
     />
   );
 }

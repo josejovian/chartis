@@ -4,9 +4,9 @@ import clsx from "clsx";
 import { EventUpdate } from "@/components";
 import {
   EventType,
-  EventUpdateBatchType,
-  EventUpdateNameType,
+  UpdateNameType,
   ScreenSizeCategoryType,
+  UpdateVersion,
 } from "@/types";
 
 interface PageViewEventCardUpdatesTabProps {
@@ -18,7 +18,7 @@ export function PageViewEventCardUpdatesTab({
   event,
   type,
 }: PageViewEventCardUpdatesTabProps) {
-  const [updates, setUpdates] = useState<EventUpdateBatchType[]>();
+  const [updates, setUpdates] = useState<UpdateVersion[]>();
 
   const handleGetEventUpdates = useCallback(async () => {
     if (event.version === 0) return;
@@ -41,11 +41,11 @@ export function PageViewEventCardUpdatesTab({
           Object.entries(batch.updates).map(
             ([type, { valueNew, valuePrevious }], idx) => (
               <EventUpdate
-                key={`Update_${batch.id}_${idx}`}
-                authorId={batch.authorId}
+                key={`Update_${batch.updateId}_${idx}`}
+                authorId={event.authorName}
                 date={batch.date}
-                eventId={batch.eventId}
-                type={type as EventUpdateNameType}
+                eventId={event.id}
+                type={type as UpdateNameType}
                 valueNew={valueNew}
                 valuePrevious={valuePrevious}
                 last={
@@ -56,10 +56,8 @@ export function PageViewEventCardUpdatesTab({
             )
           )
       ),
-    [updates]
+    [event.authorName, event.id, updates]
   );
-
-  // return <div className="pt-8 px-16 overflow-y">{renderEventUpdates}</div>;
 
   return (
     <div
