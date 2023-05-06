@@ -81,7 +81,6 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           icon: "calendar plus",
           permission: "user",
           href: "/event/new",
-          hidden: user?.ban,
         },
         {
           name: "Your Events",

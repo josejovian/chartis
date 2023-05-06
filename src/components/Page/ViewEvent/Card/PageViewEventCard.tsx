@@ -18,6 +18,7 @@ import {
   PageViewEventCardDetailTab,
   PageViewEventCardUpdatesTab,
   PageViewEventCardDiscussionTab,
+  LayoutNotice,
 } from "@/components";
 import { useIdentification, useEvent, useToast } from "@/hooks";
 import {
@@ -99,7 +100,12 @@ export function PageViewEventCard({
 
   const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
-  const { user } = identification;
+  const { user, initialized } = identification;
+  const authorized = useMemo(() => {
+    if (!initialized) return undefined;
+
+    return Boolean(user && user?.ban);
+  }, [initialized, user]);
 
   const handleConstructEventValues = useCallback(
     (values: unknown) => {
@@ -142,12 +148,7 @@ export function PageViewEventCard({
 
   const handleFailedSubmit = useCallback(() => {
     if (!user) return;
-
-    if (user.ban) {
-      addToastPreset("fail-post-banned-user");
-    } else {
-      addToastPreset("fail-post");
-    }
+    addToastPreset(user.ban ? "fail-post-banned-user" : "fail-post");
     setSubmitting(false);
   }, [addToastPreset, setSubmitting, user]);
 
@@ -292,11 +293,12 @@ export function PageViewEventCard({
             <PageViewEventCardDiscussionTab
               type={type}
               stateEvent={stateEvent}
+              identification={identification}
             />
           );
       }
     },
-    [activeTab, event, mode, stateEvent, stateTags, type]
+    [activeTab, event, identification, mode, stateEvent, stateTags, type]
   );
 
   const renderCardContents = useCallback(
@@ -373,26 +375,48 @@ export function PageViewEventCard({
     handleUpdateTagsOnEditMode();
   }, [handleUpdateTagsOnEditMode]);
 
-  return mode === "view" ? (
-    <LayoutCard className={className}>{renderCardContents({})}</LayoutCard>
+  const renderPage = useMemo(
+    () =>
+      mode === "view" ? (
+        <LayoutCard className={className}>{renderCardContents({})}</LayoutCard>
+      ) : (
+        <Formik
+          initialValues={initialEventData}
+          validate={handleValidateExtraForm}
+          validationSchema={SchemaEvent}
+          onSubmit={handleSubmitForm}
+          validateOnChange
+        >
+          {/** @todos Submit button seems to not work unless you do this. */}
+          {({ submitForm, validateForm, setFieldValue }) => (
+            <LayoutCard className={className} form>
+              {renderCardContents({
+                submitForm,
+                validateForm,
+                setFieldValue,
+              })}
+            </LayoutCard>
+          )}
+        </Formik>
+      ),
+    [
+      className,
+      handleSubmitForm,
+      handleValidateExtraForm,
+      initialEventData,
+      mode,
+      renderCardContents,
+    ]
+  );
+
+  return authorized === undefined ? (
+    <LayoutNotice preset="loader" />
+  ) : mode === "view" || authorized ? (
+    renderPage
   ) : (
-    <Formik
-      initialValues={initialEventData}
-      validate={handleValidateExtraForm}
-      validationSchema={SchemaEvent}
-      onSubmit={handleSubmitForm}
-      validateOnChange
-    >
-      {/** @todos Submit button seems to not work unless you do this. */}
-      {({ submitForm, validateForm, setFieldValue }) => (
-        <LayoutCard className={className} form>
-          {renderCardContents({
-            submitForm,
-            validateForm,
-            setFieldValue,
-          })}
-        </LayoutCard>
-      )}
-    </Formik>
+    <LayoutNotice
+      title="No Access"
+      description="You are not allowed to post contents because you are banned."
+    />
   );
 }
