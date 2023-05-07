@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { SemanticICONS } from "semantic-ui-react";
+import { type SemanticICONS } from "semantic-ui-react";
 
 export interface ScreenSizeType {
   width: number;

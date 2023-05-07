@@ -1,5 +1,6 @@
 import { HTMLInputTypeAttribute, ReactNode } from "react";
-import { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
+import type { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
+import { UserPermissionType } from "./auth";
 
 export interface EventType {
   id: string;
@@ -7,8 +8,10 @@ export interface EventType {
   description: string;
   location?: string;
   authorId: string;
+  authorName: string;
   postDate: number;
   editDate?: number;
+  lastUpdatedAt?: number;
   organizer?: string;
   thumbnailSrc?: string;
   startDate: number;
@@ -16,7 +19,9 @@ export interface EventType {
   subscriberCount?: number;
   subscriberIds?: string[];
   guestSubscriberCount?: number;
-  tags: number[];
+  version?: number;
+  commentCount?: number;
+  tags: EventTagObjectType;
 }
 
 export interface EventDetailBaseType {
@@ -50,10 +55,19 @@ export type EventDetailType =
 export type EventDetailUnionType = EventDetailSimpleTextType &
   EventDetailComponentType;
 
+export type EventTagNameType =
+  | "seminar"
+  | "workshop"
+  | "briefing"
+  | "competition"
+  | "reminder";
+
 export interface EventTagType {
   name: string;
   color: SemanticCOLORS;
 }
+
+export type EventTagObjectType = Partial<Record<EventTagNameType, boolean>>;
 
 export type EventCardDisplayType = "horizontal" | "vertical";
 
@@ -62,15 +76,27 @@ export type EventThumbnailDisplayType =
   | "thumbnail-fixed-height"
   | "banner";
 
-export interface EventModalTabType {
+export interface EventCardTabType {
+  id: EventCardTabNameType;
   name: string;
+  icon: SemanticICONS;
   onClick?: () => void;
+  count?: number;
+  permission?: UserPermissionType;
 }
 
 export interface EventSortType {
-  id: keyof EventType;
+  id: string;
+  key: keyof EventType;
   name: string;
+  descending: boolean;
 }
+
+export type EventSortNameType =
+  | "oldest"
+  | "newest"
+  | "leastFollowers"
+  | "mostFollowers";
 
 export interface EventSortDirectionType {
   value: boolean;
@@ -83,3 +109,9 @@ export type EventSearchType =
   | "userFollowedEvents"
   | "userCreatedEvents"
   | "userFollowedTags";
+
+export type EventCardTabNameType =
+  | "detail"
+  | "updates"
+  | "discussion"
+  | "reports";

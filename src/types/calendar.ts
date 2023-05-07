@@ -8,3 +8,9 @@ export interface CalendarDateType {
   eventCount?: number;
   followedCount?: number;
 }
+
+export interface FocusDateType {
+  day: number;
+  month: number;
+  year: number;
+}

@@ -37,13 +37,14 @@ const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
 export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [navBar, setNavBar] = stateNavBar;
   const { type } = useScreen();
-  const stateIdentification = useIdentification();
-  const { user } = stateIdentification[0];
+  const { stateIdentification } = useIdentification();
+  const { user, users } = stateIdentification[0];
 
-  const permission = useMemo<UserPermissionType>(
-    () => (user ? "user" : "guest"),
-    [user]
-  );
+  const permission = useMemo<UserPermissionType>(() => {
+    if (user && users[user.uid].role === "admin") return "admin";
+    if (user) return "user";
+    return "guest";
+  }, [user, users]);
 
   const links = useMemo<Record<string, LayoutNavbarItemProps[]>>(
     () => ({
@@ -55,13 +56,22 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           href: "/",
         },
         {
-          name: "Notification",
+          name: "Followed Events",
+          icon: "calendar check",
+          permission: "guest",
+          href: "/event/subscribed",
+        },
+        {
+          name: "Notifications",
           icon: "bell",
+          permission: "user",
+          href: "/notifications",
         },
         {
           name: "Profile",
           icon: "user",
           permission: "user",
+          href: `/profile/${user?.uid}`,
         },
       ],
       Events: [
@@ -77,20 +87,29 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           permission: "user",
           href: "/event/created",
         },
-      ],
-      Following: [
         {
           name: "Followed Events",
           icon: "calendar check",
+          permission: "user",
           href: "/event/subscribed",
         },
+      ],
+      Admin: [
         {
-          name: "Followed Tags",
-          icon: "tags",
+          name: "Manage Users",
+          icon: "users",
+          href: "/users",
+          permission: "admin",
+        },
+        {
+          name: "Manage Reports",
+          icon: "clipboard list",
+          href: "/reports",
+          permission: "admin",
         },
       ],
     }),
-    []
+    [user?.uid]
   );
 
   const renderNavBarToggle = useMemo(
@@ -137,7 +156,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     >
       <div
         className={clsx(
-          "h-screen flex flex-col justify-between",
+          "h-full flex flex-col justify-between",
           "bg-slate-900 text-gray-50"
         )}
         style={

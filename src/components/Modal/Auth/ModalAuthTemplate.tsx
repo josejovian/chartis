@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ReactNode, useMemo } from "react";
 import { Button } from "semantic-ui-react";
 import clsx from "clsx";
@@ -15,6 +16,8 @@ export interface ModalAuthTemplateProps {
   overrideInitialValues?: Record<string, string>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: (values: Record<string, any>) => void;
+  loading: boolean;
+  validate?: (values: any) => Record<string, string>;
 }
 
 export function ModalAuthTemplate({
@@ -24,6 +27,8 @@ export function ModalAuthTemplate({
   formSchema,
   overrideInitialValues,
   onSubmit,
+  loading,
+  validate,
 }: ModalAuthTemplateProps) {
   const { type } = useScreen();
 
@@ -48,6 +53,7 @@ export function ModalAuthTemplate({
         onSubmit={(values) => {
           onSubmit(values);
         }}
+        validate={validate}
       >
         <Form
           className={clsx(
@@ -58,13 +64,27 @@ export function ModalAuthTemplate({
           {formFields.map((field) => (
             <ModalAuthInput key={`Field_${field.id}`} props={field} />
           ))}
-          <Button className="mt-2" type="submit" color="yellow">
+          <Button
+            className="mt-2"
+            type="submit"
+            color="yellow"
+            loading={loading}
+          >
             {formName}
           </Button>
         </Form>
       </Formik>
     ),
-    [formFields, formName, formSchema, initialValues, onSubmit, type]
+    [
+      formFields,
+      formName,
+      formSchema,
+      initialValues,
+      loading,
+      onSubmit,
+      type,
+      validate,
+    ]
   );
 
   return (

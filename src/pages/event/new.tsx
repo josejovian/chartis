@@ -2,18 +2,19 @@ import { useRouter } from "next/router";
 import { LayoutTemplateCard, PageViewEventCard } from "@/components";
 import { EVENT_EMPTY } from "@/consts";
 import { useState } from "react";
-import { useScreen, useSearchEvent } from "@/hooks";
+import { useScreen, useEvent, useIdentification } from "@/hooks";
 import { EventModeType, ResponsiveStyleType } from "@/types";
 
 export default function CreateEvent() {
   const router = useRouter();
 
-  const { handleUpdateEvent } = useSearchEvent({});
+  const { handleUpdateEvent } = useEvent({});
   const stateMode = useState<EventModeType>("create");
   const stateActiveTab = useState(0);
   const { type } = useScreen();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const activeTab = stateActiveTab[0];
+  const { updateUserSubscribedEventClientSide } = useIdentification();
 
   const stateEvent = useState(EVENT_EMPTY);
 
@@ -34,6 +35,9 @@ export default function CreateEvent() {
         stateMode={stateMode}
         type={type}
         updateEvent={handleUpdateEvent}
+        updateUserSubscribedEventClientSide={
+          updateUserSubscribedEventClientSide
+        }
       />
     </LayoutTemplateCard>
   );

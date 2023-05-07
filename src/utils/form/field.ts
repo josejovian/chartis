@@ -26,3 +26,12 @@ export const FieldPassword: FormCustomFieldProps = {
   type: "password",
   iconLabel: "key",
 };
+
+export const FieldConfirmPass: FormCustomFieldProps = {
+  id: "confirm",
+  initial: "",
+  name: "Confirm Password",
+  placeholder: "Enter your password again",
+  type: "password",
+  iconLabel: "key"
+}

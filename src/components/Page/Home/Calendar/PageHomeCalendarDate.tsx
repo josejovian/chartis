@@ -64,8 +64,8 @@ export function PageHomeCalendarDate({
       <div
         className={clsx(
           "flex justify-items-center",
-          CALENDAR_CELL_DATE_CURRENT_MONTH_WRAPPER_STYLE,
-          focus && CALENDAR_CELL_FOCUS_STYLE
+          CALENDAR_CELL_DATE_CURRENT_MONTH_WRAPPER_STYLE
+          //focus //&& CALENDAR_CELL_FOCUS_STYLE
         )}
       >
         <span
@@ -90,7 +90,9 @@ export function PageHomeCalendarDate({
             ? CALENDAR_CELL_DENSITY_COLORS[density]
             : differentMonth
             ? CALENDAR_CELL_DIFFERENT_MONTH_STYLE
-            : CALENDAR_CELL_CURRENT_MONTH_STYLE
+            : CALENDAR_CELL_CURRENT_MONTH_STYLE,
+          focus && date,
+          focus && CALENDAR_CELL_FOCUS_STYLE
         )}
         onClick={onClick}
       >
@@ -110,7 +112,17 @@ export function PageHomeCalendarDate({
         </div>
       </td>
     ),
-    [count, density, differentMonth, events, onClick, renderDate, type]
+    [
+      count,
+      density,
+      differentMonth,
+      events,
+      onClick,
+      renderDate,
+      type,
+      date,
+      focus,
+    ]
   );
 
   const renderMobileCell = useMemo(
@@ -123,14 +135,16 @@ export function PageHomeCalendarDate({
             ? CALENDAR_CELL_DENSITY_COLORS[density]
             : differentMonth
             ? CALENDAR_CELL_DIFFERENT_MONTH_STYLE
-            : CALENDAR_CELL_CURRENT_MONTH_STYLE
+            : CALENDAR_CELL_CURRENT_MONTH_STYLE,
+          date,
+          focus && CALENDAR_CELL_FOCUS_STYLE
         )}
         onClick={onClick}
       >
         <div className="flex flex-col items-center h-full">{renderDate}</div>
       </td>
     ),
-    [count, density, differentMonth, onClick, renderDate, type]
+    [count, density, differentMonth, onClick, renderDate, type, date, focus]
   );
 
   const renderCell = useMemo(
@@ -147,7 +161,7 @@ const CALENDAR_CELL_BASE_STYLE = clsx(
   "cursor-pointer transition-colors"
 );
 const CALENDAR_CELL_FOCUS_STYLE =
-  "!bg-amber-400 rounded-full font-bold !text-black";
+  "outline outline-offset-[-1px] outline-rose-500 outline-5";
 
 const CALENDAR_CELL_CURRENT_MONTH_STYLE = "bg-gray-100 hover:bg-white";
 const CALENDAR_CELL_DIFFERENT_MONTH_STYLE = "bg-white hover:bg-gray-100";

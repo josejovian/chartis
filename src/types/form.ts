@@ -1,4 +1,4 @@
-import { SemanticICONS } from "semantic-ui-react";
+import { type SemanticICONS } from "semantic-ui-react";
 
 export interface FormCustomFieldProps {
   iconLabel?: SemanticICONS;
@@ -7,6 +7,7 @@ export interface FormCustomFieldProps {
   name: string;
   type: string;
   placeholder: string;
+  defaultValue?: string;
 }
 
 export interface FormLoginProps {
@@ -18,4 +19,5 @@ export interface FormRegisterProps {
   name: string;
   email: string;
   password: string;
+  confirm: string;
 }
