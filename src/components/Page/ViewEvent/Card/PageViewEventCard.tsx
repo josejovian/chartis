@@ -20,7 +20,7 @@ import {
   PageViewEventCardDiscussionTab,
   LayoutNotice,
 } from "@/components";
-import { useIdentification, useEvent, useToast } from "@/hooks";
+import { useEvent, useToast } from "@/hooks";
 import {
   SchemaEvent,
   getLocalTimeInISO,
@@ -35,6 +35,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
   EventCardTabNameType,
+  IdentificationType,
 } from "@/types";
 import {
   EVENT_EMPTY,
@@ -46,6 +47,7 @@ export interface ModalViewEventProps {
   className?: string;
   stateEvent: StateObject<EventType>;
   stateMode: StateObject<EventModeType>;
+  stateIdentification: StateObject<IdentificationType>;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvt: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
@@ -60,6 +62,7 @@ export function PageViewEventCard({
   className,
   stateEvent,
   stateMode,
+  stateIdentification,
   type,
   updateEvent,
   updateUserSubscribedEventClientSide,
@@ -98,7 +101,6 @@ export function PageViewEventCard({
   const { addToastPreset } = useToast();
   const { stateModalDelete, deleteEvent } = useEvent({});
 
-  const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user, initialized } = identification;
   const authorized = useMemo(() => {

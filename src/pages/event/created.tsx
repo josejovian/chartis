@@ -1,7 +1,31 @@
-import { TemplateSearchEvent } from "@/components";
+import { useMemo } from "react";
+import { getAuth } from "firebase/auth";
+import { TemplateSearchEvent, TemplatePageGuestNotAllowed } from "@/components";
+import { useAuthorization, useIdentification } from "@/hooks";
 
 export default function SubscribedEvent() {
-  return (
-    <TemplateSearchEvent title="Created Events" viewType="userCreatedEvents" />
+  const { stateIdentification } = useIdentification();
+  const auth = getAuth();
+  const isAuthorized = useAuthorization({
+    auth,
+    stateIdentification,
+    minPermission: "user",
+  });
+
+  const renderGuestNotAllowed = useMemo(
+    () => <TemplatePageGuestNotAllowed />,
+    []
   );
+
+  const renderPage = useMemo(
+    () => (
+      <TemplateSearchEvent
+        title="Created Events"
+        viewType="userCreatedEvents"
+      />
+    ),
+    []
+  );
+
+  return isAuthorized ? renderPage : renderGuestNotAllowed;
 }

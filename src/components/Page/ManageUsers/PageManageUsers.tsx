@@ -10,12 +10,7 @@ import {
   StickyHeaderTable,
   LayoutNotice,
 } from "@/components";
-import {
-  useAuthorization,
-  useIdentification,
-  useScreen,
-  useToast,
-} from "@/hooks";
+import { useScreen, useToast } from "@/hooks";
 import { sleep, strDateTime, validateEventQuery } from "@/utils";
 import {
   MODERATION_USER_SORT,
@@ -29,28 +24,19 @@ import {
   UserSortType,
   UserType,
 } from "@/types";
-import { getAuth } from "firebase/auth";
-import { useRouter } from "next/router";
 
 export interface PageManageUsersProps {
   className?: string;
+  isAuthorized?: boolean;
 }
 
-export function PageManageUsers({ className }: PageManageUsersProps) {
+export function PageManageUsers({
+  className,
+  isAuthorized,
+}: PageManageUsersProps) {
   const { addToastPreset } = useToast();
-  const { stateIdentification } = useIdentification();
-  const router = useRouter();
-  const auth = getAuth();
-  const isAuthorized = useAuthorization({
-    auth,
-    stateIdentification,
-    onFail: () => {
-      router.replace("/");
-    },
-    minPermission: "admin",
-  });
-  const { type } = useScreen();
 
+  const { type } = useScreen();
   const [loading, setLoading] = useState(true);
   const stateQuery = useState("");
   const stateUserType = useState<UserGroupFilterType>("all");
