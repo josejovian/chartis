@@ -106,7 +106,7 @@ export function PageViewEventCard({
   const authorized = useMemo(() => {
     if (!initialized) return undefined;
 
-    return Boolean(user && user?.ban);
+    return Boolean(user && !user?.ban);
   }, [initialized, user]);
 
   const handleConstructEventValues = useCallback(

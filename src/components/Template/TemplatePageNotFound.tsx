@@ -1,22 +1,22 @@
 import { useRouter } from "next/router";
 import { LayoutNotice, LayoutTemplateCard } from "../Layout";
 import { Button } from "semantic-ui-react";
+import { useMemo } from "react";
 import { ResponsiveStyleType } from "@/types";
 import { useScreen } from "@/hooks";
-import clsx from "clsx";
 
-export function TemplatePageNotFound() {
-  const { type } = useScreen();
+interface TemplatePageNotFoundProps {
+  includeLayoutWrapper?: boolean;
+}
+
+export function TemplatePageNotFound({
+  includeLayoutWrapper,
+}: TemplatePageNotFoundProps) {
   const router = useRouter();
+  const { type } = useScreen();
 
-  return (
-    <LayoutTemplateCard
-      title=""
-      classNameMain={clsx(
-        "!bg-sky-50",
-        LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]
-      )}
-    >
+  const renderNotice = useMemo(
+    () => (
       <LayoutNotice
         illustration="/404.png"
         title="Page Not Found"
@@ -26,7 +26,19 @@ export function TemplatePageNotFound() {
           </Button>
         }
       />
+    ),
+    [router]
+  );
+
+  return includeLayoutWrapper ? (
+    <LayoutTemplateCard
+      title=""
+      classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
+    >
+      {renderNotice}
     </LayoutTemplateCard>
+  ) : (
+    renderNotice
   );
 }
 

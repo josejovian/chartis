@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { getAuth } from "firebase/auth";
 import { useRouter } from "next/router";
 import {
@@ -32,48 +32,33 @@ export default function CreateEvent() {
   const stateMode = useState<EventModeType>("create");
   const stateEvent = useState(EVENT_EMPTY);
 
-  const renderGuestNotAllowed = useMemo(
-    () => <TemplatePageGuestNotAllowed />,
-    []
+  return (
+    <LayoutTemplateCard
+      title="Create Event"
+      leftButton={{
+        icon: "arrow left",
+        onClick: () => {
+          router.back();
+        },
+      }}
+      classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
+      minPermission="user"
+      authorized={isAuthorized}
+      unauthorizedElement={<TemplatePageGuestNotAllowed />}
+    >
+      <PageViewEventCard
+        className="card ui"
+        stateEvent={stateEvent}
+        stateMode={stateMode}
+        stateIdentification={stateIdentification}
+        type={type}
+        updateEvent={handleUpdateEvent}
+        updateUserSubscribedEventClientSide={
+          updateUserSubscribedEventClientSide
+        }
+      />
+    </LayoutTemplateCard>
   );
-
-  const renderPage = useMemo(
-    () => (
-      <LayoutTemplateCard
-        title="Create Event"
-        leftButton={{
-          icon: "arrow left",
-          onClick: () => {
-            router.back();
-          },
-        }}
-        classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
-      >
-        <PageViewEventCard
-          className="card ui"
-          stateEvent={stateEvent}
-          stateMode={stateMode}
-          stateIdentification={stateIdentification}
-          type={type}
-          updateEvent={handleUpdateEvent}
-          updateUserSubscribedEventClientSide={
-            updateUserSubscribedEventClientSide
-          }
-        />
-      </LayoutTemplateCard>
-    ),
-    [
-      handleUpdateEvent,
-      router,
-      stateEvent,
-      stateIdentification,
-      stateMode,
-      type,
-      updateUserSubscribedEventClientSide,
-    ]
-  );
-
-  return isAuthorized ? renderPage : renderGuestNotAllowed;
 }
 
 const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {

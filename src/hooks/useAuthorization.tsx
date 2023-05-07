@@ -24,7 +24,7 @@ export function useAuthorization({
     if (verdict !== undefined || !initialized) return;
 
     if (auth.currentUser && user) {
-      const permission = user.role;
+      const permission = user.role ?? "user";
 
       setVerdict(
         Boolean(permission && hasPermission(permission, minPermission))
