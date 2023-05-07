@@ -1,46 +1,79 @@
+import { useMemo, useState } from "react";
+import { getAuth } from "firebase/auth";
 import { useRouter } from "next/router";
-import { LayoutTemplateCard, PageViewEventCard } from "@/components";
+import {
+  LayoutTemplateCard,
+  PageViewEventCard,
+  TemplatePageGuestNotAllowed,
+} from "@/components";
+import {
+  useScreen,
+  useEvent,
+  useIdentification,
+  useAuthorization,
+} from "@/hooks";
 import { EVENT_EMPTY } from "@/consts";
-import { useState } from "react";
-import { useScreen, useEvent, useIdentification } from "@/hooks";
 import { EventModeType, ResponsiveStyleType } from "@/types";
 
 export default function CreateEvent() {
+  const auth = getAuth();
   const router = useRouter();
 
   const { handleUpdateEvent } = useEvent({});
-  const stateMode = useState<EventModeType>("create");
-  const stateActiveTab = useState(0);
   const { type } = useScreen();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const activeTab = stateActiveTab[0];
   const { updateUserSubscribedEventClientSide } = useIdentification();
+  const { stateIdentification } = useIdentification();
+  const isAuthorized = useAuthorization({
+    auth,
+    stateIdentification,
+    minPermission: "user",
+  });
 
+  const stateMode = useState<EventModeType>("create");
   const stateEvent = useState(EVENT_EMPTY);
 
-  return (
-    <LayoutTemplateCard
-      title="Create Event"
-      leftButton={{
-        icon: "arrow left",
-        onClick: () => {
-          router.back();
-        },
-      }}
-      classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
-    >
-      <PageViewEventCard
-        className="card ui"
-        stateEvent={stateEvent}
-        stateMode={stateMode}
-        type={type}
-        updateEvent={handleUpdateEvent}
-        updateUserSubscribedEventClientSide={
-          updateUserSubscribedEventClientSide
-        }
-      />
-    </LayoutTemplateCard>
+  const renderGuestNotAllowed = useMemo(
+    () => <TemplatePageGuestNotAllowed />,
+    []
   );
+
+  const renderPage = useMemo(
+    () => (
+      <LayoutTemplateCard
+        title="Create Event"
+        leftButton={{
+          icon: "arrow left",
+          onClick: () => {
+            router.back();
+          },
+        }}
+        classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
+      >
+        <PageViewEventCard
+          className="card ui"
+          stateEvent={stateEvent}
+          stateMode={stateMode}
+          stateIdentification={stateIdentification}
+          type={type}
+          updateEvent={handleUpdateEvent}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
+        />
+      </LayoutTemplateCard>
+    ),
+    [
+      handleUpdateEvent,
+      router,
+      stateEvent,
+      stateIdentification,
+      stateMode,
+      type,
+      updateUserSubscribedEventClientSide,
+    ]
+  );
+
+  return isAuthorized ? renderPage : renderGuestNotAllowed;
 }
 
 const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {
