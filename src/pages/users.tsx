@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { getAuth } from "firebase/auth";
 import { useRouter } from "next/router";
 import clsx from "clsx";
@@ -22,33 +21,29 @@ export default function ManageUsers() {
     minPermission: "admin",
   });
 
-  const renderNotFound = useMemo(() => <TemplatePageNotFound />, []);
-
-  const renderPage = useMemo(
-    () => (
-      <LayoutTemplateCard
-        title="Users"
-        leftButton={{
-          icon: "arrow left",
-          onClick: () => {
-            router.back();
-          },
-        }}
-        classNameMain={clsx(
-          "!bg-sky-50",
-          LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]
-        )}
-      >
-        <PageManageUsers
-          isAuthorized={isAuthorized}
-          className={clsx("ui card", type !== "mobile" ? "!p-16" : "!p-4")}
-        />
-      </LayoutTemplateCard>
-    ),
-    [isAuthorized, router, type]
+  return (
+    <LayoutTemplateCard
+      title="Users"
+      leftButton={{
+        icon: "arrow left",
+        onClick: () => {
+          router.back();
+        },
+      }}
+      classNameMain={clsx(
+        "!bg-sky-50",
+        LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]
+      )}
+      authorized={isAuthorized}
+      minPermission="guest"
+      unauthorizedElement={<TemplatePageNotFound />}
+    >
+      <PageManageUsers
+        isAuthorized={isAuthorized}
+        className={clsx("ui card", type !== "mobile" ? "!p-16" : "!p-4")}
+      />
+    </LayoutTemplateCard>
   );
-
-  return isAuthorized ? renderPage : renderNotFound;
 }
 
 const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {

@@ -13,7 +13,7 @@ export default function SubscribedEvent() {
   });
 
   const renderGuestNotAllowed = useMemo(
-    () => <TemplatePageGuestNotAllowed />,
+    () => <TemplatePageGuestNotAllowed includeLayoutWrapper />,
     []
   );
 

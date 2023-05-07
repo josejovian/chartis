@@ -1,23 +1,23 @@
 import { LayoutNotice, LayoutTemplateCard } from "../Layout";
 import { Button } from "semantic-ui-react";
-import clsx from "clsx";
 import { ASSET_NO_ACCESS } from "@/consts";
 import { useModal, useScreen } from "@/hooks";
 import { ModalAuthLogin } from "../Modal";
 import { ResponsiveStyleType } from "@/types";
+import { useMemo } from "react";
 
-export function TemplatePageGuestNotAllowed() {
-  const { type } = useScreen();
+interface TemplatePageGuestNotAllowedProps {
+  includeLayoutWrapper?: boolean;
+}
+
+export function TemplatePageGuestNotAllowed({
+  includeLayoutWrapper,
+}: TemplatePageGuestNotAllowedProps) {
   const { setModal } = useModal();
+  const { type } = useScreen();
 
-  return (
-    <LayoutTemplateCard
-      title=""
-      classNameMain={clsx(
-        "!bg-sky-50",
-        LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]
-      )}
-    >
+  const renderNotice = useMemo(
+    () => (
       <LayoutNotice
         illustration={ASSET_NO_ACCESS}
         title="You must login to access this page."
@@ -27,7 +27,19 @@ export function TemplatePageGuestNotAllowed() {
           </Button>
         }
       />
+    ),
+    [setModal]
+  );
+
+  return includeLayoutWrapper ? (
+    <LayoutTemplateCard
+      title=""
+      classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
+    >
+      {renderNotice}
     </LayoutTemplateCard>
+  ) : (
+    renderNotice
   );
 }
 

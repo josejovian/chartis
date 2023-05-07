@@ -1,8 +1,8 @@
 import { CSSProperties, ReactNode, useMemo } from "react";
-import { LayoutHead } from "@/components";
 import clsx from "clsx";
+import { LayoutHead, LayoutHeadButtonProps } from "@/components";
 import { useNavBar, useScreen } from "@/hooks";
-import { LayoutHeadButtonProps } from "../Head/LayoutHeadButton";
+import { UserPermissionType } from "@/types";
 
 export interface LayoutTemplateProps {
   classNameWrapper?: string;
@@ -15,6 +15,9 @@ export interface LayoutTemplateProps {
   rightButton?: LayoutHeadButtonProps;
   rightElement?: ReactNode;
   title: string;
+  minPermission?: UserPermissionType;
+  authorized?: boolean;
+  unauthorizedElement?: ReactNode;
 }
 
 export function LayoutTemplate({
@@ -28,20 +31,39 @@ export function LayoutTemplate({
   rightButton,
   rightElement,
   title,
+  minPermission,
+  authorized,
+  unauthorizedElement,
 }: LayoutTemplateProps) {
   const stateNavBar = useNavBar();
   const { type } = useScreen();
+
+  const showContent = useMemo(() => {
+    return !minPermission || authorized;
+  }, [authorized, minPermission]);
+
+  const renderPage = useMemo(() => {
+    if (showContent) {
+      return children;
+    }
+
+    if (authorized === false) {
+      return unauthorizedElement;
+    }
+
+    return <></>;
+  }, [authorized, children, showContent, unauthorizedElement]);
 
   const renderMain = useMemo(
     () => (
       <div className={clsx("flex flex-col w-full", "h-full")}>
         <LayoutHead
           stateNavBar={stateNavBar}
-          leftButton={leftButton}
-          leftElement={leftElement}
-          rightButton={rightButton}
-          rightElement={rightElement}
-          title={title}
+          leftButton={showContent ? leftButton : undefined}
+          leftElement={showContent ? leftElement : undefined}
+          rightButton={showContent ? rightButton : undefined}
+          rightElement={showContent ? rightElement : undefined}
+          title={showContent ? title : ""}
           type={type}
         />
         <div
@@ -51,18 +73,19 @@ export function LayoutTemplate({
           )}
           style={inlineMain}
         >
-          {children}
+          {renderPage}
         </div>
       </div>
     ),
     [
-      children,
       classNameMain,
       inlineMain,
       leftButton,
       leftElement,
+      renderPage,
       rightButton,
       rightElement,
+      showContent,
       stateNavBar,
       title,
       type,
