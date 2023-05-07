@@ -1,6 +1,25 @@
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { documentId, where } from "firebase/firestore";
+import {
+  BatchOperationType,
+  readData,
+  updateData,
+  writeDataBatch,
+} from "@/firebase";
+import clsx from "clsx";
 import { LayoutTemplateCard, PageNotificationsCard } from "@/components";
-import { useIdentification, useNotification, useScreen } from "@/hooks";
+import {
+  useIdentification,
+  useNotification,
+  useScreen,
+  useToast,
+} from "@/hooks";
+import {
+  FIREBASE_COLLECTION_EVENTS,
+  FIREBASE_COLLECTION_UPDATES,
+  FIREBASE_COLLECTION_USERS,
+} from "@/consts";
 import {
   EventType,
   EventUpdateArrayType,
@@ -9,27 +28,15 @@ import {
   ResponsiveStyleType,
   NotificationData,
 } from "@/types";
-import clsx from "clsx";
-import { useCallback, useEffect, useState } from "react";
-import {
-  BatchOperationType,
-  readData,
-  updateData,
-  writeDataBatch,
-} from "@/firebase";
-import {
-  FIREBASE_COLLECTION_EVENTS,
-  FIREBASE_COLLECTION_UPDATES,
-  FIREBASE_COLLECTION_USERS,
-} from "@/consts";
-import { documentId, where } from "firebase/firestore";
 
 export default function Notification() {
+  const { addToastPreset } = useToast();
   const { stateIdentification } = useIdentification();
   const [{ user }] = stateIdentification;
   const router = useRouter();
   const { type } = useScreen();
   const { updates: userNotification } = useNotification();
+
   const [notificationData, setNotificationData] = useState<NotificationData[]>(
     []
   );
@@ -129,9 +136,9 @@ export default function Notification() {
         setNotificationData([]);
       })
       .catch(() => {
-        addToastPreset("post-fail");
+        addToastPreset("fail-post");
       });
-  }, [notificationData, user]);
+  }, [addToastPreset, notificationData, user]);
 
   const handleReadNotification = useCallback(
     async (targetEventId: string, targetEventVersion: number) => {
@@ -149,10 +156,10 @@ export default function Notification() {
           );
         })
         .catch(() => {
-          addToastPreset("post-fail");
+          addToastPreset("fail-post");
         });
     },
-    [user]
+    [addToastPreset, user]
   );
 
   useEffect(() => {
@@ -205,6 +212,3 @@ const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {
   desktop_sm: "!px-20",
   mobile: "",
 };
-function addToastPreset(arg0: string) {
-  throw new Error("Function not implemented.");
-}
