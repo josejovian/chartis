@@ -5,7 +5,8 @@ import {
   PageSearchEventCardHead,
 } from "@/components";
 import {
-  EventSortType,
+  EventSortNameType,
+  EventTagNameType,
   EventType,
   ScreenSizeCategoryType,
   StateObject,
@@ -14,16 +15,20 @@ import { useMemo } from "react";
 import clsx from "clsx";
 import { useIdentification } from "@/hooks";
 import { validateEventQuery } from "@/utils";
-import { EVENT_QUERY_LENGTH_CONSTRAINTS } from "@/consts";
+import {
+  ASSET_CALENDAR,
+  ASSET_NO_CONTENT,
+  EVENT_QUERY_LENGTH_CONSTRAINTS,
+  EVENT_SORT_CRITERIA,
+} from "@/consts";
 
 export interface PageSearchEventCardProps {
   className?: string;
   events: EventType[];
   type: ScreenSizeCategoryType;
   stateQuery: StateObject<string>;
-  stateFilters: StateObject<Record<number, boolean>>;
-  stateSortBy: StateObject<EventSortType>;
-  stateSortDescending: StateObject<boolean>;
+  stateFilters: StateObject<EventTagNameType[]>;
+  stateSort: StateObject<EventSortNameType>;
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
@@ -33,32 +38,50 @@ export function PageSearchEventCard({
   type,
   stateQuery,
   stateFilters,
-  stateSortBy,
-  stateSortDescending,
+  stateSort,
   updateEvent,
 }: PageSearchEventCardProps) {
   const query = stateQuery[0];
-  const sortBy = stateSortBy[0];
-  const sortDescending = stateSortDescending[0];
-  const stateIdentification = useIdentification();
-  const identification = stateIdentification[0];
+  const sort = stateSort[0];
+  const sortBy = useMemo(() => EVENT_SORT_CRITERIA[sort], [sort]);
+  const filters = stateFilters[0];
+  const { stateIdentification, updateUserSubscribedEventClientSide } =
+    useIdentification();
 
-  const sortCaption = useMemo(
-    () =>
-      `, sorted by ${sortBy.name} ${
-        sortDescending ? "descending" : "ascending"
-      }ly.`,
-    [sortBy, sortDescending]
+  const filterCaption = useMemo(
+    () => (
+      <>
+        &nbsp;that has the tag(s): <b>{filters.join(", ")}</b>
+      </>
+    ),
+    [filters]
   );
 
-  const mainCaption = useMemo(() => `Searching for "${query}" events`, [query]);
+  const sortCaption = useMemo(
+    () => ` , sorted by ${sortBy.name}.`,
+    [sortBy.name]
+  );
 
   const renderCaption = useMemo(
-    () =>
-      validateEventQuery(query) && query !== ""
-        ? `${mainCaption} ${sortCaption}`
-        : `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters.`,
-    [mainCaption, query, sortCaption]
+    () => (
+      <>
+        {!validateEventQuery(query) &&
+          `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters. `}
+        {query !== "" ? (
+          <>
+            Searching for {query}
+            {filters.length > 0 && filterCaption}
+          </>
+        ) : (
+          <>
+            Filtering by{" "}
+            <b>{filters.length > 0 ? filters.join(", ") : "none"}</b>
+          </>
+        )}
+        {sortCaption}
+      </>
+    ),
+    [filterCaption, filters, query, sortCaption]
   );
 
   const renderEvents = useMemo(
@@ -68,21 +91,31 @@ export function PageSearchEventCard({
           key={`PageSearchEventCard_${event.id}`}
           type={type === "mobile" ? "vertical" : "horizontal"}
           event={event}
-          identification={identification}
+          stateIdentification={stateIdentification}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
           updateEvent={updateEvent}
         />
       )),
-    [events, identification, type, updateEvent]
+    [
+      events,
+      stateIdentification,
+      type,
+      updateEvent,
+      updateUserSubscribedEventClientSide,
+    ]
   );
 
   const renderEmpty = useMemo(
     () => (
       <LayoutNotice
-        title={query !== "" ? "It's Empty" : "Start Searching"}
+        illustration={query !== "" ? ASSET_NO_CONTENT : ASSET_CALENDAR}
+        title={query !== "" ? "No Events" : "Start Searching"}
         description={
           query !== ""
             ? "No events found with such query."
-            : "Type in any key word."
+            : "Select a filter or type in any key word."
         }
       />
     ),
@@ -100,10 +133,9 @@ export function PageSearchEventCard({
         type={type}
         stateQuery={stateQuery}
         stateFilters={stateFilters}
-        stateSortBy={stateSortBy}
-        stateSortDescending={stateSortDescending}
+        stateSort={stateSort}
       />
-      <div className="mt-4 mb-6 pl-4">{renderCaption}&nbsp;</div>
+      <div className="mt-4 mb-6 pl-4">{renderCaption}</div>
       <div
         className={clsx(
           "flex flex-col gap-4",

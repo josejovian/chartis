@@ -7,23 +7,31 @@ import {
   useRef,
   useState,
 } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { fs, readData } from "@/firebase";
 import "@/styles/globals.css";
 import "semantic-ui-css/semantic.min.css";
 import { Lato } from "@next/font/google";
 import clsx from "clsx";
-import { LayoutNavbar, Modal } from "@/components";
-import { SCREEN_CONTEXT_DEFAULT, ContextWrapper } from "@/contexts";
+import { LayoutNavbar, Modal, ToastWrapper } from "@/components";
+import { ContextWrapper } from "@/contexts";
+import {
+  DESKTOP_SMALL_SCREEN_THRESHOLD,
+  FIREBASE_COLLECTION_USERS,
+  MOBILE_SCREEN_THRESHOLD,
+  TOAST_PRESETS,
+} from "@/consts";
 import {
   ScreenSizeCategoryType,
   ScreenSizeType,
   IdentificationType,
+  ToastLiveType,
+  ToastType,
+  ToastPresetType,
+  UserType,
+  EventUpdateBatchType,
 } from "@/types";
-import {
-  DESKTOP_SMALL_SCREEN_THRESHOLD,
-  MOBILE_SCREEN_THRESHOLD,
-} from "@/consts";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth, getDataFromPath } from "@/firebase";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
@@ -36,10 +44,41 @@ export default function App({ Component, pageProps }: AppProps) {
     user: null,
     users: {},
     permission: "guest",
+    initialized: false,
   });
-  const setIdentification = stateIdentification[1];
-  const [screen, setScreen] = useState<ScreenSizeType>(SCREEN_CONTEXT_DEFAULT);
+  const [identification, setIdentification] = stateIdentification;
+  const { user, users } = identification;
+  const [screen, setScreen] = useState<ScreenSizeType>({
+    width: 0,
+    type: "mobile",
+  });
   const initialize = useRef(false);
+  const initializeListener = useRef(false);
+  const [toasts, setToasts] = useState<ToastLiveType[]>([]);
+  const stateNotification = useState<EventUpdateBatchType[]>([]);
+  const setNotification = stateNotification[1];
+  const toastCount = useRef(0);
+  const auth = getAuth();
+
+  const handleAddToast = useCallback((toast: ToastType) => {
+    toastCount.current++;
+    setToasts((prev) => [
+      ...prev,
+      {
+        ...toast,
+        id: `Toast-${toastCount.current}`,
+        createdAt: new Date().getTime(),
+        time: 4,
+      } as ToastLiveType,
+    ]);
+  }, []);
+
+  const handleAddToastPreset = useCallback(
+    (preset: ToastPresetType) => {
+      handleAddToast(TOAST_PRESETS[preset]);
+    },
+    [handleAddToast]
+  );
 
   const handleUpdateScreen = useCallback(() => {
     const width = window.innerWidth;
@@ -56,18 +95,15 @@ export default function App({ Component, pageProps }: AppProps) {
     });
   }, []);
 
-  const handleInitialize = useCallback(async () => {
-    if (initialize.current) return;
-    window.addEventListener("resize", handleUpdateScreen);
-    handleUpdateScreen();
-    initialize.current = true;
-
+  const handleUpdateLoggedInUserData = useCallback(async () => {
     onAuthStateChanged(auth, async (user) => {
       let userData = null;
       let newUsers = {};
 
       if (user) {
-        userData = await getDataFromPath(`/user/${user.uid}`).catch(() => null);
+        userData = await readData(FIREBASE_COLLECTION_USERS, user.uid).catch(
+          () => null
+        );
 
         if (userData) {
           newUsers = {
@@ -84,9 +120,19 @@ export default function App({ Component, pageProps }: AppProps) {
           ...prev.users,
           ...newUsers,
         },
+        initialized: true,
       }));
     });
-  }, [handleUpdateScreen, setIdentification]);
+  }, [auth, setIdentification]);
+
+  const handleInitialize = useCallback(() => {
+    if (initialize.current) return;
+    window.addEventListener("resize", handleUpdateScreen);
+    handleUpdateScreen();
+    initialize.current = true;
+
+    handleUpdateLoggedInUserData();
+  }, [handleUpdateLoggedInUserData, handleUpdateScreen]);
 
   const handleAdjustNavbar = useCallback(() => {
     if (screen.type === "desktop_lg") {
@@ -114,7 +160,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const renderShadeModal = useMemo(
     () =>
-      modal && (
+      modal &&
+      (modal as JSX.Element).type && (
         <div
           className={clsx(
             "fixed left-0 top-0 w-screen h-screen",
@@ -124,7 +171,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <div
             className="w-screen h-screen z-40 bg-black opacity-80"
             onClick={() => {
-              setModal(false);
+              setModal(null);
             }}
           />
           <Modal content={modal} />
@@ -137,6 +184,38 @@ export default function App({ Component, pageProps }: AppProps) {
     handleInitialize();
   }, [handleInitialize]);
 
+  // notification listener
+  useEffect(() => {
+    if (user && !initializeListener.current) {
+      initializeListener.current = true;
+
+      const { subscribedEvents = {} } = users[user.uid];
+      const subscribedEventIds = Object.keys(subscribedEvents);
+
+      return onSnapshot(
+        doc(fs, FIREBASE_COLLECTION_USERS, user.uid),
+        async (doc) => {
+          if (doc.data()) {
+            const { unseenEvents = {} } = doc.data() as UserType;
+            if (
+              Object.entries(unseenEvents).length > 0 &&
+              subscribedEventIds.length > 0
+            ) {
+              const notifications = subscribedEventIds.map(
+                (id): EventUpdateBatchType => ({
+                  eventId: id,
+                  lastSeenVersion: subscribedEvents[id],
+                  unseen: unseenEvents[id],
+                })
+              );
+              setNotification(notifications);
+            }
+          }
+        }
+      );
+    }
+  }, [identification, setNotification, user, users]);
+
   useEffect(() => {
     handleAdjustNavbar();
   }, [handleAdjustNavbar, screen]);
@@ -144,7 +223,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <style jsx global>{`
-        #__next > #App *:not(.icon) {
+        body *:not(.icon) {
           font-family: ${lato.style.fontFamily}!important;
         }
       `}</style>
@@ -153,14 +232,24 @@ export default function App({ Component, pageProps }: AppProps) {
         screen={screen}
         stateModal={stateModal}
         stateNavBar={stateNavBar}
+        toastProps={{
+          toasts,
+          setToasts,
+          addToast: handleAddToast,
+          addToastPreset: handleAddToastPreset,
+        }}
+        notificationProps={{
+          stateUpdates: stateNotification,
+        }}
       >
-        <div id="App" className={clsx("flex flex-row w-full")}>
+        <div id="App" className={clsx("flex flex-row w-full h-full")}>
           {renderShadeNavBar}
           {renderShadeModal}
           <LayoutNavbar stateNavBar={stateNavBar} />
-          <div className="flex flex-auto w-full">
+          <div className="flex flex-auto w-full h-full">
             <Component {...pageProps} />
           </div>
+          <ToastWrapper />
         </div>
       </ContextWrapper>
     </>

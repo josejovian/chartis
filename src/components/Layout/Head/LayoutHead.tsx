@@ -89,7 +89,7 @@ export function LayoutHead({
           type === "desktop_sm" && "!px-8"
         )}
         style={{
-          minHeight: "48px",
+          height: "48px",
         }}
       >
         <div className="flex items-center gap-4">
@@ -107,7 +107,7 @@ export function LayoutHead({
       <div
         className={LAYOUT_HEAD_MOBILE_STYLE}
         style={{
-          minHeight: "48px",
+          minHeight: "64px",
         }}
       >
         {renderLeft}

@@ -2,12 +2,18 @@ import { useMemo } from "react";
 import { Icon } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventCard, LayoutNotice } from "@/components";
-import { EventType, ResponsiveInlineStyleType, StateObject } from "@/types";
-import { strDate } from "@/utils";
+import {
+  EventType,
+  FocusDateType,
+  ResponsiveInlineStyleType,
+  StateObject,
+} from "@/types";
+import { parseFromDateMonthYear, strDate } from "@/utils";
 import { useIdentification, useScreen } from "@/hooks";
+import { ASSET_NO_CONTENT } from "@/consts";
 
 export interface PageHomeSideBarProps {
-  focusDate: Date;
+  focusDate: FocusDateType;
   events: EventType[];
   updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   stateSideBar: StateObject<boolean>;
@@ -21,14 +27,15 @@ export function PageHomeSideBar({
 }: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
-  const stateIdentification = useIdentification();
-  const identification = stateIdentification[0];
+  const { stateIdentification, updateUserSubscribedEventClientSide } =
+    useIdentification();
 
   const renderTitle = useMemo(
     () => (
       <div className="flex items-center justify-between mb-8">
         <span className="text-16px text-secondary-6 italic">
-          Showing {events.length} events on {strDate(focusDate)}
+          Showing {events.length} events on{" "}
+          {strDate(parseFromDateMonthYear(focusDate))}
         </span>
         {type === "mobile" && (
           <div
@@ -62,18 +69,27 @@ export function PageHomeSideBar({
           <EventCard
             key={`EventCard_${event.id}`}
             event={event}
-            identification={identification}
+            stateIdentification={stateIdentification}
+            updateUserSubscribedEventClientSide={
+              updateUserSubscribedEventClientSide
+            }
             updateEvent={updateEvent}
           />
         ))}
       </div>
     ),
-    [events, identification, updateEvent]
+    [
+      events,
+      stateIdentification,
+      updateEvent,
+      updateUserSubscribedEventClientSide,
+    ]
   );
 
   const renderEmpty = useMemo(
     () => (
       <LayoutNotice
+        illustration={ASSET_NO_CONTENT}
         title="It's Empty"
         description="There are no events on this date."
       />
@@ -90,11 +106,17 @@ export function PageHomeSideBar({
     <div
       className={clsx(
         SIDEBAR_WRAPPER_STYLE,
-        sideBar ? ["fixed left-0 bottom-0"] : [type === "mobile" && "h-full"]
+        sideBar && ["fixed left-0 bottom-0"]
       )}
       style={{
         ...SIDEBAR_WRAPPER_RESPONSIVE_STYLE[type],
-        height: sideBar ? "calc(100vh - 64px)" : undefined,
+        zIndex: 8,
+        height:
+          sideBar && type !== "mobile"
+            ? "100%"
+            : type === "mobile"
+            ? "calc(100% - 64px)"
+            : undefined,
       }}
     >
       <div>
@@ -107,17 +129,17 @@ export function PageHomeSideBar({
 
 const SIDEBAR_WRAPPER_STYLE = clsx(
   "flex flex-col p-8",
-  "bg-slate-100 overflow-x-hidden overflow-y-scroll z-10"
+  "bg-slate-100 overflow-x-hidden overflow-y-scroll"
 );
 
 const SIDEBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
   desktop_lg: {
     height: "100vh",
-    minWidth: "504px",
+    width: "600px",
   },
   desktop_sm: {
     height: "100vh",
-    minWidth: "400px",
+    width: "550px",
   },
   mobile: {
     width: "100vw",

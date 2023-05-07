@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
-import { Button, Dropdown, Icon, SemanticSIZES } from "semantic-ui-react";
+import { Button, Dropdown, Icon, type SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventType, StateObject, IdentificationType } from "@/types";
-import { ModalEventDeleteConfirmation } from "@/components/Modal";
+import { ModalConfirmation } from "@/components/Modal";
 
 export interface EventButtonMoreProps {
   event: EventType;
   identification: IdentificationType;
   size?: SemanticSIZES;
+  stateModalDelete: StateObject<boolean>;
   stateDeleting?: StateObject<boolean>;
   onDelete?: () => void;
   onEdit?: () => void;
@@ -18,11 +19,13 @@ export function EventButtonMore({
   event,
   identification,
   size,
+  stateModalDelete,
   stateDeleting,
   onDelete,
   onEdit,
   onReport,
 }: EventButtonMoreProps) {
+  const deleting = stateDeleting && stateDeleting[0];
   const [open, setOpen] = useState(false);
   const { authorId } = event;
   const { permission, user } = identification;
@@ -32,30 +35,41 @@ export function EventButtonMore({
     [authorId, user]
   );
 
+  const modalDelete = useMemo(
+    () => (
+      <ModalConfirmation
+        trigger={
+          <Dropdown.Item className="!text-red-400">Delete</Dropdown.Item>
+        }
+        onConfirm={onDelete}
+        stateOpen={stateModalDelete}
+        loading={deleting}
+        color="red"
+        modalText="Are you sure you want to delete this event? This cannot be undone later."
+        confirmText="Delete"
+      />
+    ),
+    [deleting, onDelete, stateModalDelete]
+  );
+
   const renderDropdownItems = useMemo(() => {
     if (permission === "admin")
       return (
         <>
           <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
           <Dropdown.Item>Hide</Dropdown.Item>
-          <ModalEventDeleteConfirmation
-            onDelete={onDelete}
-            stateDeleting={stateDeleting}
-          />
+          {modalDelete}
         </>
       );
     if (isAuthor)
       return (
         <>
           <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
-          <ModalEventDeleteConfirmation
-            onDelete={onDelete}
-            stateDeleting={stateDeleting}
-          />
+          {modalDelete}
         </>
       );
     return <Dropdown.Item onClick={onReport}>Report</Dropdown.Item>;
-  }, [isAuthor, onDelete, onEdit, onReport, permission, stateDeleting]);
+  }, [isAuthor, modalDelete, onEdit, onReport, permission]);
 
   return (
     <div

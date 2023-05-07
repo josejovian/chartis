@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { ReactNode } from "react";
-import { Icon, SemanticICONS } from "semantic-ui-react";
+import { Icon, type SemanticICONS } from "semantic-ui-react";
 
 export interface LayoutNavbarButtonProps {
   className?: string;

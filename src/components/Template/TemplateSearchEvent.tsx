@@ -1,12 +1,8 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
-import { LayoutTemplateCard } from "@/components";
-import { PageSearchEventCard } from "@/components/Page/SearchEvent";
+import { LayoutTemplateCard, PageSearchEventCard } from "@/components";
 import { EventSearchType, ResponsiveStyleType } from "@/types";
-import { populateEvents } from "@/utils";
-import { useIdentification, useScreen, useSearchEvent } from "@/hooks";
-import { db } from "@/firebase";
-import { ref, update } from "firebase/database";
+import { useEvent, useScreen } from "@/hooks";
 
 export interface TemplateSearchEventProps {
   viewType?: EventSearchType;
@@ -19,36 +15,61 @@ export function TemplateSearchEvent({
 }: TemplateSearchEventProps) {
   const {
     filteredEvents,
-    handleFetchEvents,
+    getEvents,
     handleUpdateEvent,
     stateFilters,
     stateQuery,
-    stateSortBy,
-    stateSortDescending,
-  } = useSearchEvent({ type: viewType });
+    stateSort,
+  } = useEvent({ type: viewType });
+  const [filters, setFilters] = stateFilters;
+  const [query, setQuery] = stateQuery;
+  const [sort, setSort] = stateSort;
   const router = useRouter();
   const { type } = useScreen();
-  const stateIdentification = useIdentification();
-  const identification = stateIdentification[0];
-  const { user } = identification;
 
-  useEffect(() => {
-    handleFetchEvents();
-  }, [handleFetchEvents]);
+  const queried = useRef(0);
+  const viewTypeString = useMemo(() => `query-${viewType}`, [viewType]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handlePopulateDatabaseEvents = useCallback(async () => {
-    if (!user || !user.uid) return;
+  const handleUpdatePathQueries = useCallback(() => {
+    if (queried.current <= 1) return;
 
-    const samples = populateEvents(40, "admin");
+    sessionStorage.setItem(
+      viewTypeString,
+      JSON.stringify({
+        filters,
+        query,
+        sort,
+      })
+    );
+  }, [filters, query, sort, viewTypeString]);
 
-    const updates: Record<string, unknown> = {};
-    for (const sample of samples) {
-      updates[`/events/${sample.id}`] = sample;
+  const handleGetPathQuery = useCallback(() => {
+    const rawQuery = sessionStorage.getItem(viewTypeString);
+
+    if (rawQuery && queried.current <= 1) {
+      const parsedQuery = JSON.parse(rawQuery);
+
+      const parsedFilters = parsedQuery.filters;
+
+      setFilters(parsedFilters);
+      setQuery(parsedQuery.query);
+      setSort(parsedQuery.sort);
     }
 
-    await update(ref(db), updates);
-  }, [user]);
+    queried.current++;
+  }, [setFilters, setQuery, setSort, viewTypeString]);
+
+  useEffect(() => {
+    handleUpdatePathQueries();
+  }, [stateFilters, stateQuery, stateSort, handleUpdatePathQueries]);
+
+  useEffect(() => {
+    handleGetPathQuery();
+  }, [handleGetPathQuery]);
+
+  useEffect(() => {
+    getEvents();
+  }, [getEvents]);
 
   return (
     <LayoutTemplateCard
@@ -62,13 +83,12 @@ export function TemplateSearchEvent({
       classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
     >
       <PageSearchEventCard
-        className="PageSearchEventCard !bg-sky-50 p-4 !h-screen"
+        className="PageSearchEventCard !bg-sky-50 p-4 !pb-0 !h-full"
         events={filteredEvents}
         type={type}
         stateQuery={stateQuery}
         stateFilters={stateFilters}
-        stateSortBy={stateSortBy}
-        stateSortDescending={stateSortDescending}
+        stateSort={stateSort}
         updateEvent={handleUpdateEvent}
       />
     </LayoutTemplateCard>
@@ -76,7 +96,7 @@ export function TemplateSearchEvent({
 }
 
 const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {
-  desktop_lg: "!px-10",
-  desktop_sm: "!px-10",
+  desktop_lg: "!px-10 !pb-0",
+  desktop_sm: "!px-10 !pb-0",
   mobile: "",
 };

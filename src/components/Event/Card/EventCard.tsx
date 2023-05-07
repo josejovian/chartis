@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import { Card } from "semantic-ui-react";
 import clsx from "clsx";
@@ -15,22 +16,30 @@ import {
   EventDetailCompactType,
   EventType,
   IdentificationType,
+  StateObject,
 } from "@/types";
+import { useEvent, useReport } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
-  identification: IdentificationType;
+  stateIdentification: StateObject<IdentificationType>;
   event: EventType;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   type?: EventCardDisplayType;
+  updateUserSubscribedEventClientSide: (
+    userId: string,
+    eventId: string,
+    version?: number
+  ) => void;
+  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
 export function EventCard({
   className,
-  identification,
+  stateIdentification,
   event,
-  updateEvent,
   type = "vertical",
+  updateUserSubscribedEventClientSide,
+  updateEvent,
 }: EventCardProps) {
   const {
     id,
@@ -41,8 +50,17 @@ export function EventCard({
     thumbnailSrc,
     tags,
     postDate,
+    authorName,
   } = event;
-  const { users } = identification;
+  const identification = stateIdentification[0];
+  const { users, user } = identification;
+  const { deleteEvent } = useEvent({});
+  const { showReportModal } = useReport();
+  const stateDeleting = useState(false);
+  const setDeleting = stateDeleting[1];
+  const stateModalDelete = useState(false);
+  const setModalDelete = stateModalDelete[1];
+  const router = useRouter();
 
   const truncatedDescription = useMemo(
     () =>
@@ -51,6 +69,34 @@ export function EventCard({
         : `${description.slice(0, 100)}...`,
     [description]
   );
+
+  const handleDeleteEvent = useCallback(async () => {
+    if (!event.id) return;
+
+    setDeleting(true);
+
+    await deleteEvent({
+      eventId: id,
+      onSuccess: () => {
+        setModalDelete(false);
+      },
+      onFail: () => {
+        setDeleting(false);
+      },
+    });
+  }, [deleteEvent, event.id, id, setDeleting, setModalDelete]);
+
+  const handleEditEvent = useCallback(() => {
+    if (!event.id) return;
+
+    router.push(
+      {
+        pathname: `/event/${event.id}/`,
+        query: { mode: "edit" },
+      },
+      `/event/${event.id}/`
+    );
+  }, [event, router]);
 
   const startDate = useMemo(() => new Date(event.startDate), [event]);
   const endDate = useMemo(
@@ -103,7 +149,11 @@ export function EventCard({
       <span className="text-12px text-secondary-4 tracking-wide">
         Posted by{" "}
         <span className="text-secondary-6 font-black">
-          {users[authorId] ? users[authorId].name : authorId}
+          {authorName
+            ? authorName
+            : users[authorId]
+            ? users[authorId].name
+            : authorId}
         </span>{" "}
         {getTimeDifference(postDate)}
         {organizer && (
@@ -114,7 +164,7 @@ export function EventCard({
         )}
       </span>
     ),
-    [authorId, organizer, postDate, users]
+    [authorId, authorName, organizer, postDate, users]
   );
 
   const renderEventTags = useMemo(
@@ -159,16 +209,43 @@ export function EventCard({
           event={event}
           updateEvent={updateEvent}
           identification={identification}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
           size="tiny"
         />
         <EventButtonMore
           event={event}
           identification={identification}
           size="tiny"
+          stateModalDelete={stateModalDelete}
+          onDelete={handleDeleteEvent}
+          onEdit={handleEditEvent}
+          onReport={() =>
+            showReportModal({
+              eventId: id,
+              contentType: "event",
+              authorId,
+              reportedBy: user ? user.uid : "invalid",
+            })
+          }
         />
       </div>
     ),
-    [event, identification, type, updateEvent]
+    [
+      type,
+      event,
+      updateEvent,
+      identification,
+      updateUserSubscribedEventClientSide,
+      stateModalDelete,
+      handleDeleteEvent,
+      handleEditEvent,
+      showReportModal,
+      id,
+      authorId,
+      user,
+    ]
   );
 
   const renderCardContents = useMemo(

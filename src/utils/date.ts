@@ -1,4 +1,21 @@
 import { DAYS, MONTHS } from "@/consts";
+import { FocusDateType } from "@/types";
+
+export function getDateMonthYear(date: Date): FocusDateType {
+  return {
+    day: date.getDate(),
+    month: date.getMonth(),
+    year: date.getFullYear(),
+  };
+}
+
+export function parseFromDateMonthYear(date: FocusDateType): Date {
+  const now = new Date();
+  now.setDate(date.day);
+  now.setMonth(date.month);
+  now.setFullYear(date.year);
+  return now;
+}
 
 export function strMonth(idx: number, length?: number) {
   return MONTHS[idx].slice(0, length);
@@ -9,19 +26,19 @@ export function strDay(idx: number, length?: number) {
 }
 
 export function strDate(date: Date) {
-  return `${date.getDate()} ${strMonth(
-    date.getMonth(),
-    3
-  )} ${date.getFullYear()}`;
+  return date.toLocaleString("en-gb", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function strTime(date: Date) {
-  const hour = date.getHours();
-  const text = 24 > hour && hour >= 12 ? "PM" : "AM";
-  const ampm = 24 > hour && hour > 12 ? hour - 12 : hour % 24;
-  const minutes = date.getMinutes();
-
-  return `${ampm}:${minutes >= 10 ? minutes : `0${minutes}`} ${text}`;
+  return date.toLocaleString("en", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export function strDateTime(date: Date) {
@@ -72,4 +89,10 @@ export function getTimeDifference(timeBefore: number, timeAfter?: number) {
   })();
 
   return timeAfter < timeBefore ? `in ${string}` : `${string} ago`;
+}
+
+export function getLocalTimeInISO(time: number) {
+  const offset = new Date().getTimezoneOffset() * 60 * 1000;
+  const result = new Date(time).getTime() - offset;
+  return new Date(result).toISOString().substring(0, 16);
 }

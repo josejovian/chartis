@@ -1,8 +1,66 @@
 import { IdentificationContext } from "@/contexts";
-import { useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
 
 export function useIdentification() {
-  const params = useContext(IdentificationContext);
+  const stateIdentification = useContext(IdentificationContext);
+  const setIdentification = stateIdentification[1];
 
-  return useMemo(() => params, [params]);
+  const updateUserSubscribedEventClientSide = useCallback(
+    (userId: string, eventId: string, version?: number) => {
+      setIdentification((prev) => ({
+        ...prev,
+        users: {
+          ...prev.users,
+          [userId]: {
+            ...prev.users[userId],
+            subscribedEvents: {
+              ...prev.users[userId].subscribedEvents,
+              ...(version === undefined
+                ? (() => {
+                    const temp = prev.users[userId].subscribedEvents ?? {};
+                    delete temp[eventId];
+                    return temp;
+                  })()
+                : {
+                    [eventId]: version,
+                  }),
+            },
+          },
+        },
+      }));
+    },
+    [setIdentification]
+  );
+
+  const updateUserSubscribedEventsClientSide = useCallback(
+    (userId: string, versions: Record<string, number>) => {
+      setIdentification((prev) => ({
+        ...prev,
+        users: {
+          ...prev.users,
+          [userId]: {
+            ...prev.users[userId],
+            subscribedEvents: {
+              ...prev.users[userId].subscribedEvents,
+              ...versions,
+            },
+          },
+        },
+      }));
+    },
+    [setIdentification]
+  );
+
+  return useMemo(
+    () => ({
+      stateIdentification,
+      updateUserSubscribedEventClientSide,
+      updateUserSubscribedEventsClientSide,
+    }),
+    [
+      stateIdentification,
+      updateUserSubscribedEventClientSide,
+      updateUserSubscribedEventsClientSide,
+    ]
+  );
 }

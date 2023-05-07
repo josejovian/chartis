@@ -1,2 +1,4 @@
 export * from "./config";
-export * from "./functions";
+export * from "./auth";
+export * from "./getterSetter";
+export * from "./populate";
