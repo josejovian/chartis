@@ -73,7 +73,6 @@ export function LayoutCalendar({
       date.setDate(date.getDate() + 1);
     }
 
-    counts.sort((a, b) => a - b);
     setCountData(counts);
 
     const firstDifference = firstDay.getDay();
@@ -181,8 +180,9 @@ export function LayoutCalendar({
     [type]
   );
 
-  const renderCalendar = useMemo(
-    () => (
+  const renderCalendar = useMemo(() => {
+    let o = 0;
+    return (
       <div className="flex flex-col flex-auto gap-4">
         <table className="w-full h-full table-fixed">
           <thead>
@@ -210,7 +210,7 @@ export function LayoutCalendar({
                     <PageHomeCalendarDate
                       key={`Calendar_${idx}_${idx2}`}
                       calendarDate={calendar && calendar[7 * idx + idx2]}
-                      countData={countData}
+                      countData={countData[o++]}
                       type={type}
                       onClick={() => {
                         if (calendar)
@@ -226,9 +226,8 @@ export function LayoutCalendar({
         </table>
         {renderLegend}
       </div>
-    ),
-    [calendar, countData, renderLegend, setFocusDate, type]
-  );
+    );
+  }, [calendar, countData, renderLegend, setFocusDate, type]);
 
   useEffect(() => {
     handleBuildCalendar();
