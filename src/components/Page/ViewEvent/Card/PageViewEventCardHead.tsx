@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
-import { Button, Icon, Input, Label } from "semantic-ui-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Button, Icon, Label } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventThumbnail,
@@ -64,6 +64,7 @@ export function PageViewEventHead({
     stateIdentification,
     permission: "admin",
   });
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
 
   const crumb = useMemo(
     () =>
@@ -205,30 +206,22 @@ export function PageViewEventHead({
   const renderEditTabs = useMemo(
     () => (
       <div className="flex items-between p-4 gap-4 ml-auto">
-        <Button htmlFor="file-input" style={{ padding: "0" }}>
-          <label
-            htmlFor="file-input"
-            style={{
-              display: "block",
-              height: "100%",
-              width: "100%",
-              padding: "0.8rem",
-            }}
-          >
-            <Icon
-              name="camera"
-              style={{
-                margin: "0",
-                padding: "0",
-              }}
-            ></Icon>
-          </label>
+        <Button
+          htmlFor="file-input"
+          className="p-0 h-16"
+          icon
+          labelPosition="left"
+          onClick={() => imageInputRef.current?.click()}
+        >
+          <Icon name="camera" />
+          Upload Thumbnail
         </Button>
-        <Input
+        <input
           id="file-input"
           name="thumbnailSrc"
           type="file"
           accept="image/*"
+          ref={imageInputRef}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(event: any) => {
             setFieldValue("thumbnailSrc", event.target.files[0]);
@@ -278,7 +271,7 @@ export function PageViewEventHead({
         )}
       >
         {mode === "view" && renderCrumb}
-        <div className={clsx("flex items-end justify-between")}>
+        <div className={clsx("flex items-end justify-between h-full")}>
           {mode === "view" ? renderViewTabs : renderEditTabs}
         </div>
       </div>
