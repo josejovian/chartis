@@ -41,15 +41,10 @@ export function PageViewEventCardDetailTab({
   type,
   stateTags,
   validateForm,
-<<<<<<< HEAD:src/components/Page/ViewEvent/Card/PageViewEventCardBody.tsx
-}: PageViewEventBodyProps) {
-  const { users } = useIdentification()[0];
-=======
   setFieldValue,
 }: PageViewEventCardDetailTabProps) {
   const { stateIdentification } = useIdentification();
   const { users } = stateIdentification[0];
->>>>>>> main:src/components/Page/ViewEvent/DetailTab/PageViewEventCardDetailTab.tsx
   const {
     location,
     authorId,

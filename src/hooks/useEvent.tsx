@@ -28,6 +28,7 @@ import {
   deleteData,
   readData,
   updateData,
+  uploadImage,
   writeDataBatch,
 } from "@/firebase";
 import pushid from "pushid";
@@ -227,6 +228,37 @@ export function useEvent({ type }: useEventProps) {
     []
   );
 
+  const createEvent = useCallback(
+    async (event: EventType, thumbnailImage?: Blob): Promise<void> => {
+      const batchOperations: BatchOperationType[] = [];
+      batchOperations.push({
+        collectionName: FIREBASE_COLLECTION_EVENTS,
+        operationType: "create",
+        documentId: event.id,
+        value: event,
+      });
+      batchOperations.push({
+        collectionName: FIREBASE_COLLECTION_UPDATES,
+        operationType: "create",
+        documentId: event.id,
+        value: {
+          updates: [],
+        },
+      });
+
+      return writeDataBatch(batchOperations).then(() => {
+        if (thumbnailImage) {
+          return uploadImage(event.id, thumbnailImage).then((imageURL) => {
+            return updateData(FIREBASE_COLLECTION_EVENTS, event.id, {
+              thumbnailSrc: imageURL,
+            });
+          });
+        }
+      });
+    },
+    []
+  );
+
   const updateEventNew = useCallback(
     async (eventId: string, previousValue: EventType, newValue: EventType) => {
       const eventUpdateId = pushid();
@@ -419,6 +451,7 @@ export function useEvent({ type }: useEventProps) {
       handleUpdateEvent,
       updateEventNew,
       deleteEvent: handleDeleteEvent,
+      createEvent,
       sortEvents,
       filterEvents,
       toggleEventSubscription,
@@ -437,6 +470,7 @@ export function useEvent({ type }: useEventProps) {
       handleUpdateEvent,
       updateEventNew,
       handleDeleteEvent,
+      createEvent,
       sortEvents,
       filterEvents,
       toggleEventSubscription,
