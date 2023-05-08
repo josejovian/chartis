@@ -23,6 +23,7 @@ import {
   getLocalTimeInISO,
   sleep,
   validateEndDate,
+  validateImage,
   validateStartDate,
   validateTags,
 } from "@/utils";
@@ -220,11 +221,12 @@ export function PageViewEventCard({
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
-      const { startDate, endDate } = values;
+      const { startDate, endDate, thumbnailSrc } = values;
       const result = {
         startDate: validateStartDate(startDate),
         endDate: validateEndDate(startDate, endDate),
         tags: validateTags(tags),
+        thumbnailSrc: validateImage(thumbnailSrc),
       };
 
       if (Object.values(result).filter((entry) => entry).length === 0)
