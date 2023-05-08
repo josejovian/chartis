@@ -26,3 +26,8 @@ export interface IdentificationType {
   users: Record<string, UserType>;
   initialized: boolean;
 }
+
+export type UserProfileTabNameType =
+  | "detail"
+  | "edit-profile"
+  | "edit-password";

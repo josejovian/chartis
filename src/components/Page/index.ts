@@ -4,3 +4,4 @@ export * from "./ManageUsers";
 export * from "./ManageReports";
 export * from "./SearchEvent";
 export * from "./ViewEvent";
+export * from "./Profile";
