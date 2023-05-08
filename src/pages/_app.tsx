@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
+import { type Unsubscribe, doc, onSnapshot } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { fs, readData } from "@/firebase";
 import "@/styles/globals.css";
@@ -30,8 +30,9 @@ import {
   ToastType,
   ToastPresetType,
   UserType,
-  EventUpdateBatchType,
+  NotificationData,
 } from "@/types";
+import { useNotification } from "@/hooks";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
@@ -55,10 +56,12 @@ export default function App({ Component, pageProps }: AppProps) {
   const initialize = useRef(false);
   const initializeListener = useRef(false);
   const [toasts, setToasts] = useState<ToastLiveType[]>([]);
-  const stateNotification = useState<EventUpdateBatchType[]>([]);
+  const stateNotification = useState<NotificationData[]>([]);
   const setNotification = stateNotification[1];
   const toastCount = useRef(0);
   const auth = getAuth();
+  const listenerRef = useRef<Unsubscribe>();
+  const { handleUpdateNotifications } = useNotification();
 
   const handleAddToast = useCallback((toast: ToastType) => {
     toastCount.current++;
@@ -130,15 +133,6 @@ export default function App({ Component, pageProps }: AppProps) {
     });
   }, [auth, setIdentification]);
 
-  const handleInitialize = useCallback(() => {
-    if (initialize.current) return;
-    window.addEventListener("resize", handleUpdateScreen);
-    handleUpdateScreen();
-    initialize.current = true;
-
-    handleUpdateLoggedInUserData();
-  }, [handleUpdateLoggedInUserData, handleUpdateScreen]);
-
   const handleAdjustNavbar = useCallback(() => {
     if (screen.type === "desktop_lg") {
       setNavBar(true);
@@ -185,45 +179,66 @@ export default function App({ Component, pageProps }: AppProps) {
     [modal, setModal]
   );
 
-  useEffect(() => {
-    handleInitialize();
-  }, [handleInitialize]);
-
-  // notification listener
-  useEffect(() => {
+  const handleListenForUpdates = useCallback(() => {
     if (user && !initializeListener.current) {
       initializeListener.current = true;
 
       const { subscribedEvents = {} } = user;
       const subscribedEventIds = Object.keys(subscribedEvents);
 
-      return onSnapshot(
+      const listener = onSnapshot(
         doc(fs, FIREBASE_COLLECTION_USERS, user.id),
         async (doc) => {
-          if (doc.data()) {
-            const { unseenEvents = {} } = doc.data() as UserType;
+          const newUser = doc.data();
+          if (newUser) {
+            const { unseenEvents = {} } = newUser as UserType;
             if (
               Object.entries(unseenEvents).length > 0 &&
               subscribedEventIds.length > 0
             ) {
-              const notifications = subscribedEventIds.map(
-                (id): EventUpdateBatchType => ({
-                  eventId: id,
-                  lastSeenVersion: subscribedEvents[id],
-                  unseen: unseenEvents[id],
-                })
+              const newNotifs = await handleUpdateNotifications(
+                newUser as UserType
               );
-              setNotification(notifications);
+              if (newNotifs) setNotification(newNotifs);
             }
           }
         }
       );
+
+      listenerRef.current = listener;
+
+      return listener;
     }
-  }, [identification, setNotification, user]);
+    return null;
+  }, [handleUpdateNotifications, setNotification, user]);
+
+  // notification listener
+  useEffect(() => {
+    const listener = handleListenForUpdates();
+    return () => {
+      if (listener) listener();
+    };
+  }, [handleListenForUpdates, identification, user]);
 
   useEffect(() => {
     handleAdjustNavbar();
   }, [handleAdjustNavbar, screen]);
+
+  const handleInitialize = useCallback(() => {
+    if (initialize.current) return;
+    window.addEventListener("resize", handleUpdateScreen);
+    window.addEventListener("beforeunload", () => {
+      if (listenerRef.current) listenerRef.current();
+    });
+    handleUpdateScreen();
+    initialize.current = true;
+
+    handleUpdateLoggedInUserData();
+  }, [handleUpdateLoggedInUserData, handleUpdateScreen]);
+
+  useEffect(() => {
+    handleInitialize();
+  }, [handleInitialize]);
 
   return (
     <>
@@ -244,7 +259,7 @@ export default function App({ Component, pageProps }: AppProps) {
           addToastPreset: handleAddToastPreset,
         }}
         notificationProps={{
-          stateUpdates: stateNotification,
+          stateNotification,
         }}
       >
         <div id="App" className={clsx("flex flex-row w-full h-full")}>
