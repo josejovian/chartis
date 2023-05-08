@@ -72,6 +72,10 @@
   :is(.PageSearchEventCard, .dropdown) i.dropdown.icon {
     display: none !important;
   }
+  .PageSearchEventCardEmbed {
+    overflow: hidden;
+    max-height: calc(100% - 10rem);
+  }
   [role="listbox"] .ui.label.empty {
     @apply border;
   }
@@ -267,6 +271,9 @@
   :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).six.wide {
     inline-size: 37.5%;
     max-width: 37.5% !important;
+  }
+  .ProfileCardDetail > input:not(:last-child) {
+    @apply mb-2;
   }
   .skeleton {
     @apply bg-gray-100 rounded-full;
