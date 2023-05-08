@@ -23,6 +23,7 @@ import {
   uploadBytes,
   ref as refStorage,
   getDownloadURL,
+  deleteObject,
 } from "firebase/storage";
 import { fs, storage } from "./config";
 import {
@@ -151,6 +152,8 @@ export async function uploadImage(id:string, image: Blob):Promise<string> {
   return uploadBytes(imageRef, image).then(()=>getDownloadURL(imageRef));
 }
 
-// export async function deleteImage() {
-  
-// }
+export async function deleteImage(id: string): Promise<void> {
+  const imageRef = refStorage(storage, id);
+
+  return deleteObject(imageRef);
+}

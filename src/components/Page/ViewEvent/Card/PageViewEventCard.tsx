@@ -116,7 +116,6 @@ export function PageViewEventCard({
         authorId: user.uid,
         authorName: user.displayName as string,
         version: (event.version ?? 0) + (mode === "edit" ? 1 : 0),
-        thumbnailSrc: "",
         tags,
       };
 
@@ -147,7 +146,7 @@ export function PageViewEventCard({
       await sleep(200);
 
       if (mode === "create") {
-        createEvent(newEvent, values.thumbnailSrc)
+        createEvent(newEvent)
           .then(() => {
             sleep(200).then(() => {
               addToast({
@@ -168,9 +167,8 @@ export function PageViewEventCard({
           eventPreviousValues.current,
           newEvent
         )
-          .then(async () => {
+          .then(async (result) => {
             await sleep(200);
-            router.replace(`/event/${event.id}/`);
             addToast({
               title: "Event Updated",
               description: "",
@@ -178,14 +176,10 @@ export function PageViewEventCard({
             });
             await sleep(200);
             setMode("view");
-            setEvent((prev) => ({
-              ...newEvent,
-              version: (prev.version ?? 0) + 1,
-            }));
-            updateEvent(event.id, newEvent);
+            setEvent(result);
             setSubmitting(false);
             if (eventPreviousValues && eventPreviousValues.current)
-              eventPreviousValues.current = newEvent;
+              eventPreviousValues.current = result;
           })
           .catch((e) => {
             addToastPreset("post-fail");
@@ -197,7 +191,6 @@ export function PageViewEventCard({
       addToast,
       addToastPreset,
       createEvent,
-      event.id,
       eventPreviousValues,
       handleConstructEventValues,
       mode,
@@ -205,7 +198,6 @@ export function PageViewEventCard({
       setEvent,
       setMode,
       setSubmitting,
-      updateEvent,
       updateEventNew,
       user,
     ]
