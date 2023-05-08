@@ -1,4 +1,4 @@
-import { EventUpdateBatchType } from "./update";
+import { NotificationData } from "./update";
 import { StateObject } from "./misc";
 
 export interface NotificationType {
@@ -10,5 +10,5 @@ export interface NotificationType {
 }
 
 export interface NotificationContextPropsType {
-  stateUpdates: StateObject<EventUpdateBatchType[]>;
+  stateNotification: StateObject<NotificationData[]>;
 }

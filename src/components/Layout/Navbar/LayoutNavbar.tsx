@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import clsx from "clsx";
-import { useScreen } from "@/hooks";
+import { useNotification, useScreen } from "@/hooks";
 import {
   ResponsiveInlineStyleType,
   StateObject,
@@ -39,6 +39,9 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const { type } = useScreen();
   const { stateIdentification } = useIdentification();
   const { user } = stateIdentification[0];
+  const { notification } = useNotification();
+
+  const unread = useMemo(() => notification.length > 0, [notification.length]);
 
   const permission = useMemo<UserPermissionType>(() => {
     if (user && user.role === "admin") return "admin";
@@ -66,6 +69,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           icon: "bell",
           permission: "user",
           href: "/notifications",
+          alert: unread,
         },
         {
           name: "Profile",
@@ -110,7 +114,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         },
       ],
     }),
-    [user]
+    [unread, user]
   );
 
   const renderNavBarToggle = useMemo(

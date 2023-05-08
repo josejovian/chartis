@@ -1,11 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import {
-  BatchOperationType,
-  readData,
-  updateData,
-  writeDataBatch,
-} from "@/firebase";
+import { BatchOperationType, updateData, writeDataBatch } from "@/firebase";
 import clsx from "clsx";
 import { LayoutTemplateCard, PageNotificationsCard } from "@/components";
 import {
@@ -15,12 +10,7 @@ import {
   useToast,
 } from "@/hooks";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
-import {
-  UpdateNameType,
-  UpdateChangedValueType,
-  ResponsiveStyleType,
-  NotificationData,
-} from "@/types";
+import { ResponsiveStyleType } from "@/types";
 
 export default function Notification() {
   const { addToastPreset } = useToast();
@@ -28,104 +18,13 @@ export default function Notification() {
   const [{ user }] = stateIdentification;
   const router = useRouter();
   const { type } = useScreen();
-  const { updates: userNotification } = useNotification();
-
-  const [notificationData, setNotificationData] = useState<NotificationData[]>(
-    []
-  );
-  const [isLoading, setIsLoading] = useState(true);
-
-  const handleUpdateNotifications = useCallback(async () => {
-    if (!isLoading) return null;
-    if (!user) return null;
-
-    const newUserData = await readData(FIREBASE_COLLECTION_USERS, user.id);
-
-    if (!newUserData) return null;
-
-    const { subscribedEvents = {}, unseenEvents = {} } = newUserData;
-    const subscribedEventIds = Object.keys(subscribedEvents);
-
-    const notificationUpdates: NotificationData[] = [];
-
-    if (
-      Object.entries(unseenEvents).length > 0 &&
-      subscribedEventIds.length > 0
-    ) {
-      for (const eventId of Object.keys(unseenEvents)) {
-        const lastSeenVersion = subscribedEvents[eventId];
-        const newEvent = await readData("events", eventId);
-        if (
-          newEvent &&
-          newEvent.version &&
-          newEvent.version > lastSeenVersion
-        ) {
-          const eventUpdates = await readData("updates", eventId);
-
-          if (eventUpdates) {
-            const unseenBatches = eventUpdates.updates.slice(lastSeenVersion);
-
-            const unseenUpdates: Partial<
-              Record<UpdateNameType, UpdateChangedValueType>
-            > = {};
-
-            unseenBatches
-              .map((batch) => batch.updates)
-              .forEach((batchUpdate) => {
-                (
-                  Object.entries(batchUpdate) as [
-                    UpdateNameType,
-                    UpdateChangedValueType
-                  ][]
-                ).forEach(([type, changes]) => {
-                  if (!unseenUpdates[type]) {
-                    unseenUpdates[type] = {
-                      ...changes,
-                    };
-                  } else {
-                    unseenUpdates[type] = {
-                      ...unseenUpdates[type],
-                      valueNew: changes.valueNew,
-                    };
-                  }
-                });
-              });
-
-            const diffObject: NotificationData = {
-              eventId: newEvent.id,
-              eventVersion: newEvent.version,
-              authorId: newEvent.authorId,
-              eventName: newEvent.name,
-              lastUpdatedAt: newEvent.lastUpdatedAt ?? 0,
-              changes: unseenUpdates,
-            };
-
-            notificationUpdates.push(diffObject);
-          }
-        }
-      }
-
-      notificationUpdates.sort((a, b) => {
-        if (a.lastUpdatedAt > b.lastUpdatedAt) {
-          return -1;
-        }
-        if (a.lastUpdatedAt < b.lastUpdatedAt) {
-          return 1;
-        }
-        return 0;
-      });
-
-      setNotificationData(notificationUpdates);
-    }
-
-    setNotificationData(notificationUpdates);
-    setIsLoading(false);
-  }, [isLoading, user]);
+  const { notification, setNotification } = useNotification();
+  const [isLoading] = useState(false);
 
   const handleReadAllNotifications = useCallback(async () => {
     if (!user) return;
     const batchOperations: BatchOperationType[] = [];
-    notificationData.forEach((notification) => {
+    notification.forEach((notification) => {
       batchOperations.push({
         collectionName: FIREBASE_COLLECTION_USERS,
         documentId: user.id,
@@ -140,12 +39,12 @@ export default function Notification() {
 
     return writeDataBatch(batchOperations)
       .then(() => {
-        setNotificationData([]);
+        setNotification([]);
       })
       .catch(() => {
         addToastPreset("fail-post");
       });
-  }, [addToastPreset, notificationData, user]);
+  }, [addToastPreset, notification, setNotification, user]);
 
   const handleReadNotification = useCallback(
     async (targetEventId: string, targetEventVersion: number) => {
@@ -156,7 +55,7 @@ export default function Notification() {
         [`unseenEvents.${targetEventId}`]: false,
       })
         .then(() => {
-          setNotificationData((prev) =>
+          setNotification((prev) =>
             prev.filter(
               (notification) => notification.eventId !== targetEventId
             )
@@ -166,12 +65,27 @@ export default function Notification() {
           addToastPreset("fail-post");
         });
     },
-    [addToastPreset, user]
+    [addToastPreset, setNotification, user]
   );
 
-  useEffect(() => {
-    handleUpdateNotifications();
-  }, [handleUpdateNotifications, userNotification]);
+  const renderNotification = useMemo(
+    () => (
+      <PageNotificationsCard
+        updateData={notification}
+        handleReadAllNotifications={handleReadAllNotifications}
+        handleReadNotification={handleReadNotification}
+        className={clsx("!bg-sky-50 h-full", type === "mobile" && "pt-8")}
+        isLoading={isLoading}
+      />
+    ),
+    [
+      handleReadAllNotifications,
+      handleReadNotification,
+      isLoading,
+      notification,
+      type,
+    ]
+  );
 
   return (
     <LayoutTemplateCard
@@ -187,13 +101,7 @@ export default function Notification() {
         "!pb-0"
       )}
     >
-      <PageNotificationsCard
-        updateData={notificationData}
-        handleReadAllNotifications={handleReadAllNotifications}
-        handleReadNotification={handleReadNotification}
-        className={clsx("!bg-sky-50 h-full", type === "mobile" && "pt-8")}
-        isLoading={isLoading}
-      />
+      {renderNotification}
     </LayoutTemplateCard>
   );
 }
