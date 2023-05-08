@@ -6,7 +6,7 @@ import { NotificationData } from "@/types";
 
 export interface PageNotificationsCardProps {
   className?: string;
-  udpateData: NotificationData[];
+  updateData: NotificationData[];
   handleReadAllNotifications: () => Promise<void>;
   handleReadNotification: (
     eventId: string,
@@ -17,7 +17,7 @@ export interface PageNotificationsCardProps {
 
 export function PageNotificationsCard({
   className,
-  udpateData,
+  updateData,
   handleReadAllNotifications,
   handleReadNotification,
   isLoading,
@@ -28,14 +28,9 @@ export function PageNotificationsCard({
         <div className="h-full">
           <div className="flex flex-row items-center justify-between px-4 pb-8">
             <span className="text-16px">
-              You have {udpateData.length} unread notifications.
+              You have {updateData.length} unread notifications.
             </span>
-            <Button
-              onClick={() => {
-                return null;
-              }}
-              color="yellow"
-            >
+            <Button onClick={handleReadAllNotifications} color="yellow">
               Mark All as Read
             </Button>
           </div>
@@ -43,10 +38,10 @@ export function PageNotificationsCard({
             className={NOTIFICATION_LIST_STYLE}
             style={{ height: "calc(100% - 73.13px)" }}
           >
-            {udpateData.map((update) => (
+            {updateData.map((update) => (
               <NotificationCard
                 key={`Update_${update.eventId}`}
-                udpateData={update}
+                updateData={update}
                 handleReadNotification={handleReadNotification}
               />
             ))}
@@ -54,7 +49,7 @@ export function PageNotificationsCard({
         </div>
       </>
     ),
-    [handleReadNotification, udpateData]
+    [handleReadAllNotifications, handleReadNotification, updateData]
   );
 
   const renderEmptyNotifications = useMemo(
@@ -71,7 +66,7 @@ export function PageNotificationsCard({
     <LayoutCard className={className}>
       {isLoading ? (
         <Loader active={isLoading} inline="centered" />
-      ) : udpateData.length > 0 ? (
+      ) : updateData.length > 0 ? (
         renderNotifications
       ) : (
         renderEmptyNotifications

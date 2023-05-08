@@ -205,7 +205,7 @@ export function PageViewEventCard({
             if (eventPreviousValues && eventPreviousValues.current)
               eventPreviousValues.current = newEvent;
           })
-          .catch((e) => {
+          .catch(() => {
             handleFailedSubmit();
           });
       }
