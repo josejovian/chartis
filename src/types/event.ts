@@ -60,7 +60,8 @@ export type EventTagNameType =
   | "workshop"
   | "briefing"
   | "competition"
-  | "reminder";
+  | "reminder"
+  | "other";
 
 export interface EventTagType {
   name: string;
