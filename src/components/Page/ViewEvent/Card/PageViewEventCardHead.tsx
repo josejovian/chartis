@@ -5,6 +5,7 @@ import {
   EventThumbnail,
   EventButtonFollow,
   EventButtonMore,
+  FormErrorMessage,
 } from "@/components";
 import {
   EventModeType,
@@ -19,7 +20,7 @@ import {
 import { EVENT_TAGS } from "@/consts";
 import { useAuthorization, useReport } from "@/hooks";
 import { getAuth } from "firebase/auth";
-import { useFormikContext } from "formik";
+import { Field, useFormikContext } from "formik";
 
 export interface PageViewEventHeadProps {
   event: EventType;
@@ -206,29 +207,43 @@ export function PageViewEventHead({
   const renderEditTabs = useMemo(
     () => (
       <div className="flex items-between p-4 gap-4 ml-auto">
-        <Button
-          htmlFor="file-input"
-          className="p-0 h-16"
-          icon
-          labelPosition="left"
-          onClick={() => imageInputRef.current?.click()}
-        >
-          <Icon name="camera" />
-          Upload Thumbnail
-        </Button>
-        <input
-          id="file-input"
-          name="thumbnailSrc"
-          type="file"
-          accept="image/*"
-          ref={imageInputRef}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onChange={(event: any) => {
-            setFieldValue("thumbnailSrc", event.target.files[0]);
-            setThumbnailURL(URL.createObjectURL(event.target.files[0]));
-          }}
-          style={{ display: "none" }}
-        />
+        <Field name="thumbnailSrc">
+          {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ({ meta }: any) => (
+              <>
+                <Button
+                  htmlFor="file-input"
+                  className="p-0 h-16"
+                  icon
+                  labelPosition="left"
+                  onClick={() => imageInputRef.current?.click()}
+                >
+                  <Icon name="camera" />
+                  Upload Thumbnail
+                </Button>
+                <FormErrorMessage
+                  meta={meta}
+                  className="absolute bg-white -mx-2 !z-50"
+                  overlap
+                />
+                <input
+                  id="file-input"
+                  name="thumbnailSrc"
+                  type="file"
+                  accept="image/*"
+                  ref={imageInputRef}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onChange={(event: any) => {
+                    setFieldValue("thumbnailSrc", event.target.files[0]);
+                    setThumbnailURL(URL.createObjectURL(event.target.files[0]));
+                  }}
+                  style={{ display: "none" }}
+                />
+              </>
+            )
+          }
+        </Field>
       </div>
     ),
     [setFieldValue, setThumbnailURL]
