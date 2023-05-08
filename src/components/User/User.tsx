@@ -58,7 +58,7 @@ export function User({ id, type }: UserProps) {
 
   const renderName = useMemo(() => {
     if (loading) return <span className="skeleton w-24 h-4 !rounded-sm"></span>;
-    else return <span>{user ? user.name : "Unknown User"}</span>;
+    else return <>{user ? user.name : "Unknown User"}</>;
   }, [loading, user]);
 
   const renderUser = useMemo(() => {

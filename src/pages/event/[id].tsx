@@ -91,6 +91,7 @@ export default function ViewEvent() {
       <PageViewEventCard
         className="card ui"
         stateEvent={stateEvent}
+        stateIdentification={stateIdentification}
         eventPreviousValues={eventPreviousValues}
         stateMode={stateMode}
         type={type}
@@ -106,6 +107,7 @@ export default function ViewEvent() {
     loading,
     router,
     stateEvent,
+    stateIdentification,
     stateMode,
     type,
     updateUserSubscribedEventClientSide,

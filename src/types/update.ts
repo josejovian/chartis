@@ -42,7 +42,7 @@ export interface EventUpdateArrayType {
 export type NotificationData = {
   eventId: string;
   eventVersion: number;
-  authorName: string;
+  authorId: string;
   eventName: string;
   lastUpdatedAt: number;
   changes: UpdateChangesType;

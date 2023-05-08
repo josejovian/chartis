@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { documentId, where } from "firebase/firestore";
 import {
   BatchOperationType,
   readData,
@@ -15,14 +14,8 @@ import {
   useScreen,
   useToast,
 } from "@/hooks";
+import { FIREBASE_COLLECTION_USERS } from "@/consts";
 import {
-  FIREBASE_COLLECTION_EVENTS,
-  FIREBASE_COLLECTION_UPDATES,
-  FIREBASE_COLLECTION_USERS,
-} from "@/consts";
-import {
-  EventType,
-  EventUpdateArrayType,
   UpdateNameType,
   UpdateChangedValueType,
   ResponsiveStyleType,
@@ -42,78 +35,92 @@ export default function Notification() {
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  const getUpdateObject = useCallback(
-    async (eventId: string[]): Promise<NotificationData[]> => {
-      const eventData: { [eventId: string]: EventType } = await readData(
-        FIREBASE_COLLECTION_EVENTS,
-        [where(documentId(), "in", eventId)]
-      ).then((eventData) =>
-        (eventData as EventType[]).reduce((obj, x) => {
-          return { ...obj, [x.id]: x };
-        }, {})
-      );
-      const updateData: {
-        [eventId: string]: {
-          date: number;
-          updateId: string;
-          updates: Partial<Record<UpdateNameType, UpdateChangedValueType>>;
-        }[];
-      } = await readData(FIREBASE_COLLECTION_UPDATES, [
-        where(documentId(), "in", eventId),
-      ]).then((updateData) =>
-        (updateData as EventUpdateArrayType[]).reduce((obj, x) => {
-          return { ...obj, [x.eventId]: x.updates };
-        }, {})
-      );
+  const handleUpdateNotifications = useCallback(async () => {
+    if (!isLoading) return null;
+    if (!user) return null;
 
-      const notificationData = [] as NotificationData[];
-      userNotification.forEach((notification) => {
-        const unseenChanges = updateData[notification.eventId].slice(
-          notification.lastSeenVersion
-        );
-        const differences: Partial<
-          Record<UpdateNameType, UpdateChangedValueType>
-        > = {};
+    const newUserData = await readData(FIREBASE_COLLECTION_USERS, user.id);
 
-        unseenChanges
-          .map((batch) => batch.updates)
-          .forEach((batchUpdate) => {
-            (
-              Object.entries(batchUpdate) as [
-                UpdateNameType,
-                UpdateChangedValueType
-              ][]
-            ).forEach(([type, changes]) => {
-              if (!differences[type]) {
-                differences[type] = {
-                  ...changes,
-                };
-              } else {
-                differences[type] = {
-                  ...differences[type],
-                  valueNew: changes.valueNew,
-                };
-              }
-            });
-          });
+    if (!newUserData) return null;
 
-        const diffObject: NotificationData = {
-          eventId: notification.eventId,
-          eventVersion: eventData[notification.eventId].version as number,
-          authorName: eventData[notification.eventId].authorName,
-          eventName: eventData[notification.eventId].name,
-          lastUpdatedAt: eventData[notification.eventId]
-            .lastUpdatedAt as number,
-          changes: differences,
-        };
+    const { subscribedEvents = {}, unseenEvents = {} } = newUserData;
+    const subscribedEventIds = Object.keys(subscribedEvents);
 
-        notificationData.push(diffObject);
+    const notificationUpdates: NotificationData[] = [];
+
+    if (
+      Object.entries(unseenEvents).length > 0 &&
+      subscribedEventIds.length > 0
+    ) {
+      for (const eventId of Object.keys(unseenEvents)) {
+        const lastSeenVersion = subscribedEvents[eventId];
+        const newEvent = await readData("events", eventId);
+        if (
+          newEvent &&
+          newEvent.version &&
+          newEvent.version > lastSeenVersion
+        ) {
+          const eventUpdates = await readData("updates", eventId);
+
+          if (eventUpdates) {
+            const unseenBatches = eventUpdates.updates.slice(lastSeenVersion);
+
+            const unseenUpdates: Partial<
+              Record<UpdateNameType, UpdateChangedValueType>
+            > = {};
+
+            unseenBatches
+              .map((batch) => batch.updates)
+              .forEach((batchUpdate) => {
+                (
+                  Object.entries(batchUpdate) as [
+                    UpdateNameType,
+                    UpdateChangedValueType
+                  ][]
+                ).forEach(([type, changes]) => {
+                  if (!unseenUpdates[type]) {
+                    unseenUpdates[type] = {
+                      ...changes,
+                    };
+                  } else {
+                    unseenUpdates[type] = {
+                      ...unseenUpdates[type],
+                      valueNew: changes.valueNew,
+                    };
+                  }
+                });
+              });
+
+            const diffObject: NotificationData = {
+              eventId: newEvent.id,
+              eventVersion: newEvent.version,
+              authorId: newEvent.authorId,
+              eventName: newEvent.name,
+              lastUpdatedAt: newEvent.lastUpdatedAt ?? 0,
+              changes: unseenUpdates,
+            };
+
+            notificationUpdates.push(diffObject);
+          }
+        }
+      }
+
+      notificationUpdates.sort((a, b) => {
+        if (a.lastUpdatedAt > b.lastUpdatedAt) {
+          return -1;
+        }
+        if (a.lastUpdatedAt < b.lastUpdatedAt) {
+          return 1;
+        }
+        return 0;
       });
 
-      return notificationData;
-    },
-    [userNotification]
-  );
+      setNotificationData(notificationUpdates);
+    }
+
+    setNotificationData(notificationUpdates);
+    setIsLoading(false);
+  }, [isLoading, user]);
 
   const handleReadAllNotifications = useCallback(async () => {
     if (!user) return;
@@ -163,24 +170,8 @@ export default function Notification() {
   );
 
   useEffect(() => {
-    if (userNotification.length > 0) {
-      const updateEventId = userNotification.reduce(
-        (filtered, notification) => {
-          if (notification.unseen) filtered.push(notification.eventId);
-          return filtered;
-        },
-        [] as string[]
-      );
-      if (updateEventId.length > 0) {
-        setIsLoading(true);
-        getUpdateObject(updateEventId).then((notificationData) => {
-          setNotificationData(notificationData);
-        });
-      }
-    }
-
-    setIsLoading(false);
-  }, [getUpdateObject, userNotification]);
+    handleUpdateNotifications();
+  }, [handleUpdateNotifications, userNotification]);
 
   return (
     <LayoutTemplateCard
@@ -197,7 +188,7 @@ export default function Notification() {
       )}
     >
       <PageNotificationsCard
-        udpateData={notificationData}
+        updateData={notificationData}
         handleReadAllNotifications={handleReadAllNotifications}
         handleReadNotification={handleReadNotification}
         className={clsx("!bg-sky-50 h-full", type === "mobile" && "pt-8")}

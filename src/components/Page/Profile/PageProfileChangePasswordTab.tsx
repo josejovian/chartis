@@ -17,6 +17,7 @@ import {
   FieldConfirmPassword,
   FieldNewPassword,
   FieldOldPassword,
+  SchemaChangePassword,
 } from "@/utils";
 import { ScreenSizeCategoryType, UserType } from "@/types";
 
@@ -86,7 +87,10 @@ export function PageProfileChangePasswordTab({
         }}
         validate={(values) => {
           const errors: any = {};
-          if (values.newPassword !== values.confirmPassword) {
+          if (
+            values.newPassword !== values.confirmPassword &&
+            values.confirmPassword !== ""
+          ) {
             errors.newPassword =
               "New password should be the same as confirm password!";
           }
@@ -100,6 +104,7 @@ export function PageProfileChangePasswordTab({
           console.log(errors);
           return errors;
         }}
+        validationSchema={SchemaChangePassword}
         validateOnBlur
         validateOnChange
       >
