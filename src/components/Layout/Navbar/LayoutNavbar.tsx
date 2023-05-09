@@ -9,10 +9,23 @@ import {
 import {
   LayoutNavbarAuth,
   LayoutNavbarButton,
-  LayoutNavbarItemProps,
   LayoutNavbarMain,
 } from "@/components";
 import { useIdentification } from "@/hooks/useIdentification";
+import { type SemanticICONS } from "semantic-ui-react";
+import { hasPermission } from "@/utils";
+
+export interface LayoutNavbarItemProps {
+  category: string;
+  name: string;
+  icon: SemanticICONS;
+  href: string;
+  onClick?: () => void;
+  permission?: UserPermissionType;
+  active?: boolean;
+  hidden?: boolean;
+  alert?: boolean;
+}
 
 export interface LayoutNavbarProps {
   stateNavBar: StateObject<boolean>;
@@ -33,73 +46,84 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     return "guest";
   }, [user]);
 
-  const links = useMemo<Record<string, LayoutNavbarItemProps[]>>(
-    () => ({
-      "": [
-        {
-          name: "Home",
-          icon: "home",
-          active: true,
-          href: "/",
+  const links: Record<string, LayoutNavbarItemProps[]> = useMemo(() => {
+    const allLinks: LayoutNavbarItemProps[] = [
+      {
+        category: "",
+        name: "Home",
+        icon: "home",
+        active: true,
+        href: "/",
+      },
+      {
+        category: "",
+        name: "Notifications",
+        icon: "bell",
+        permission: "user",
+        href: "/notifications",
+        alert: unread,
+      },
+      {
+        category: "",
+        name: "Profile",
+        icon: "user",
+        permission: "user",
+        href: `/profile/${user && user.id}`,
+        hidden: !user,
+      },
+      {
+        category: "Events",
+        name: "Post Event",
+        icon: "calendar plus",
+        permission: "user",
+        href: "/event/new",
+      },
+      {
+        category: "Events",
+        name: "Your Events",
+        icon: "calendar alternate",
+        permission: "user",
+        href: "/event/created",
+      },
+      {
+        category: "Events",
+        name: "Followed Events",
+        icon: "calendar check",
+        permission: "user",
+        href: "/event/subscribed",
+      },
+      {
+        category: "Admin",
+        name: "Manage Users",
+        icon: "users",
+        href: "/users",
+        permission: "admin",
+      },
+      {
+        category: "Admin",
+        name: "Manage Reports",
+        icon: "clipboard list",
+        href: "/reports",
+        permission: "admin",
+      },
+    ];
+
+    const accessibleLinks = allLinks
+      .filter(
+        (link) => hasPermission(permission, link.permission) && !link.hidden
+      )
+      .reduce(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (links: any, link) => {
+          if (!links[link.category]) links[link.category] = [];
+          links[link.category].push(link);
+          return links;
         },
-        {
-          name: "Followed Events",
-          icon: "calendar check",
-          permission: "guest",
-          href: "/event/subscribed",
-        },
-        {
-          name: "Notifications",
-          icon: "bell",
-          permission: "user",
-          href: "/notifications",
-          alert: unread,
-        },
-        {
-          name: "Profile",
-          icon: "user",
-          permission: "user",
-          href: `/profile/${user && user.id}`,
-          hidden: !user,
-        },
-      ],
-      Events: [
-        {
-          name: "Post Event",
-          icon: "calendar plus",
-          permission: "user",
-          href: "/event/new",
-        },
-        {
-          name: "Your Events",
-          icon: "calendar alternate",
-          permission: "user",
-          href: "/event/created",
-        },
-        {
-          name: "Followed Events",
-          icon: "calendar check",
-          permission: "user",
-          href: "/event/subscribed",
-        },
-      ],
-      Admin: [
-        {
-          name: "Manage Users",
-          icon: "users",
-          href: "/users",
-          permission: "admin",
-        },
-        {
-          name: "Manage Reports",
-          icon: "clipboard list",
-          href: "/reports",
-          permission: "admin",
-        },
-      ],
-    }),
-    [unread, user]
-  );
+        { "": [] }
+      );
+
+    return accessibleLinks;
+  }, [permission, unread, user]);
 
   const renderNavBarToggle = useMemo(
     () =>

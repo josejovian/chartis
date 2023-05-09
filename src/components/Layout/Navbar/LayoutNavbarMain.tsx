@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
 import {
   ScreenSizeCategoryType,
@@ -8,7 +8,6 @@ import {
 import { LayoutNavbarItem, LayoutNavbarItemProps } from "@/components";
 import { useRouter } from "next/router";
 import { LayoutNavbarButton } from "./LayoutNavbarButton";
-import { hasPermission } from "@/utils";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -27,6 +26,7 @@ export function LayoutNavbarMain({
 }: LayoutNavbarMainProps) {
   const router = useRouter();
   const [navBar, setNavBar] = stateNavBar;
+  const [categoryOrder] = useState(["", "Events", "Admin"]);
 
   const renderNavBarToggle = useMemo(
     () =>
@@ -78,39 +78,35 @@ export function LayoutNavbarMain({
   const renderLinks = useMemo(
     () => (
       <>
-        {Object.entries(links).map(([category, links], idx) => {
-          const allowedLinks = links.filter(
-            (link) => hasPermission(permission, link.permission) && !link.hidden
-          );
-
+        {categoryOrder.map((categoryName, idx) => {
+          if (!links[categoryName]) return <></>;
           return (
-            allowedLinks.length > 0 && (
+            <>
               <div
                 className={clsx("mt-4", idx > 0 && "border-t border-slate-600")}
-                key={`LayoutNavbarCategory_${category}`}
+                key={`LayoutNavbarCategory_${categoryName}`}
               >
                 <div className={idx > 0 ? "p-4" : "hidden"}>
                   <span className="text-slate-300 italic font-black uppercase">
-                    {category}
+                    {categoryName}
                   </span>
                 </div>
-                {allowedLinks.map(({ onClick, ...link }) => (
+                {links[categoryName].map(({ onClick, ...link }) => (
                   <LayoutNavbarItem
                     key={`LayoutNavbarItem_${link.name}`}
                     {...link}
                     onClick={() => {
-                      onClick && onClick();
                       if (type !== "desktop_lg") setNavBar(false);
                     }}
                   />
                 ))}
               </div>
-            )
+            </>
           );
         })}
       </>
     ),
-    [links, permission, setNavBar, type]
+    [categoryOrder, links, setNavBar, type]
   );
 
   return (
