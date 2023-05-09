@@ -11,6 +11,8 @@ export interface LayoutNavbarItemProps {
   onClick?: () => void;
   permission?: UserPermissionType;
   active?: boolean;
+  hidden?: boolean;
+  alert?: boolean;
 }
 
 export function LayoutNavbarItem({
@@ -19,12 +21,13 @@ export function LayoutNavbarItem({
   href,
   onClick,
   active,
+  alert,
 }: LayoutNavbarItemProps) {
   const renderItem = useMemo(
     () => (
       <div
         className={clsx(
-          "flex items-center h-8 border-l border-l-4",
+          "relative flex items-center h-8 border-l border-l-4",
           active
             ? [
                 "text-primary-3 bg-slate-800 hover:bg-slate-700",
@@ -37,13 +40,16 @@ export function LayoutNavbarItem({
         )}
         onClick={onClick}
       >
-        <span className="ml-4">
-          <Icon name={icon} />
+        <span className="ml-4 relative">
+          <Icon.Group>
+            <Icon name={icon} />
+            {alert && <Icon name="circle" color="red" corner="top right" />}
+          </Icon.Group>
         </span>
         <span className="ml-2">{name}</span>
       </div>
     ),
-    [active, icon, name, onClick]
+    [active, alert, icon, name, onClick]
   );
 
   return href ? <Link href={href}>{renderItem}</Link> : renderItem;

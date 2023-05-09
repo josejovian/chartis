@@ -2,7 +2,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { createData } from "@/firebase";
 import { FormErrorMessage, FormInputDropdown } from "@/components";
-import { useModal, useScreen, useToast } from "@/hooks";
+import { useIdentification, useModal, useScreen, useToast } from "@/hooks";
 import { SchemaReport, sleep } from "@/utils";
 import {
   CommentReportType,
@@ -22,7 +22,7 @@ export default function ModalReport(props: ModalReportProps) {
   const { authorId, reportedBy, contentType, eventId } = props;
 
   const { clearModal } = useModal();
-  const { addToast, addToastPreset } = useToast();
+  const { addToastPreset } = useToast();
   const { type } = useScreen();
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<ReportType>({
@@ -40,6 +40,8 @@ export default function ModalReport(props: ModalReportProps) {
           contentType: "event",
         }),
   });
+  const { stateIdentification } = useIdentification();
+  const { initialized, user } = stateIdentification[0];
 
   const labelStyle = useMemo(
     () => clsx(INPUT_LABEL_BASE_STYLE, RESPONSIVE_WIDTH_STYLE[type]),
@@ -48,6 +50,8 @@ export default function ModalReport(props: ModalReportProps) {
 
   const handleSubmitReport = useCallback(
     async (values: unknown) => {
+      if (!initialized) return;
+
       const { reason } = values as ReportType;
 
       const finalReport: ReportType = {
@@ -64,18 +68,14 @@ export default function ModalReport(props: ModalReportProps) {
         .then(async () => {
           await sleep(200);
           clearModal();
-          addToast({
-            title: "Report Submitted!",
-            description: "An admin will take care of it.",
-            variant: "success",
-          });
+          addToastPreset("feat-report-create");
         })
-        .catch((e) => {
+        .catch(() => {
+          addToastPreset(user?.ban ? "fail-post-banned-user" : "fail-post");
           setLoading(false);
-          addToastPreset("post-fail");
         });
     },
-    [addToast, addToastPreset, clearModal, report]
+    [addToastPreset, clearModal, initialized, report, user?.ban]
   );
 
   const handleValidateCategory = useCallback(() => {

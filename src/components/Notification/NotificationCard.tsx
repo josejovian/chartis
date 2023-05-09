@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { Button, Card } from "semantic-ui-react";
-import { UserPicture } from "@/components";
+import { User } from "@/components";
 import { useScreen } from "@/hooks";
 import { getTimeDifference } from "@/utils";
 import { EVENT_UPDATE_TERM } from "@/consts";
@@ -13,7 +13,7 @@ import {
 } from "@/types";
 
 interface NotificationCardProps {
-  udpateData: NotificationData;
+  updateData: NotificationData;
   handleReadNotification: (
     eventId: string,
     eventVersion: number
@@ -21,18 +21,21 @@ interface NotificationCardProps {
 }
 
 export function NotificationCard({
-  udpateData,
+  updateData,
   handleReadNotification,
 }: NotificationCardProps) {
-  const {
-    eventId,
-    eventVersion,
-    eventName,
-    authorName,
-    lastUpdatedAt,
-    changes,
-  } = udpateData;
+  const { eventId, eventVersion, eventName, authorId, lastUpdatedAt, changes } =
+    updateData;
   const { type } = useScreen();
+
+  const renderAuthorPicture = useMemo(
+    () => <User id={authorId} type="picture" />,
+    [authorId]
+  );
+  const renderAuthor = useMemo(
+    () => <User id={authorId} type="name" />,
+    [authorId]
+  );
 
   const renderChangeList = useMemo(
     () => (
@@ -67,7 +70,7 @@ export function NotificationCard({
       <div className="break-words w-full pr-8">
         <Link href={`/event/${eventId}`}>
           <p className="text-16px mb-2 pr-8">
-            <b>{authorName}</b> updated <b>{eventName}</b>.
+            <b>{renderAuthor}</b> updated <b>{eventName}</b>.
           </p>
           {renderChangeList}
           <span className="text-gray-400">
@@ -76,7 +79,7 @@ export function NotificationCard({
         </Link>
       </div>
     ),
-    [authorName, eventId, eventName, lastUpdatedAt, renderChangeList]
+    [renderAuthor, eventId, eventName, lastUpdatedAt, renderChangeList]
   );
 
   return (
@@ -89,9 +92,7 @@ export function NotificationCard({
       )}
       fluid
     >
-      <div>
-        <UserPicture fullName="Unknown User" />
-      </div>
+      <div>{renderAuthorPicture}</div>
       <div
         className={clsx(
           NOTIFICATION_MAIN_BASE_STYLE,

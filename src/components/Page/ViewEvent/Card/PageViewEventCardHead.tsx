@@ -63,7 +63,7 @@ export function PageViewEventHead({
   const isAuthorized = useAuthorization({
     auth,
     stateIdentification,
-    permission: "admin",
+    minPermission: "admin",
   });
   const imageInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -173,7 +173,7 @@ export function PageViewEventHead({
               eventId: event.id,
               authorId: event.authorId,
               contentType: "event",
-              reportedBy: user ? user.uid : "",
+              reportedBy: user ? user.id : "",
             })
           }
         />

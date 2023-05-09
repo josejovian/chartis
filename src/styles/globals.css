@@ -72,6 +72,10 @@
   :is(.PageSearchEventCard, .dropdown) i.dropdown.icon {
     display: none !important;
   }
+  .PageSearchEventCardEmbed {
+    overflow: hidden;
+    max-height: calc(100% - 10rem);
+  }
   [role="listbox"] .ui.label.empty {
     @apply border;
   }
@@ -267,6 +271,25 @@
   :not(.StickyHeaderTableMobile) > div > .ui.table :is(td, th).six.wide {
     inline-size: 37.5%;
     max-width: 37.5% !important;
+  }
+  .ProfileCardDetail > input:not(:last-child) {
+    @apply mb-2;
+  }
+  .skeleton {
+    @apply bg-gray-100 rounded-full;
+    animation-name: skeleframe;
+    animation-duration: 0.8s;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+  }
+  @keyframes skeleframe {
+    from {
+      @apply bg-gray-400;
+    }
+    to {
+      @apply bg-gray-500;
+    }
   }
   @media only screen and (max-width: 1024px) {
     .ui.table:not(.unstackable) tr {

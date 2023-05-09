@@ -8,13 +8,7 @@ import {
   LayoutNotice,
   ModalConfirmation,
 } from "@/components";
-import {
-  useAuthorization,
-  useIdentification,
-  useReport,
-  useScreen,
-  useToast,
-} from "@/hooks";
+import { useReport, useScreen, useToast } from "@/hooks";
 import { sleep, strDateTime, validateEventQuery } from "@/utils";
 import {
   EVENT_QUERY_LENGTH_CONSTRAINTS,
@@ -33,13 +27,12 @@ import {
   StickyHeaderTableColumnProps,
   StickyHeaderTableRowProps,
 } from "@/types";
-import { useRouter } from "next/router";
-import { getAuth } from "firebase/auth";
 import { Button, Icon, Label } from "semantic-ui-react";
 import Link from "next/link";
 
 export interface PageManageReportsProps {
   className?: string;
+  isAuthorized?: boolean;
 }
 
 interface PageManageReportLoading {
@@ -48,19 +41,11 @@ interface PageManageReportLoading {
   delete: boolean;
 }
 
-export function PageManageReports({ className }: PageManageReportsProps) {
+export function PageManageReports({
+  className,
+  isAuthorized,
+}: PageManageReportsProps) {
   const { addToast, addToastPreset } = useToast();
-  const { stateIdentification } = useIdentification();
-  const auth = getAuth();
-  const router = useRouter();
-  const isAuthorized = useAuthorization({
-    auth,
-    stateIdentification,
-    onFail: () => {
-      router.replace("/");
-    },
-    permission: "admin",
-  });
   const { type } = useScreen();
   const { deleteReport, getReports, updateReportStatus } = useReport();
 
@@ -169,7 +154,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         setLoadingState("page", false);
       },
       onFail: () => {
-        addToastPreset("get-fail");
+        addToastPreset("fail-get");
       },
     });
 
@@ -214,7 +199,7 @@ export function PageManageReports({ className }: PageManageReportsProps) {
             },
           }));
           setLoadingState("edit", false);
-          addToastPreset("post-fail");
+          addToastPreset("fail-post");
         },
       });
     },
@@ -247,15 +232,11 @@ export function PageManageReports({ className }: PageManageReportsProps) {
         await sleep(200);
         setLoadingState("delete", false);
         setModalDelete(false);
-        addToast({
-          title: "Report Deleted",
-          description: "Report is successfully deleted.",
-          variant: "success",
-        });
+        addToastPreset("feat-report-create");
       },
       onFail: () => {
         setLoadingState("delete", false);
-        addToastPreset("post-fail");
+        addToastPreset("fail-post");
       },
     });
   }, [
@@ -263,7 +244,6 @@ export function PageManageReports({ className }: PageManageReportsProps) {
     setLoadingState,
     deleteReport,
     setModalDelete,
-    addToast,
     addToastPreset,
   ]);
 

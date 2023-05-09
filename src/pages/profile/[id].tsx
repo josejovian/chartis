@@ -1,86 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useEffect, useState } from "react";
+import { createRef, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { getAuth } from "firebase/auth";
+import { readData } from "@/firebase";
+import clsx from "clsx";
 import {
-  LayoutTemplate,
   UserPicture,
   PageSearchEventCard,
-  ModalAuthInput,
+  LayoutTemplateCard,
+  PageProfileChangePasswordTab,
+  PageProfileDetailTab,
+  PageProfileEdit,
 } from "@/components";
-import { useEvent, useScreen, useToast } from "@/hooks";
-import { getDateMonthYear } from "@/utils";
-import { useRouter } from "next/router";
-import { Button, Card } from "semantic-ui-react";
-import { readData, updateData } from "@/firebase";
-import { UserType, FormCustomFieldProps } from "@/types";
-import { Formik, Form } from "formik";
-import { FIREBASE_COLLECTION_USERS } from "@/consts";
-import {
-  getAuth,
-  reauthenticateWithCredential,
-  updatePassword,
-} from "firebase/auth";
-import firebase from "firebase/compat/app";
-import "firebase/compat/auth";
-import "firebase/compat/firestore";
-
-const FieldOldPassword: FormCustomFieldProps = {
-  id: "oldPassword",
-  initial: "",
-  name: "Password",
-  placeholder: "Enter your current password",
-  type: "password",
-  iconLabel: "key",
-};
-
-const FieldNewPassword: FormCustomFieldProps = {
-  id: "newPassword",
-  initial: "",
-  name: "Password",
-  placeholder: "Enter your new password",
-  type: "password",
-  iconLabel: "key",
-};
-
-const FieldConfirmPassword: FormCustomFieldProps = {
-  id: "confirmPassword",
-  initial: "",
-  name: "Password",
-  placeholder: "Enter your new password again",
-  type: "password",
-  iconLabel: "key",
-};
-
-const FieldChangeName: FormCustomFieldProps = {
-  id: "name",
-  initial: "",
-  name: "Full Name",
-  placeholder: "Enter your name",
-  type: "text",
-  iconLabel: "user",
-};
+import { useEvent, useScreen } from "@/hooks";
+import { UserType, UserProfileTabNameType, ResponsiveStyleType } from "@/types";
 
 export default function Profile() {
   const auth = getAuth();
   const user = auth.currentUser;
+  const profileCardRef = createRef<HTMLDivElement>();
 
-  const [activeCard, setActiveCard] = useState("First");
+  const [activeCard, setActiveCard] =
+    useState<UserProfileTabNameType>("detail");
 
-  const stateFocusDate = useState(getDateMonthYear(new Date()));
-  //const stateSideBar = useState(false);
-  const focusDate = stateFocusDate[0];
   const { type } = useScreen();
 
   const router = useRouter();
   const { id } = router.query;
   const stateUser = useState<UserType>({
-    name: "jeff jeffry",
-    email: "jeff@email.com",
+    id: "",
+    name: "",
+    email: "",
     joinDate: 0,
   });
   const [profile, setProfile] = stateUser;
   const [, setLoading] = useState(true);
   const [, setError] = useState(false);
-  const { addToast } = useToast();
 
   const handleGetProfile = useCallback(async () => {
     if (!id) return;
@@ -101,6 +56,21 @@ export default function Profile() {
       });
   }, [id, setProfile]);
 
+  const handleAdjustEventSearcherHeight = useCallback(() => {
+    const eventSearcherEmbed = document.getElementsByClassName(
+      "PageSearchEventCardEmbed"
+    )[0];
+    if (!profileCardRef.current || !eventSearcherEmbed) return;
+
+    const profileCardHeight =
+      profileCardRef.current.offsetHeight + type === "mobile" ? 16 : 272;
+
+    (eventSearcherEmbed as HTMLDivElement).style.display = "initial";
+    (
+      eventSearcherEmbed as HTMLDivElement
+    ).style.maxHeight = `calc(100% - ${profileCardHeight}px)`;
+  }, [profileCardRef, type]);
+
   const {
     filteredEvents,
     getEvents,
@@ -110,18 +80,6 @@ export default function Profile() {
     stateSort,
   } = useEvent({});
 
-  //const auth = getAuth();
-
-  const { getEventsMonthly } = useEvent({});
-
-  const handlePopulateCalendar = useCallback(() => {
-    getEventsMonthly(focusDate.month, focusDate.year);
-  }, [focusDate.month, focusDate.year, getEventsMonthly]);
-
-  useEffect(() => {
-    handlePopulateCalendar();
-  }, [handlePopulateCalendar]);
-
   useEffect(() => {
     getEvents();
   }, [getEvents]);
@@ -130,211 +88,72 @@ export default function Profile() {
     handleGetProfile();
   }, [handleGetProfile]);
 
-  function changePassword(currentPass: string, newPass: string): void {
-    if (!user) return;
-    if (!user.email) return;
+  useEffect(() => {
+    handleAdjustEventSearcherHeight();
+  });
 
-    const credential = firebase.auth.EmailAuthProvider.credential(
-      user.email,
-      currentPass
-    );
+  const renderCardContent = useMemo(() => {
+    switch (activeCard) {
+      case "detail":
+        return (
+          <PageProfileDetailTab
+            profile={profile}
+            type={type}
+            onClickEdit={() => setActiveCard("edit-profile")}
+            onClickChangePassword={() => setActiveCard("edit-password")}
+          />
+        );
+      case "edit-password":
+        return (
+          user && (
+            <PageProfileChangePasswordTab
+              profile={profile}
+              type={type}
+              user={user}
+              onCancelEdit={() => setActiveCard("detail")}
+            />
+          )
+        );
+      case "edit-profile":
+        return (
+          <PageProfileEdit
+            profile={profile}
+            type={type}
+            onCancelEdit={() => setActiveCard("detail")}
+          />
+        );
+    }
+  }, [activeCard, profile, type, user]);
 
-    reauthenticateWithCredential(user, credential)
-      .then(() => {
-        updatePassword(user, newPass)
-          .then(() => {
-            // Password successfully updated
-            addToast({
-              title: "Password changed",
-              description: "Please login again",
-              variant: "success",
-            });
-            router.push("/");
-          })
-          .catch((error: any) => {
-            // There was an error updating the user's password
-            /* eslint-disable no-console */
-            console.error(error);
-          });
-      })
-      .catch((error: any) => {
-        // There was an error reauthenticating the user
-        /* eslint-disable no-console */
-        console.error(error);
-      });
-  }
+  const renderProfileCard = useMemo(
+    () => (
+      <div
+        ref={profileCardRef}
+        className={clsx(
+          "ProfileCard card ui !w-full !flex-row !h-fit",
+          type !== "mobile" ? "!p-16 gap-16" : "!p-4"
+        )}
+      >
+        <div>
+          {type !== "mobile" && (
+            <UserPicture fullName={profile.name ?? ""} size="big" />
+          )}
+        </div>
+        <div className="ProfileCardDetail !w-full flex flex-col justify-between">
+          {renderCardContent}
+        </div>
+      </div>
+    ),
+    [profile.name, profileCardRef, renderCardContent, type]
+  );
 
-  return (
-    <LayoutTemplate
-      title="Profile"
-      leftButton={{
-        icon: "arrow left",
-        onClick: () => {
-          router.back();
-        },
-      }}
-    >
-      <div className="md:container md:mx-auto px-72 py-20">
-        {
-          {
-            First: activeCard === "First",
-            Second: activeCard === "Second",
-            Third: activeCard === "Third",
-          }[activeCard]
-        }
-        {activeCard === "First" && (
-          <Card className="flex !flex-row" fluid>
-            <div className="py-12 px-12 h-full justify-between">
-              <UserPicture fullName={profile?.name ?? ""} size="big" />
-            </div>
-            <div className="container mx-auto py-12 px-3">
-              <div className="px-3">
-                <h1>{profile?.name}</h1>
-              </div>
-              <div className="py-2 px-3.5">
-                <h6>{profile.email}</h6>
-              </div>
-              <div className="py-2 px-3">
-                <Button onClick={() => setActiveCard("Second")}>
-                  Edit Profile
-                </Button>
-                <Button onClick={() => setActiveCard("Third")}>
-                  Change Password
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
-        {activeCard === "Second" && (
-          <Card className="flex !flex-row" fluid>
-            <div className="py-12 px-12 h-full justify-between">
-              <UserPicture fullName={profile?.name ?? ""} size="big" />
-            </div>
-            <div className="container mx-auto py-12 px-3">
-              {/* Form For Edit */}
-              {/* <div className="px-3">
-                <h1>{profile?.name}</h1>
-              </div>
-              <div className="py-2 px-3.5">
-                <h6>{profile.email}</h6>
-              </div> */}
-              <Formik
-                initialValues={{ name: profile.name }}
-                onSubmit={(values) => {
-                  updateData(FIREBASE_COLLECTION_USERS, id as string, {
-                    name: values.name,
-                  }).then(() => {
-                    router.reload();
-                  });
-                }}
-                validate={(values) => {
-                  const errors: any = {};
-                  if (values.name === profile.name) {
-                    errors.name =
-                      "Name should be different from previous name!";
-                  }
-                  if (values.name === "") {
-                    errors.name = "Name cannot be empty!";
-                  }
-                  return errors;
-                }}
-                validateOnBlur
-                validateOnChange
-              >
-                {({ errors }) => (
-                  <Form>
-                    <ModalAuthInput props={{ ...FieldChangeName }} />
-                    <div className="py-2 px-3">
-                      <Button onClick={() => setActiveCard("First")}>
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={
-                          Object.keys(errors).length > 0 || errors === undefined
-                        }
-                        //onClick={window.location.reload}
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-            </div>
-          </Card>
-        )}
-        {activeCard === "Third" && (
-          <Card className="flex !flex-row" fluid>
-            <div className="py-12 px-12 h-full justify-between">
-              <UserPicture fullName={profile?.name ?? ""} size="big" />
-            </div>
-            <div className="container mx-auto py-12 px-3">
-              {/* Form for Change Password */}
-              {/* <div className="px-3">
-                <h1>{profile?.name}</h1>
-              </div>
-              <div className="py-2 px-3.5">
-                <h6>{profile.email}</h6>
-              </div> */}
-              <Formik
-                initialValues={{
-                  oldPassword: "",
-                  newPassword: "",
-                  confirmPassword: "",
-                }}
-                onSubmit={(values) => {
-                  // updateData(FIREBASE_COLLECTION_USERS, id as string, {
-                  //   name: values.name,
-                  // });
-                  // handleValidatePassword(user)
-                  changePassword(values.oldPassword, values.newPassword);
-                }}
-                validate={(values) => {
-                  const errors: any = {};
-                  if (values.newPassword !== values.confirmPassword) {
-                    errors.name =
-                      "New password should be the same as confirm password!";
-                  }
-                  if (values.newPassword === values.oldPassword) {
-                    errors.name =
-                      "New password cannot be the same as old password!";
-                  }
-                  if (values.confirmPassword === "") {
-                    errors.name = "Fill in confirm password!";
-                  }
-                  return errors;
-                }}
-                validateOnBlur
-                validateOnChange
-              >
-                {({ errors }) => (
-                  <Form>
-                    <ModalAuthInput props={FieldOldPassword} />
-                    <ModalAuthInput props={FieldNewPassword} />
-                    <ModalAuthInput props={FieldConfirmPassword} />
-                    <div className="py-2 px-3">
-                      <Button onClick={() => setActiveCard("First")}>
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={
-                          Object.keys(errors).length > 0 || errors === undefined
-                        }
-                        //onClick={window.location.reload}
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-            </div>
-          </Card>
-        )}
+  const renderEventSearcher = useMemo(
+    () =>
+      (type !== "mobile" || activeCard === "detail") && (
         <PageSearchEventCard
-          className="PageSearchEventCard !bg-sky-50 p-4 !pb-0 !h-full !mx-0"
+          className={clsx(
+            "PageSearchEventCard PageSearchEventCardEmbed !bg-sky-50 !pb-0 !mx-0 !overflow-visible"
+          )}
           stateQuery={stateQuery}
           stateFilters={stateFilters}
           stateSort={stateSort}
@@ -342,7 +161,42 @@ export default function Profile() {
           type={type}
           updateEvent={handleUpdateEvent}
         />
-      </div>
-    </LayoutTemplate>
+      ),
+    [
+      activeCard,
+      filteredEvents,
+      handleUpdateEvent,
+      stateFilters,
+      stateQuery,
+      stateSort,
+      type,
+    ]
+  );
+
+  return (
+    <LayoutTemplateCard
+      title="Profile"
+      leftButton={{
+        icon: "arrow left",
+        onClick: () => {
+          router.back();
+        },
+      }}
+      classNameMain={clsx(
+        LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type],
+        "flex flex-col flex-auto !justify-start"
+      )}
+    >
+      <>
+        {renderProfileCard}
+        {renderEventSearcher}
+      </>
+    </LayoutTemplateCard>
   );
 }
+
+const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {
+  desktop_lg: "!px-20 !pb-0",
+  desktop_sm: "!px-20 !pb-0",
+  mobile: "!p-8 !pb-0",
+};

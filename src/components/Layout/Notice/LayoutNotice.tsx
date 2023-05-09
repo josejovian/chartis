@@ -45,7 +45,7 @@ export function LayoutNotice(rawProps: LayoutNoticeProps) {
   return (
     <div
       style={{ width: "75%" }}
-      className="flex flex-col items-center justify-center mx-auto"
+      className="flex flex-col items-center mx-auto"
     >
       {renderIllustration}
       <span className="text-20px font-bold text-slate-500">{title}</span>

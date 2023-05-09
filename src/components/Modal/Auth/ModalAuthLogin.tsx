@@ -10,7 +10,7 @@ import { FormLoginProps } from "@/types";
 export function ModalAuthLogin() {
   const [loading, setLoading] = useState(false);
   const { setModal, clearModal } = useModal();
-  const { addToast } = useToast();
+  const { addToast, addToastPreset } = useToast();
   const router = useRouter();
 
   const handleShowRegisterModal = useCallback(() => {
@@ -23,11 +23,7 @@ export function ModalAuthLogin() {
       await login({
         ...(values as FormLoginProps),
         onSuccess: () => {
-          addToast({
-            title: "Login Success",
-            description: "Welcome!",
-            variant: "success",
-          });
+          addToastPreset("auth-login");
           setLoading(false);
           clearModal();
           router.replace(router.asPath);
@@ -35,7 +31,7 @@ export function ModalAuthLogin() {
         onFail: (e) => {
           const errorMessage = getErrorMessage((e as any).code);
           addToast({
-            title: "Registration Failed",
+            title: "Login Failed",
             description: errorMessage.message,
             variant: "danger",
           });
@@ -43,7 +39,7 @@ export function ModalAuthLogin() {
         },
       });
     },
-    [addToast, clearModal, router]
+    [addToast, addToastPreset, clearModal, router]
   );
 
   const renderFormHead = useMemo(

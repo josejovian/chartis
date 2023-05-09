@@ -10,12 +10,7 @@ import {
   StickyHeaderTable,
   LayoutNotice,
 } from "@/components";
-import {
-  useAuthorization,
-  useIdentification,
-  useScreen,
-  useToast,
-} from "@/hooks";
+import { useScreen, useToast } from "@/hooks";
 import { sleep, strDateTime, validateEventQuery } from "@/utils";
 import {
   MODERATION_USER_SORT,
@@ -29,28 +24,19 @@ import {
   UserSortType,
   UserType,
 } from "@/types";
-import { getAuth } from "firebase/auth";
-import { useRouter } from "next/router";
 
 export interface PageManageUsersProps {
   className?: string;
+  isAuthorized?: boolean;
 }
 
-export function PageManageUsers({ className }: PageManageUsersProps) {
-  const { addToast, addToastPreset } = useToast();
-  const { stateIdentification } = useIdentification();
-  const router = useRouter();
-  const auth = getAuth();
-  const isAuthorized = useAuthorization({
-    auth,
-    stateIdentification,
-    onFail: () => {
-      router.replace("/");
-    },
-    permission: "admin",
-  });
-  const { type } = useScreen();
+export function PageManageUsers({
+  className,
+  isAuthorized,
+}: PageManageUsersProps) {
+  const { addToastPreset } = useToast();
 
+  const { type } = useScreen();
   const [loading, setLoading] = useState(true);
   const stateQuery = useState("");
   const stateUserType = useState<UserGroupFilterType>("all");
@@ -154,23 +140,11 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
         .then(async () => {
           await sleep(200);
           setProcessing(false);
-          addToast(
-            !isBanned
-              ? {
-                  title: "User Banned",
-                  description: "User has been banned.",
-                  variant: "success",
-                }
-              : {
-                  title: "User Unbanned",
-                  description: "User has been unbanned.",
-                  variant: "success",
-                }
-          );
+          addToastPreset(!isBanned ? "feat-user-unban" : "feat-user-unban");
         })
         .catch(() => {
           setProcessing(false);
-          addToastPreset("post-fail");
+          addToastPreset("fail-post");
           setData((prev) => ({
             ...prev,
             [userId]: {
@@ -180,7 +154,7 @@ export function PageManageUsers({ className }: PageManageUsersProps) {
           }));
         });
     },
-    [addToast, addToastPreset, processing]
+    [addToastPreset, processing]
   );
 
   const handleGetUsers = useCallback(async () => {

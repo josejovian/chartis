@@ -1,45 +1,65 @@
 import { getNameInitials } from "@/utils";
 import clsx from "clsx";
 import Image from "next/image";
-import { useMemo } from "react";
+import { CSSProperties, useMemo } from "react";
 
-export interface UserPictureProps {
+interface UserPictureProps {
+  className?: string;
   fullName: string;
   pictureUrl?: string;
-  size?: "small" | "big";
+  size?: "small" | "medium" | "big";
+  loading?: boolean;
 }
 
 export function UserPicture({
+  className,
   fullName,
   pictureUrl,
   size = "small",
+  loading,
 }: UserPictureProps) {
   const initials = useMemo(
-    () => getNameInitials(fullName).slice(0, 2),
-    [fullName]
+    () => (loading ? "" : getNameInitials(fullName).slice(0, 2)),
+    [fullName, loading]
   );
+
+  const sizeStyle = useMemo<CSSProperties>(() => {
+    let sizeValue: [number, number] = [2, 1];
+    switch (size) {
+      case "big":
+        sizeValue = [8, 4];
+        break;
+      case "medium":
+        sizeValue = [3, 1.5];
+        break;
+      case "small":
+        sizeValue = [2, 1];
+        break;
+    }
+
+    const pictureSize = `${sizeValue[0]}rem`;
+    const textSize = `${sizeValue[1]}rem`;
+
+    return {
+      width: pictureSize,
+      height: pictureSize,
+      minWidth: pictureSize,
+      minHeight: pictureSize,
+      fontSize: textSize,
+      borderRadius: "100%!important",
+    };
+  }, [size]);
 
   return (
     <div
-      style={
-        size === "small"
-          ? {
-              width: "2rem",
-              height: "2rem",
-              minWidth: "2rem",
-              minHeight: "2rem",
-            }
-          : {
-              width: "8rem",
-              height: "8rem",
-              minWidth: "8rem",
-              minHeight: "8rem",
-              fontSize: "4rem",
-            }
-      }
+      style={{
+        ...sizeStyle,
+      }}
       className={clsx(
         "flex items-center justify-center",
-        "rounded-full text-white bg-red-700 overflow-hidden z-10"
+        "!rounded-full text-white overflow-hidden z-10",
+        loading ? "skeleton" : "bg-red-700",
+        className
       )}
     >
       {pictureUrl ? (

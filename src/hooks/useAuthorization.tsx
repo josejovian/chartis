@@ -5,36 +5,34 @@ import { IdentificationType, StateObject, UserPermissionType } from "@/types";
 
 interface useAuthorizationProps {
   auth: Auth;
-  permission?: UserPermissionType;
+  minPermission?: UserPermissionType;
   stateIdentification: StateObject<IdentificationType>;
   onFail?: () => void;
 }
 
 export function useAuthorization({
   auth,
-  permission,
+  minPermission,
   stateIdentification,
   onFail,
 }: useAuthorizationProps) {
   const resolved = useRef(false);
   const [verdict, setVerdict] = useState<boolean>();
-  const [{ user, users, initialized }] = stateIdentification;
+  const [{ user, initialized }] = stateIdentification;
 
   const handleCheckPermission = useCallback(() => {
     if (verdict !== undefined || !initialized) return;
 
-    if (auth.currentUser) {
-      const userPermission = user && users[user.uid].role;
-
-      if (!user || !users[user.uid]) return;
+    if (auth.currentUser && user) {
+      const permission = user.role ?? "user";
 
       setVerdict(
-        Boolean(userPermission && hasPermission(userPermission, permission))
+        Boolean(permission && hasPermission(permission, minPermission))
       );
     } else {
       setVerdict(false);
     }
-  }, [auth, initialized, permission, user, users, verdict]);
+  }, [auth.currentUser, initialized, minPermission, user, verdict]);
 
   const handleDealWithVerdict = useCallback(() => {
     if (verdict === false && !resolved.current) {

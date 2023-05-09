@@ -1,21 +1,35 @@
-import { useRouter } from "next/router";
-import { LayoutTemplateCard, PageViewEventCard } from "@/components";
-import { EVENT_EMPTY } from "@/consts";
 import { useState } from "react";
-import { useScreen, useEvent, useIdentification } from "@/hooks";
+import { getAuth } from "firebase/auth";
+import { useRouter } from "next/router";
+import {
+  LayoutTemplateCard,
+  PageViewEventCard,
+  TemplatePageGuestNotAllowed,
+} from "@/components";
+import {
+  useScreen,
+  useEvent,
+  useIdentification,
+  useAuthorization,
+} from "@/hooks";
+import { EVENT_EMPTY } from "@/consts";
 import { EventModeType, ResponsiveStyleType } from "@/types";
 
 export default function CreateEvent() {
+  const auth = getAuth();
   const router = useRouter();
 
   const { handleUpdateEvent } = useEvent({});
-  const stateMode = useState<EventModeType>("create");
-  const stateActiveTab = useState(0);
   const { type } = useScreen();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const activeTab = stateActiveTab[0];
   const { updateUserSubscribedEventClientSide } = useIdentification();
+  const { stateIdentification } = useIdentification();
+  const isAuthorized = useAuthorization({
+    auth,
+    stateIdentification,
+    minPermission: "user",
+  });
 
+  const stateMode = useState<EventModeType>("create");
   const stateEvent = useState(EVENT_EMPTY);
 
   return (
@@ -28,11 +42,15 @@ export default function CreateEvent() {
         },
       }}
       classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
+      minPermission="user"
+      authorized={isAuthorized}
+      unauthorizedElement={<TemplatePageGuestNotAllowed />}
     >
       <PageViewEventCard
         className="card ui"
         stateEvent={stateEvent}
         stateMode={stateMode}
+        stateIdentification={stateIdentification}
         type={type}
         updateEvent={handleUpdateEvent}
         updateUserSubscribedEventClientSide={

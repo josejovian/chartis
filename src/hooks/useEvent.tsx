@@ -56,7 +56,7 @@ export function useEvent({ type }: useEventProps) {
   const [events, setEvents] = stateEvents;
   const stateModalDelete = useState(false);
   const setModalDelete = stateModalDelete[1];
-  const { addToast, addToastPreset } = useToast();
+  const { addToastPreset } = useToast();
 
   const validatedEvents = useMemo(() => {
     if (
@@ -77,8 +77,8 @@ export function useEvent({ type }: useEventProps) {
           return false;
         }
         let extraValidation = true;
-        if (type === "userFollowedEvents" && user && user.uid) {
-          extraValidation = subscriberIds.includes(user.uid);
+        if (type === "userFollowedEvents" && user && user.id) {
+          extraValidation = subscriberIds.includes(user.id);
         } else if (type === "userFollowedEvents") {
           const subscribe = JSON.parse(
             localStorage.getItem("subscribe") ?? "{}"
@@ -101,7 +101,7 @@ export function useEvent({ type }: useEventProps) {
 
   const filterByMethod = useMemo(
     () => [
-      type === "userCreatedEvents" && user && where("authorId", "==", user.uid),
+      type === "userCreatedEvents" && user && where("authorId", "==", user.id),
       ...filters.map((tag) => where(`tags.${tag}`, "==", true)),
       where("hide", "!=", true),
     ],
@@ -150,7 +150,7 @@ export function useEvent({ type }: useEventProps) {
           }
         })
         .catch(() => {
-          addToastPreset("get-fail");
+          addToastPreset("fail-get");
         });
 
       return eventArray;
@@ -161,8 +161,8 @@ export function useEvent({ type }: useEventProps) {
   const getFollowedEvents = useCallback(
     async (events?: EventType[]): Promise<EventType[]> => {
       const subscribedEventIds =
-        user && user.uid
-          ? identification.users[user.uid].subscribedEvents
+        user && user.id
+          ? identification.users[user.id].subscribedEvents
           : JSON.parse(localStorage.getItem("subscribe") ?? "{}");
 
       let eventArray = [] as EventType[];
@@ -462,20 +462,16 @@ export function useEvent({ type }: useEventProps) {
         .then(async () => {
           onSuccess && onSuccess();
           setModalDelete(false);
-          addToast({
-            title: "Event Deleted",
-            description: "",
-            variant: "success",
-          });
+          addToastPreset("feat-event-delete");
           await sleep(200);
           window.location.reload();
         })
         .catch(() => {
           onFail && onFail();
-          addToastPreset("post-fail");
+          addToastPreset("fail-post");
         });
     },
-    [addToast, addToastPreset, setModalDelete]
+    [addToastPreset, setModalDelete]
   );
 
   return useMemo(

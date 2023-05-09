@@ -14,10 +14,11 @@ import {
   PageViewEventFoot,
   PageViewEventCardUpdatesTab,
   PageViewEventCardDiscussionTab,
+  LayoutNotice,
   PageViewEventCardDetailTab,
   PageViewEventHead,
 } from "@/components";
-import { useIdentification, useEvent, useToast } from "@/hooks";
+import { useEvent, useToast } from "@/hooks";
 import {
   SchemaEvent,
   getLocalTimeInISO,
@@ -33,6 +34,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
   EventCardTabNameType,
+  IdentificationType,
 } from "@/types";
 import { EVENT_EMPTY } from "@/consts";
 
@@ -40,6 +42,7 @@ export interface ModalViewEventProps {
   className?: string;
   stateEvent: StateObject<EventType>;
   stateMode: StateObject<EventModeType>;
+  stateIdentification: StateObject<IdentificationType>;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvt: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
@@ -54,6 +57,7 @@ export function PageViewEventCard({
   className,
   stateEvent,
   stateMode,
+  stateIdentification,
   type,
   updateEvent,
   updateUserSubscribedEventClientSide,
@@ -89,12 +93,16 @@ export function PageViewEventCard({
 
     return object;
   }, [event, mode]);
-  const { addToast, addToastPreset } = useToast();
+  const { addToastPreset } = useToast();
   const { stateModalDelete, deleteEvent } = useEvent({});
 
-  const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
-  const { user } = identification;
+  const { user, initialized } = identification;
+  const authorized = useMemo(() => {
+    if (!initialized) return undefined;
+
+    return Boolean(user && !user?.ban);
+  }, [initialized, user]);
 
   const handleConstructEventValues = useCallback(
     async (values: unknown) => {
@@ -114,8 +122,8 @@ export function PageViewEventCard({
         ...(event ?? defaultValues),
         ...(values as EventType),
         id: eventId,
-        authorId: user.uid,
-        authorName: user.displayName as string,
+        authorId: user.id,
+        authorName: user.name,
         version: (event.version ?? 0) + (mode === "edit" ? 1 : 0),
         tags,
       };
@@ -135,6 +143,12 @@ export function PageViewEventCard({
     [event, mode, tags, user]
   );
 
+  const handleFailedSubmit = useCallback(() => {
+    if (!user) return;
+    addToastPreset(user.ban ? "fail-post-banned-user" : "fail-post");
+    setSubmitting(false);
+  }, [addToastPreset, setSubmitting, user]);
+
   const handleSubmitForm = useCallback(
     async (values: any) => {
       const data = handleConstructEventValues(values);
@@ -150,16 +164,12 @@ export function PageViewEventCard({
         createEvent(newEvent)
           .then(() => {
             sleep(200).then(() => {
-              addToast({
-                title: "Event Created",
-                description: "",
-                variant: "success",
-              });
+              addToastPreset("feat-event-create");
               router.push(`/event/${eventId}`);
             });
           })
           .catch((e) => {
-            addToastPreset("post-fail");
+            addToastPreset("fail-post");
             setSubmitting(false);
           });
       } else if (eventPreviousValues && eventPreviousValues.current) {
@@ -170,30 +180,26 @@ export function PageViewEventCard({
         )
           .then(async (result) => {
             await sleep(200);
-            addToast({
-              title: "Event Updated",
-              description: "",
-              variant: "success",
-            });
-            await sleep(200);
+            router.replace(`/event/${event.id}/`);
+            addToastPreset("feat-event-update");
             setMode("view");
             setEvent(result);
             setSubmitting(false);
             if (eventPreviousValues && eventPreviousValues.current)
               eventPreviousValues.current = result;
           })
-          .catch((e) => {
-            addToastPreset("post-fail");
-            setSubmitting(false);
+          .catch(() => {
+            handleFailedSubmit();
           });
       }
     },
     [
-      addToast,
       addToastPreset,
       createEvent,
+      event.id,
       eventPreviousValues,
       handleConstructEventValues,
+      handleFailedSubmit,
       mode,
       router,
       setEvent,
@@ -273,11 +279,12 @@ export function PageViewEventCard({
             <PageViewEventCardDiscussionTab
               type={type}
               stateEvent={stateEvent}
+              identification={identification}
             />
           );
       }
     },
-    [activeTab, event, mode, stateEvent, stateTags, type]
+    [activeTab, event, identification, mode, stateEvent, stateTags, type]
   );
 
   const renderCardContents = useCallback(
@@ -354,28 +361,48 @@ export function PageViewEventCard({
     handleUpdateTagsOnEditMode();
   }, [handleUpdateTagsOnEditMode]);
 
-  // {/** @todos Submit button seems to not work unless you do this. */}
-  return (
-    <Formik
-      initialValues={initialEventData}
-      validate={handleValidateExtraForm}
-      validationSchema={SchemaEvent}
-      onSubmit={handleSubmitForm}
-      validateOnChange
-    >
-      {mode === "view" ? (
+  const renderPage = useMemo(
+    () =>
+      mode === "view" ? (
         <LayoutCard className={className}>{renderCardContents({})}</LayoutCard>
       ) : (
-        ({ submitForm, validateForm, setFieldValue }) => (
-          <LayoutCard className={className} form>
-            {renderCardContents({
-              submitForm,
-              validateForm,
-              setFieldValue,
-            })}
-          </LayoutCard>
-        )
-      )}
-    </Formik>
+        <Formik
+          initialValues={initialEventData}
+          validate={handleValidateExtraForm}
+          validationSchema={SchemaEvent}
+          onSubmit={handleSubmitForm}
+          validateOnChange
+        >
+          {/** @todos Submit button seems to not work unless you do this. */}
+          {({ submitForm, validateForm, setFieldValue }) => (
+            <LayoutCard className={className} form>
+              {renderCardContents({
+                submitForm,
+                validateForm,
+                setFieldValue,
+              })}
+            </LayoutCard>
+          )}
+        </Formik>
+      ),
+    [
+      className,
+      handleSubmitForm,
+      handleValidateExtraForm,
+      initialEventData,
+      mode,
+      renderCardContents,
+    ]
+  );
+
+  return authorized === undefined ? (
+    <LayoutNotice preset="loader" />
+  ) : mode === "view" || authorized ? (
+    renderPage
+  ) : (
+    <LayoutNotice
+      title="No Access"
+      description="You are not allowed to post contents because you are banned."
+    />
   );
 }
