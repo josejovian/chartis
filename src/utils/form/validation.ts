@@ -35,3 +35,11 @@ export function validateTags(tags: EventTagObjectType) {
   if (Object.keys(tags).length === 0) return "Event should have one tag.";
   return undefined;
 }
+
+export function validateImage(image: File) {
+  if(image) {
+    if(image.size > 2000000 ) return "Thumbnail cannot be larger than 2MB.";
+    if(!["image/jpeg", "image/jpg", "image/png"].includes(image.type)) return "Image format must be .jpeg, .jpg, or .png";
+  }
+  return undefined;
+}
