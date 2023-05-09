@@ -40,8 +40,6 @@ export function ModalAuthLogin() {
             variant: "danger",
           });
           setLoading(false);
-          // addToastPreset("generic-fail");
-          // setLoading(false);
         },
       });
     },
