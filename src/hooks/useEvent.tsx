@@ -70,38 +70,40 @@ export function useEvent({ type }: useEventProps) {
     return [];
   }, [atLeastOneFilter, events, type, userQuery]);
 
-  const filteredEvents = useMemo(
-    () =>
-      validatedEvents
-        .filter(({ id, name, subscriberIds = [] }) => {
-          let extraValidation = true;
-          if (type === "userFollowedEvents" && user && user.id) {
-            extraValidation = subscriberIds.includes(user.id);
-          } else if (type === "userFollowedEvents") {
-            const subscribe = JSON.parse(
-              localStorage.getItem("subscribe") ?? "{}"
-            );
-            extraValidation = subscribe[id];
-          }
+  const filteredEvents = useMemo(() => {
+    return validatedEvents
+      .filter(({ id, name, subscriberIds = [], hide = false }) => {
+        if (hide) {
+          return false;
+        }
+        let extraValidation = true;
+        if (type === "userFollowedEvents" && user && user.id) {
+          extraValidation = subscriberIds.includes(user.id);
+        } else if (type === "userFollowedEvents") {
+          const subscribe = JSON.parse(
+            localStorage.getItem("subscribe") ?? "{}"
+          );
+          extraValidation = subscribe[id];
+        }
 
-          const reg = new RegExp(_.escapeRegExp(userQuery), "i");
+        const reg = new RegExp(_.escapeRegExp(userQuery), "i");
 
-          return reg.test(name) && extraValidation;
-        })
-        .sort((a, b) => {
-          const left = a[sortBy.key] ?? 0;
-          const right = b[sortBy.key] ?? 0;
-          if (typeof left === "number" && typeof right === "number")
-            return (left - right) * (sortBy.descending ? -1 : 1);
-          return 0;
-        }),
-    [validatedEvents, type, user, userQuery, sortBy.key, sortBy.descending]
-  );
+        return reg.test(name) && extraValidation;
+      })
+      .sort((a, b) => {
+        const left = a[sortBy.key] ?? 0;
+        const right = b[sortBy.key] ?? 0;
+        if (typeof left === "number" && typeof right === "number")
+          return (left - right) * (sortBy.descending ? -1 : 1);
+        return 0;
+      });
+  }, [validatedEvents, type, user, userQuery, sortBy.key, sortBy.descending]);
 
   const filterByMethod = useMemo(
     () => [
       type === "userCreatedEvents" && user && where("authorId", "==", user.id),
       ...filters.map((tag) => where(`tags.${tag}`, "==", true)),
+      where("hide", "!=", true),
     ],
     [filters, type, user]
   );
@@ -127,7 +129,11 @@ export function useEvent({ type }: useEventProps) {
   }, [queryConstraints, setEvents]);
 
   const getEventsMonthly = useCallback(
-    async (month: number, year: number): Promise<EventType[]> => {
+    async (
+      month: number,
+      year: number,
+      showHidden = false
+    ): Promise<EventType[]> => {
       const firstDayOfTheMonth = new Date(year, month, 1, 0, 0, 0);
       const lastDayOfTheMonth = new Date(year, month + 1, 1, 0, 0, 0);
 
@@ -139,8 +145,8 @@ export function useEvent({ type }: useEventProps) {
       ])
         .then((result) => {
           if (result) {
-            eventArray = result;
-            setEvents(result);
+            eventArray = result.filter((event) => !event.hide || showHidden);
+            setEvents(eventArray);
           }
         })
         .catch(() => {
