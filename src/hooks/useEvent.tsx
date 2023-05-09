@@ -26,8 +26,10 @@ import {
 import {
   BatchOperationType,
   deleteData,
+  deleteImage,
   readData,
   updateData,
+  uploadImage,
   writeDataBatch,
 } from "@/firebase";
 import pushid from "pushid";
@@ -227,8 +229,49 @@ export function useEvent({ type }: useEventProps) {
     []
   );
 
+  const createEvent = useCallback(async (event: EventType): Promise<void> => {
+    const thumbnailImage = event.thumbnailSrc;
+    event.thumbnailSrc = "";
+    const batchOperations: BatchOperationType[] = [];
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_EVENTS,
+      operationType: "create",
+      documentId: event.id,
+      value: event,
+    });
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_UPDATES,
+      operationType: "create",
+      documentId: event.id,
+      value: {
+        updates: [],
+      },
+    });
+
+    return writeDataBatch(batchOperations).then(() => {
+      if (thumbnailImage) {
+        return uploadImage(event.id, thumbnailImage as unknown as Blob).then(
+          (imageURL) => {
+            return updateData(FIREBASE_COLLECTION_EVENTS, event.id, {
+              thumbnailSrc: imageURL,
+            });
+          }
+        );
+      }
+    });
+  }, []);
+
   const updateEventNew = useCallback(
-    async (eventId: string, previousValue: EventType, newValue: EventType) => {
+    async (
+      eventId: string,
+      previousValue: EventType,
+      newValue: EventType
+    ): Promise<EventType> => {
+      const thumbnailImage = newValue.thumbnailSrc;
+      if (previousValue.thumbnailSrc !== newValue.thumbnailSrc) {
+        newValue.thumbnailSrc = "";
+      }
+
       const eventUpdateId = pushid();
       const batchOperations: BatchOperationType[] = [];
       const updateDocumentExists = await readData(
@@ -294,7 +337,21 @@ export function useEvent({ type }: useEventProps) {
         },
       });
 
-      return writeDataBatch(batchOperations);
+      return writeDataBatch(batchOperations).then(() => {
+        if (previousValue.thumbnailSrc !== newValue.thumbnailSrc) {
+          return uploadImage(eventId, thumbnailImage as unknown as Blob).then(
+            (imageURL) => {
+              return updateData(FIREBASE_COLLECTION_EVENTS, eventId, {
+                thumbnailSrc: imageURL,
+              }).then(() => ({
+                ...newValue,
+                thumbnailSrc: imageURL,
+                version: previousValue.version ?? 0 + 1,
+              }));
+            }
+          );
+        }
+      }) as Promise<EventType>;
     },
     []
   );
@@ -390,7 +447,7 @@ export function useEvent({ type }: useEventProps) {
       onSuccess?: () => void;
       onFail?: () => void;
     }) => {
-      await deleteData("events", eventId)
+      await Promise.all([deleteData("events", eventId), deleteImage(eventId)])
         .then(async () => {
           onSuccess && onSuccess();
           setModalDelete(false);
@@ -415,6 +472,7 @@ export function useEvent({ type }: useEventProps) {
       handleUpdateEvent,
       updateEventNew,
       deleteEvent: handleDeleteEvent,
+      createEvent,
       sortEvents,
       filterEvents,
       toggleEventSubscription,
@@ -433,6 +491,7 @@ export function useEvent({ type }: useEventProps) {
       handleUpdateEvent,
       updateEventNew,
       handleDeleteEvent,
+      createEvent,
       sortEvents,
       filterEvents,
       toggleEventSubscription,

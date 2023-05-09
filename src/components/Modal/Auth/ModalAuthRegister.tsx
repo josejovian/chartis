@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console */
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { type UserCredential, updateProfile } from "firebase/auth";
-import { auth, createData, register } from "@/firebase";
+import { auth, createData, getErrorMessage, register } from "@/firebase";
 import { ModalAuthLogin, ModalAuthTemplate } from "@/components";
 import { useModal, useToast } from "@/hooks";
 import { FormRegister, SchemaRegister } from "@/utils";
@@ -11,7 +14,7 @@ import { FIREBASE_COLLECTION_USERS } from "@/consts";
 export function ModalAuthRegister() {
   const [loading, setLoading] = useState(false);
   const { setModal, clearModal } = useModal();
-  const { addToastPreset } = useToast();
+  const { addToastPreset, addToast } = useToast();
   const router = useRouter();
 
   const handleShowLoginModal = useCallback(() => {
@@ -58,12 +61,18 @@ export function ModalAuthRegister() {
       await register({
         ...data,
         onSuccess: (cred) => handleStoreUserData(data, cred),
-        onFail: () => {
-          addToastPreset("fail-generic");
+        onFail: (e) => {
+          const errorMessage = getErrorMessage((e as any).code);
+          addToast({
+            title: "Registration Failed",
+            description: errorMessage.message,
+            variant: "danger",
+          });
+          setLoading(false);
         },
       });
     },
-    [addToastPreset, handleStoreUserData]
+    [addToast, handleStoreUserData]
   );
 
   const renderFormHead = useMemo(
@@ -96,6 +105,12 @@ export function ModalAuthRegister() {
 
         if (casted.password !== casted.confirm) {
           errors.confirm = "Password doesn't match";
+        }
+        if (casted.password.length < 4) {
+          errors.password = "Password's length must be more than 4!";
+        }
+        if (casted.name === "") {
+          errors.name = "Name cannot be empty";
         }
         return errors;
       }}
