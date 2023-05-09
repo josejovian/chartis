@@ -18,22 +18,6 @@ export interface LayoutNavbarProps {
   stateNavBar: StateObject<boolean>;
 }
 
-const NAVBAR_WIDTH_MAX_INLINE_STYLE = {
-  width: "300px",
-  minWidth: "300px",
-};
-
-const NAVBAR_WIDTH_MIN_INLINE_STYLE = {
-  width: "64px",
-  minWidth: "64px",
-};
-
-const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
-  desktop_lg: NAVBAR_WIDTH_MAX_INLINE_STYLE,
-  desktop_sm: NAVBAR_WIDTH_MIN_INLINE_STYLE,
-  mobile: { display: "none" },
-};
-
 export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [navBar, setNavBar] = stateNavBar;
   const { type } = useScreen();
@@ -148,28 +132,30 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     [links, navBar, permission, renderNavBarToggle, stateNavBar, type]
   );
 
+  const navBarStyle = useMemo(() => {
+    if (navBar) return NAVBAR_WRAPPER_RESPONSIVE_STYLE["desktop_lg"];
+    return NAVBAR_WRAPPER_RESPONSIVE_STYLE[type];
+  }, [navBar, type]);
+
   return (
-    <div
-      className="relative z-30"
-      style={
-        type === "mobile" && navBar
-          ? {
-              width: 0,
-            }
-          : NAVBAR_WRAPPER_RESPONSIVE_STYLE[type]
-      }
-    >
-      <div
+    <>
+      <div style={NAVBAR_WRAPPER_RESPONSIVE_STYLE[type]} />
+      <nav
         className={clsx(
+          "fixed z-30",
           "h-full flex flex-col justify-between",
           "bg-slate-900 text-gray-50"
         )}
-        style={
-          navBar ? NAVBAR_WIDTH_MAX_INLINE_STYLE : NAVBAR_WIDTH_MIN_INLINE_STYLE
-        }
+        style={navBarStyle}
       >
         {renderNavBarContent}
-      </div>
-    </div>
+      </nav>
+    </>
   );
 }
+
+const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
+  desktop_lg: { minWidth: "300px" },
+  desktop_sm: { minWidth: "64px" },
+  mobile: { display: "none" },
+};
