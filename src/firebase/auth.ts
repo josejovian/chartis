@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -6,11 +7,30 @@ import {
 } from "firebase/auth";
 import { auth } from "./config";
 
+
+export function getErrorMessage(code: any){
+  switch(code){
+    case "auth/email-already-in-use":
+      return{type: "email", message: "This email is already in use!"}
+    case "auth/invalid-email":
+      return{type: "email", message: "This email is invalid!"}
+    case "auth/user-not-found":
+      return { type: "email", message: "This account does not exist." };
+    case "auth/wrong-password":
+      return { type: "password", message: "Wrong password." };
+    default:
+      return {
+        type: "generic",
+        message: "Something went wrong. Please try again later.",
+      };
+  }
+}
+
 export interface loginParams {
   email: string;
   password: string;
   onSuccess?: (cred: UserCredential) => void;
-  onFail?: () => void;
+  onFail?: (error: unknown) => void;
 }
 
 export interface registerParams {
@@ -18,7 +38,7 @@ export interface registerParams {
   name: string;
   password: string;
   onSuccess?: (cred: UserCredential) => void;
-  onFail?: () => void;
+  onFail?: (error: unknown) => void;
 }
 
 export async function login({
@@ -34,8 +54,8 @@ export async function login({
         res(null);
       })
       .catch((error) => {
-        onFail && onFail();
-        rej(error.code);
+        onFail && onFail(error);
+        rej(error);
       });
   });
 }
@@ -52,8 +72,8 @@ export async function register({
       onSuccess && onSuccess(cred);
       res(null)
     }).catch((error) => {
-      onFail && onFail();
-      rej(error);
+      onFail && onFail(error);
+      rej(error.code);
     });
   });
 }
@@ -63,3 +83,4 @@ export async function logout() {
     await signOut(auth);
   }, 300);
 }
+
