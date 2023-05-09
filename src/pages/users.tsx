@@ -1,13 +1,25 @@
+import { getAuth } from "firebase/auth";
 import { useRouter } from "next/router";
-import { LayoutTemplateCard } from "@/components";
-import { useScreen } from "@/hooks";
-import { ResponsiveStyleType } from "@/types";
 import clsx from "clsx";
-import { PageManageUsers } from "@/components/Page/ManageUsers";
+import {
+  LayoutTemplateCard,
+  TemplatePageNotFound,
+  PageManageUsers,
+} from "@/components";
+import { useAuthorization, useIdentification, useScreen } from "@/hooks";
+import { ResponsiveStyleType } from "@/types";
 
-export default function Notification() {
+export default function ManageUsers() {
   const router = useRouter();
   const { type } = useScreen();
+
+  const { stateIdentification } = useIdentification();
+  const auth = getAuth();
+  const isAuthorized = useAuthorization({
+    auth,
+    stateIdentification,
+    minPermission: "admin",
+  });
 
   return (
     <LayoutTemplateCard
@@ -22,8 +34,12 @@ export default function Notification() {
         "!bg-sky-50",
         LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]
       )}
+      authorized={isAuthorized}
+      minPermission="guest"
+      unauthorizedElement={<TemplatePageNotFound />}
     >
       <PageManageUsers
+        isAuthorized={isAuthorized}
         className={clsx("ui card", type !== "mobile" ? "!p-16" : "!p-4")}
       />
     </LayoutTemplateCard>

@@ -6,9 +6,10 @@ import {
   LayoutNavbarButton,
   ModalAuthLogin,
   ModalAuthRegister,
-  UserPicture,
 } from "@/components";
 import { useModal, useToast } from "@/hooks";
+import { User } from "@/components/User/User";
+import { useRouter } from "next/router";
 
 export interface LayoutNavbarAuthProps {
   name: string;
@@ -20,8 +21,9 @@ export interface LayoutNavbarAuthProps {
 
 export function LayoutNavbarAuth() {
   const user = auth.currentUser;
-  const { addToast } = useToast();
+  const { addToastPreset } = useToast();
   const { setModal } = useModal();
+  const router = useRouter();
 
   const handleShowLoginModal = useCallback(() => {
     setModal(<ModalAuthLogin />);
@@ -32,38 +34,30 @@ export function LayoutNavbarAuth() {
   }, [setModal]);
 
   const handleLogout = useCallback(async () => {
+    router.replace("/");
+
     await logout()
       .then(() => {
-        addToast({
-          title: "Logout Success",
-          description: "See you!",
-          variant: "success",
-        });
+        addToastPreset("auth-logout");
       })
       .catch(() => {
-        addToast({
-          title: "Logout Failed",
-          description: "Please try again later.",
-          variant: "danger",
-        });
+        addToastPreset("fail-generic");
       });
-  }, [addToast]);
+  }, [addToastPreset, router]);
 
   const renderUser = useMemo(
-    () => (
-      <>
-        <div className="flex items-center gap-4">
-          <UserPicture fullName={user?.displayName ?? "?"} />
-          <span>{user?.displayName ?? "Unknown User"}</span>
-        </div>
-        <LayoutNavbarButton
-          icon="log out"
-          className="text-red-200 hover:text-red-300 active:text-red-300 focus:text-red-300"
-          onClick={handleLogout}
-        />
-      </>
-    ),
-    [handleLogout, user?.displayName]
+    () =>
+      user && (
+        <>
+          <User id={user.uid} type="all" />
+          <LayoutNavbarButton
+            icon="log out"
+            className="text-red-200 hover:text-red-300 active:text-red-300 focus:text-red-300"
+            onClick={handleLogout}
+          />
+        </>
+      ),
+    [handleLogout, user]
   );
 
   const renderGuest = useMemo(

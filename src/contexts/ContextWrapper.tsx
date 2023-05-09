@@ -10,9 +10,9 @@ import {
 
 const IDENTIFICATION_CONTEXT_DEFAULT: StateObject<IdentificationType> = [
   {
+    authUser: null,
     user: null,
     users: {},
-    permission: "guest",
     initialized: false,
   },
   () => {},
@@ -31,7 +31,7 @@ const TOAST_CONTEXT_DEFAULT: ToastContextPropsType = {
 };
 
 const NOTIFICATION_CONTEXT_DEFAULT: NotificationContextPropsType = {
-  stateUpdates: [[], (newNotifications) => {}],
+  stateNotification: [[], (newNotifications) => {}],
 };
 
 export const IdentificationContext = createContext(

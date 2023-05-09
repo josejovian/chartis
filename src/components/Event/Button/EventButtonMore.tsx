@@ -31,12 +31,12 @@ export function EventButtonMore({
   const deleting = stateDeleting && stateDeleting[0];
   const [open, setOpen] = useState(false);
   const { authorId, hide } = event;
-  const { permission, user, users } = identification;
+  const { user } = identification;
   const [eventIsHidden, setEventIsHidden] = useState(hide);
   const { addToast } = useToast();
 
   const isAuthor = useMemo(
-    () => Boolean(user && user.uid === authorId),
+    () => Boolean(user && user.id === authorId),
     [authorId, user]
   );
 
@@ -73,7 +73,7 @@ export function EventButtonMore({
   }, [addToast, event.id, eventIsHidden, hide]);
 
   const renderDropdownItems = useMemo(() => {
-    if (user && users[user.uid].role === "admin")
+    if (user?.role === "admin")
       return (
         <>
           <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
@@ -90,7 +90,11 @@ export function EventButtonMore({
           {modalDelete}
         </>
       );
-    return <Dropdown.Item onClick={onReport}>Report</Dropdown.Item>;
+    return (
+      <Dropdown.Item onClick={onReport} disabled={user?.ban}>
+        Report
+      </Dropdown.Item>
+    );
   }, [
     eventIsHidden,
     handleHideEvent,
@@ -99,15 +103,11 @@ export function EventButtonMore({
     onEdit,
     onReport,
     user,
-    users,
   ]);
 
   return (
-    <div
-      className={clsx("!relative", permission === "guest" && "hidden")}
-      style={{}}
-    >
-      {permission !== "guest" && (
+    <div className={clsx("!relative", !user && "hidden")} style={{}}>
+      {user && (
         <Dropdown
           icon={<></>}
           className={clsx("icon", open && "z-16 relative")}

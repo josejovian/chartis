@@ -33,10 +33,10 @@ export function EventButtonFollow({
 
   const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
 
-  const { permission, user, users } = identification;
+  const { user, users } = identification;
 
   const isAuthor = useMemo(
-    () => Boolean(user && user.uid === authorId),
+    () => Boolean(user && user.id === authorId),
     [authorId, user]
   );
 
@@ -55,12 +55,12 @@ export function EventButtonFollow({
     setSubscriberCount((prev) => prev + (subscribed ? -1 : 1));
     setLoading(true);
 
-    toggleEventSubscription(id, event.version ?? 0, subscribed, user?.uid)
+    toggleEventSubscription(id, event.version ?? 0, subscribed, user?.id)
       .then(() => {
         setSubscribed((prev) => !prev);
       })
       .catch((e) => {
-        addToastPreset("post-fail");
+        addToastPreset("fail-post");
         setLoading(false);
         setSubscribed((prev) => !prev);
         setSubscriberCount((prev) => prev + (subscribed ? -1 : 1));
@@ -75,24 +75,24 @@ export function EventButtonFollow({
     loading,
     subscribed,
     toggleEventSubscription,
-    user?.uid,
+    user?.id,
   ]);
 
   const handleInitializeSubscribeState = useCallback(() => {
     if (initialized.current || typeof window === "undefined") return;
 
     let status = false;
-    if (permission === "guest") {
+    if (!user) {
       const subscribe = JSON.parse(
         localStorage.getItem("subscribe") ?? "{}"
       ) as Record<string, boolean>;
       status = subscribe[id];
-    } else if (user && user.uid && users[user.uid]) {
-      status = subscriberIds.includes(user.uid);
+    } else if (user && user.id && users[user.id]) {
+      status = subscriberIds.includes(user.id);
     }
     setSubscribed(status);
     initialized.current = true;
-  }, [id, permission, subscriberIds, user, users]);
+  }, [id, subscriberIds, user, users]);
 
   useEffect(() => {
     handleInitializeSubscribeState();

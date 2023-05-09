@@ -7,13 +7,12 @@ import {
 } from "firebase/auth";
 import { auth } from "./config";
 
-
-export function getErrorMessage(code: any){
-  switch(code){
+export function getErrorMessage(code: any) {
+  switch (code) {
     case "auth/email-already-in-use":
-      return{type: "email", message: "This email is already in use!"}
+      return { type: "email", message: "This email is already in use!" };
     case "auth/invalid-email":
-      return{type: "email", message: "This email is invalid!"}
+      return { type: "email", message: "This email is invalid!" };
     case "auth/user-not-found":
       return { type: "email", message: "This account does not exist." };
     case "auth/wrong-password":
@@ -68,13 +67,15 @@ export async function register({
   onFail,
 }: registerParams) {
   return await new Promise((res, rej) => {
-    createUserWithEmailAndPassword(auth, email, password).then((cred) => {
-      onSuccess && onSuccess(cred);
-      res(null)
-    }).catch((error) => {
-      onFail && onFail(error);
-      rej(error.code);
-    });
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((cred) => {
+        onSuccess && onSuccess(cred);
+        res(null);
+      })
+      .catch((error) => {
+        onFail && onFail(error);
+        rej(error.code);
+      });
   });
 }
 
@@ -83,4 +84,3 @@ export async function logout() {
     await signOut(auth);
   }, 300);
 }
-
