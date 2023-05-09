@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { login } from "@/firebase";
+import { getErrorMessage, login } from "@/firebase";
 import { ModalAuthRegister, ModalAuthTemplate } from "@/components";
 import { useModal, useToast } from "@/hooks";
 import { FormLogin, SchemaLogin } from "@/utils";
@@ -9,7 +10,7 @@ import { FormLoginProps } from "@/types";
 export function ModalAuthLogin() {
   const [loading, setLoading] = useState(false);
   const { setModal, clearModal } = useModal();
-  const { addToast, addToastPreset } = useToast();
+  const { addToast } = useToast();
   const router = useRouter();
 
   const handleShowRegisterModal = useCallback(() => {
@@ -31,13 +32,18 @@ export function ModalAuthLogin() {
           clearModal();
           router.replace(router.asPath);
         },
-        onFail: () => {
-          addToastPreset("generic-fail");
+        onFail: (e) => {
+          const errorMessage = getErrorMessage((e as any).code);
+          addToast({
+            title: "Registration Failed",
+            description: errorMessage.message,
+            variant: "danger",
+          });
           setLoading(false);
         },
       });
     },
-    [addToast, addToastPreset, clearModal, router]
+    [addToast, clearModal, router]
   );
 
   const renderFormHead = useMemo(
