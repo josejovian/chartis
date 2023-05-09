@@ -66,6 +66,10 @@ export const EVENT_TAGS: Record<EventTagNameType, DropdownOptionType> = {
     name: "Competition",
     color: "green",
   },
+  other: {
+    name: "Other",
+    color: "grey"
+  }
 };
 
 export const EVENT_SORT_CRITERIA: Record<
