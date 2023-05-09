@@ -350,6 +350,11 @@ export function useEvent({ type }: useEventProps) {
               }));
             }
           );
+        } else {
+          return {
+            ...newValue,
+            version: previousValue.version ?? 0 + 1,
+          };
         }
       }) as Promise<EventType>;
     },
