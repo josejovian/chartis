@@ -1,19 +1,7 @@
-import { UserPermissionType } from "@/types";
 import clsx from "clsx";
-import Link from "next/link";
-import { useMemo } from "react";
-import { Icon, type SemanticICONS } from "semantic-ui-react";
-
-export interface LayoutNavbarItemProps {
-  name: string;
-  icon: SemanticICONS;
-  href?: string;
-  onClick?: () => void;
-  permission?: UserPermissionType;
-  active?: boolean;
-  hidden?: boolean;
-  alert?: boolean;
-}
+import { Icon } from "semantic-ui-react";
+import { LayoutNavbarItemProps } from "./LayoutNavbar";
+import { useRouter } from "next/router";
 
 export function LayoutNavbarItem({
   name,
@@ -23,34 +11,33 @@ export function LayoutNavbarItem({
   active,
   alert,
 }: LayoutNavbarItemProps) {
-  const renderItem = useMemo(
-    () => (
-      <div
-        className={clsx(
-          "relative flex items-center h-8 border-l border-l-4",
-          active
-            ? [
-                "text-primary-3 bg-slate-800 hover:bg-slate-700",
-                "border-l border-l-4 border-primary-3",
-              ]
-            : [
-                "!text-gray-50 hover:bg-slate-700 border-transparent",
-                "cursor-pointer",
-              ]
-        )}
-        onClick={onClick}
-      >
-        <span className="ml-4 relative">
-          <Icon.Group>
-            <Icon name={icon} />
-            {alert && <Icon name="circle" color="red" corner="top right" />}
-          </Icon.Group>
-        </span>
-        <span className="ml-2">{name}</span>
-      </div>
-    ),
-    [active, alert, icon, name, onClick]
+  const router = useRouter();
+  return (
+    <div
+      className={clsx(
+        "relative flex items-center h-8 border-l-4",
+        active
+          ? [
+              "text-primary-3 bg-slate-800 hover:bg-slate-700",
+              "border-l-4 border-primary-3",
+            ]
+          : [
+              "!text-gray-50 hover:bg-slate-700 border-transparent",
+              "cursor-pointer",
+            ]
+      )}
+      onClick={() => {
+        router.push(href);
+        onClick && onClick();
+      }}
+    >
+      <span className="ml-4 relative">
+        <Icon.Group>
+          <Icon name={icon} />
+          {alert && <Icon name="circle" color="red" corner="top right" />}
+        </Icon.Group>
+      </span>
+      <span className="ml-2">{name}</span>
+    </div>
   );
-
-  return href ? <Link href={href}>{renderItem}</Link> : renderItem;
 }
