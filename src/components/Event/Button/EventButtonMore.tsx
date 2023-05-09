@@ -5,6 +5,7 @@ import { EventType, StateObject, IdentificationType } from "@/types";
 import { ModalConfirmation } from "@/components/Modal";
 import { updateData } from "@/firebase";
 import { FIREBASE_COLLECTION_EVENTS } from "@/consts";
+import { useToast } from "@/hooks";
 
 export interface EventButtonMoreProps {
   event: EventType;
@@ -31,6 +32,8 @@ export function EventButtonMore({
   const [open, setOpen] = useState(false);
   const { authorId, hide } = event;
   const { permission, user, users } = identification;
+  const [eventIsHidden, setEventIsHidden] = useState(hide);
+  const { addToast } = useToast();
 
   const isAuthor = useMemo(
     () => Boolean(user && user.uid === authorId),
@@ -59,8 +62,15 @@ export function EventButtonMore({
 
     updateData(FIREBASE_COLLECTION_EVENTS, event.id, {
       hide: !hide,
+    }).then(() => {
+      setEventIsHidden((prev) => !prev);
+      addToast({
+        title: `Success`,
+        description: `Event is now ${eventIsHidden ? "hidden" : "visible"}`,
+        variant: "success",
+      });
     });
-  }, [event, hide]);
+  }, [addToast, event.id, eventIsHidden, hide]);
 
   const renderDropdownItems = useMemo(() => {
     if (user && users[user.uid].role === "admin")
@@ -68,7 +78,7 @@ export function EventButtonMore({
         <>
           <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
           <Dropdown.Item onClick={handleHideEvent}>
-            {hide ? "Unhide" : "Hide"}
+            {eventIsHidden ? "Unhide" : "Hide"}
           </Dropdown.Item>
           {modalDelete}
         </>
@@ -82,8 +92,8 @@ export function EventButtonMore({
       );
     return <Dropdown.Item onClick={onReport}>Report</Dropdown.Item>;
   }, [
+    eventIsHidden,
     handleHideEvent,
-    hide,
     isAuthor,
     modalDelete,
     onEdit,
