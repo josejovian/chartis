@@ -5,7 +5,7 @@ import { CalendarDateType, ScreenSizeCategoryType } from "@/types";
 
 export interface PageHomeCalendarDateProps {
   calendarDate?: CalendarDateType;
-  countData: number[];
+  countData: number;
   type: ScreenSizeCategoryType;
   onClick: () => void;
 }
@@ -23,17 +23,12 @@ export function PageHomeCalendarDate({
   const differentMonth = calendarDate && calendarDate.differentMonth;
   const count = events ? events.length : 0;
   const density = useMemo(() => {
-    const x_low = countData.filter((x) => x)[0];
-    const x_max = countData[countData.length - 1];
-    const range = x_max - x_low;
-
-    let level = 4;
-    while (--level) {
-      if (count >= x_low + range * ((level * 20) / 100)) break;
-    }
-
-    return level;
-  }, [count, countData]);
+    if (!countData) return 0;
+    if (countData >= 6) return 3;
+    if (countData >= 4) return 2;
+    if (countData >= 1) return 1;
+    return 0;
+  }, [countData]);
 
   const renderDate = useMemo(() => {
     if (calendarDate && calendarDate.differentMonth)
@@ -65,7 +60,6 @@ export function PageHomeCalendarDate({
         className={clsx(
           "flex justify-items-center",
           CALENDAR_CELL_DATE_CURRENT_MONTH_WRAPPER_STYLE
-          //focus //&& CALENDAR_CELL_FOCUS_STYLE
         )}
       >
         <span
