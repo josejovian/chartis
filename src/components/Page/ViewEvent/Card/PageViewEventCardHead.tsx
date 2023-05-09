@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from "react";
-import { Button, Label } from "semantic-ui-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Button, Icon, Label } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventThumbnail,
   EventButtonFollow,
   EventButtonMore,
+  FormErrorMessage,
 } from "@/components";
 import {
   EventModeType,
@@ -19,6 +20,7 @@ import {
 import { EVENT_TAGS } from "@/consts";
 import { useAuthorization, useReport } from "@/hooks";
 import { getAuth } from "firebase/auth";
+import { Field, useFormikContext } from "formik";
 
 export interface PageViewEventHeadProps {
   event: EventType;
@@ -51,6 +53,9 @@ export function PageViewEventHead({
 }: PageViewEventHeadProps) {
   const [activeTab, setActiveTab] = stateActiveTab;
   const [mode, setMode] = stateMode;
+  const thumbnailURLState = useState(event.thumbnailSrc);
+  const [thumbnailURL, setThumbnailURL] = thumbnailURLState;
+  const { setFieldValue } = useFormikContext() ?? {};
   const identification = stateIdentification[0];
   const { user } = identification;
   const { showReportModal } = useReport();
@@ -58,8 +63,9 @@ export function PageViewEventHead({
   const isAuthorized = useAuthorization({
     auth,
     stateIdentification,
-    permission: "admin",
+    minPermission: "admin",
   });
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
 
   const crumb = useMemo(
     () =>
@@ -167,7 +173,7 @@ export function PageViewEventHead({
               eventId: event.id,
               authorId: event.authorId,
               contentType: "event",
-              reportedBy: user ? user.uid : "",
+              reportedBy: user ? user.id : "",
             })
           }
         />
@@ -198,7 +204,50 @@ export function PageViewEventHead({
     [renderActionTabs, renderDetailTabs]
   );
 
-  const renderEditTabs = useMemo(() => <></>, []);
+  const renderEditTabs = useMemo(
+    () => (
+      <div className="flex items-between p-4 gap-4 ml-auto">
+        <Field name="thumbnailSrc">
+          {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ({ meta }: any) => (
+              <>
+                <Button
+                  htmlFor="file-input"
+                  className="p-0 h-16"
+                  icon
+                  labelPosition="left"
+                  onClick={() => imageInputRef.current?.click()}
+                >
+                  <Icon name="camera" />
+                  Upload Thumbnail
+                </Button>
+                <FormErrorMessage
+                  meta={meta}
+                  className="absolute bg-white -mx-2 !z-50"
+                  overlap
+                />
+                <input
+                  id="file-input"
+                  name="thumbnailSrc"
+                  type="file"
+                  accept="image/*"
+                  ref={imageInputRef}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onChange={(event: any) => {
+                    setFieldValue("thumbnailSrc", event.target.files[0]);
+                    setThumbnailURL(URL.createObjectURL(event.target.files[0]));
+                  }}
+                  style={{ display: "none" }}
+                />
+              </>
+            )
+          }
+        </Field>
+      </div>
+    ),
+    [setFieldValue, setThumbnailURL]
+  );
 
   const renderCrumb = useMemo(
     () => (
@@ -220,7 +269,7 @@ export function PageViewEventHead({
       <EventThumbnail
         className="!absolute !left-0 !top-0"
         type="banner"
-        src="/placeholder.png"
+        src={thumbnailURL}
         screenType={type}
       />
       <div
@@ -237,7 +286,7 @@ export function PageViewEventHead({
         )}
       >
         {mode === "view" && renderCrumb}
-        <div className={clsx("flex items-end justify-between")}>
+        <div className={clsx("flex items-end justify-between h-full")}>
           {mode === "view" ? renderViewTabs : renderEditTabs}
         </div>
       </div>

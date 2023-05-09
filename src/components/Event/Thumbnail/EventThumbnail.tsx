@@ -16,12 +16,8 @@ export function EventThumbnail({
   screenType,
   type = "thumbnail-fixed-width",
 }: EventThumbnailProps) {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-  const showImage = useMemo(
-    () => (error && type === "banner") || (loaded && src),
-    [error, loaded, src, type]
-  );
+  const placeholderURL = "/placeholder.png";
+  const [imageURL, setImageURL] = useState(src ?? placeholderURL);
   const style = useMemo(() => {
     switch (type) {
       case "banner":
@@ -33,42 +29,34 @@ export function EventThumbnail({
         return {
           minWidth: "210px",
           height: "100%",
+          display: "flex",
         };
       default:
         return undefined;
     }
   }, [screenType, type]);
 
+  useEffect(() => {
+    setImageURL(src ?? placeholderURL);
+  }, [src]);
+
   const renderImage = useMemo(
-    () =>
-      !loaded || !src ? (
-        <Image
-          className="object-cover"
-          placeholder="empty"
-          src="/placeholder.png"
-          fill
-          alt="Event Picture Placeholder"
-        />
-      ) : (
-        <Image
-          className="object-cover"
-          placeholder="empty"
-          src={src}
-          fill
-          alt="Event Title"
-          onError={() => {
-            setError(true);
-          }}
-        />
-      ),
-    [loaded, src]
+    () => (
+      <Image
+        className="object-cover"
+        placeholder="empty"
+        src={imageURL}
+        fill
+        alt="Event Picture Placeholder"
+        onError={() => {
+          setImageURL(placeholderURL);
+        }}
+      />
+    ),
+    [imageURL]
   );
 
-  useEffect(() => {
-    setLoaded(true);
-  }, []);
-
-  return showImage ? (
+  return src || type === "banner" ? (
     <div
       className={clsx(
         "relative flex items-center overflow-hidden",

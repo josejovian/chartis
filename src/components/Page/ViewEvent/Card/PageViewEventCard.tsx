@@ -6,19 +6,17 @@ import {
   useMemo,
   useState,
 } from "react";
-import { fs } from "@/firebase";
-import { doc, writeBatch } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { Formik } from "formik";
 import pushid from "pushid";
 import {
   LayoutCard,
   PageViewEventFoot,
-  PageViewEventHead,
-  PageViewEventCardDetailTab,
   PageViewEventCardUpdatesTab,
   PageViewEventCardDiscussionTab,
   LayoutNotice,
+  PageViewEventCardDetailTab,
+  PageViewEventHead,
 } from "@/components";
 import { useEvent, useToast } from "@/hooks";
 import {
@@ -26,6 +24,7 @@ import {
   getLocalTimeInISO,
   sleep,
   validateEndDate,
+  validateImage,
   validateStartDate,
   validateTags,
 } from "@/utils";
@@ -37,11 +36,7 @@ import {
   EventCardTabNameType,
   IdentificationType,
 } from "@/types";
-import {
-  EVENT_EMPTY,
-  FIREBASE_COLLECTION_EVENTS,
-  FIREBASE_COLLECTION_UPDATES,
-} from "@/consts";
+import { EVENT_EMPTY } from "@/consts";
 
 export interface ModalViewEventProps {
   className?: string;
@@ -79,7 +74,7 @@ export function PageViewEventCard({
   const setDeleting = stateDeleting[1];
   const stateActiveTab = useState<EventCardTabNameType>("detail");
   const activeTab = stateActiveTab[0];
-  const { updateEventNew } = useEvent({});
+  const { updateEventNew, createEvent } = useEvent({});
   const initialEventData = useMemo(() => {
     if (!event || mode === "create") return EVENT_EMPTY;
 
@@ -110,7 +105,7 @@ export function PageViewEventCard({
   }, [initialized, user]);
 
   const handleConstructEventValues = useCallback(
-    (values: unknown) => {
+    async (values: unknown) => {
       if (!user) return null;
 
       const { startDate, endDate } = values as EventType;
@@ -155,34 +150,27 @@ export function PageViewEventCard({
   }, [addToastPreset, setSubmitting, user]);
 
   const handleSubmitForm = useCallback(
-    async (values: unknown) => {
+    async (values: any) => {
       const data = handleConstructEventValues(values);
 
       if (!user || !data) return;
 
       setSubmitting(true);
 
-      const { newEvent, eventId } = data;
-      const eventRef = doc(fs, FIREBASE_COLLECTION_EVENTS, eventId);
-      const updatesRef = doc(fs, FIREBASE_COLLECTION_UPDATES, eventId);
-
+      const { newEvent, eventId } = (await data) as any;
       await sleep(200);
 
       if (mode === "create") {
-        const batch = writeBatch(fs);
-        batch.set(eventRef, newEvent);
-        batch.set(updatesRef, {
-          updates: [],
-        });
-        await batch
-          .commit()
-          .then(async () => {
-            await sleep(200);
-            addToastPreset("feat-event-create");
-            router.push(`/event/${eventId}`);
+        createEvent(newEvent)
+          .then(() => {
+            sleep(200).then(() => {
+              addToastPreset("feat-event-create");
+              router.push(`/event/${eventId}`);
+            });
           })
-          .catch(() => {
-            handleFailedSubmit();
+          .catch((e) => {
+            addToastPreset("fail-post");
+            setSubmitting(false);
           });
       } else if (eventPreviousValues && eventPreviousValues.current) {
         updateEventNew(
@@ -190,20 +178,15 @@ export function PageViewEventCard({
           eventPreviousValues.current,
           newEvent
         )
-          .then(async () => {
+          .then(async (result) => {
             await sleep(200);
             router.replace(`/event/${event.id}/`);
             addToastPreset("feat-event-update");
-            await sleep(200);
             setMode("view");
-            setEvent((prev) => ({
-              ...newEvent,
-              version: (prev.version ?? 0) + 1,
-            }));
-            updateEvent(event.id, newEvent);
+            setEvent(result);
             setSubmitting(false);
             if (eventPreviousValues && eventPreviousValues.current)
-              eventPreviousValues.current = newEvent;
+              eventPreviousValues.current = result;
           })
           .catch(() => {
             handleFailedSubmit();
@@ -212,6 +195,7 @@ export function PageViewEventCard({
     },
     [
       addToastPreset,
+      createEvent,
       event.id,
       eventPreviousValues,
       handleConstructEventValues,
@@ -221,7 +205,6 @@ export function PageViewEventCard({
       setEvent,
       setMode,
       setSubmitting,
-      updateEvent,
       updateEventNew,
       user,
     ]
@@ -244,11 +227,12 @@ export function PageViewEventCard({
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
-      const { startDate, endDate } = values;
+      const { startDate, endDate, thumbnailSrc } = values;
       const result = {
         startDate: validateStartDate(startDate),
         endDate: validateEndDate(startDate, endDate),
         tags: validateTags(tags),
+        thumbnailSrc: validateImage(thumbnailSrc),
       };
 
       if (Object.values(result).filter((entry) => entry).length === 0)
