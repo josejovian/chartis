@@ -1,8 +1,11 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button, Dropdown, Icon, type SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventType, StateObject, IdentificationType } from "@/types";
 import { ModalConfirmation } from "@/components/Modal";
+import { updateData } from "@/firebase";
+import { FIREBASE_COLLECTION_EVENTS } from "@/consts";
+import { useToast } from "@/hooks";
 
 export interface EventButtonMoreProps {
   event: EventType;
@@ -27,8 +30,10 @@ export function EventButtonMore({
 }: EventButtonMoreProps) {
   const deleting = stateDeleting && stateDeleting[0];
   const [open, setOpen] = useState(false);
-  const { authorId } = event;
+  const { authorId, hide } = event;
   const { user } = identification;
+  const [eventIsHidden, setEventIsHidden] = useState(hide);
+  const { addToast } = useToast();
 
   const isAuthor = useMemo(
     () => Boolean(user && user.id === authorId),
@@ -52,12 +57,29 @@ export function EventButtonMore({
     [deleting, onDelete, stateModalDelete]
   );
 
+  const handleHideEvent = useCallback(async () => {
+    if (!event.id) return;
+
+    updateData(FIREBASE_COLLECTION_EVENTS, event.id, {
+      hide: !hide,
+    }).then(() => {
+      setEventIsHidden((prev) => !prev);
+      addToast({
+        title: `Success`,
+        description: `Event is now ${eventIsHidden ? "hidden" : "visible"}`,
+        variant: "success",
+      });
+    });
+  }, [addToast, event.id, eventIsHidden, hide]);
+
   const renderDropdownItems = useMemo(() => {
     if (user?.role === "admin")
       return (
         <>
           <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
-          <Dropdown.Item>Hide</Dropdown.Item>
+          <Dropdown.Item onClick={handleHideEvent}>
+            {eventIsHidden ? "Unhide" : "Hide"}
+          </Dropdown.Item>
           {modalDelete}
         </>
       );
@@ -73,7 +95,15 @@ export function EventButtonMore({
         Report
       </Dropdown.Item>
     );
-  }, [isAuthor, modalDelete, onEdit, onReport, user?.ban, user?.role]);
+  }, [
+    eventIsHidden,
+    handleHideEvent,
+    isAuthor,
+    modalDelete,
+    onEdit,
+    onReport,
+    user,
+  ]);
 
   return (
     <div className={clsx("!relative", !user && "hidden")} style={{}}>

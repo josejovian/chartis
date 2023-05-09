@@ -22,6 +22,7 @@ export interface EventType {
   version?: number;
   commentCount?: number;
   tags: EventTagObjectType;
+  hide?: boolean;
 }
 
 export interface EventDetailBaseType {
@@ -60,7 +61,8 @@ export type EventTagNameType =
   | "workshop"
   | "briefing"
   | "competition"
-  | "reminder";
+  | "reminder"
+  | "other";
 
 export interface EventTagType {
   name: string;
