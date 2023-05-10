@@ -15,14 +15,12 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { logout } from "@/firebase";
 
-export interface LayoutNavbarItemProps {
+interface LayoutNavbarItemProps {
   category: string;
   name: string;
   icon: SemanticICONS;
   href: string;
-  onClick?: () => void;
   permission?: UserPermissionType;
-  active?: boolean;
   hidden?: boolean;
   alert?: boolean;
 }
@@ -32,7 +30,7 @@ export interface LayoutNavbarProps {
 }
 
 export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
-  const [navBar, setNavBar] = stateNavBar;
+  const [isNavBarVisible, setIsNavBarVisible] = stateNavBar;
   const { type } = useScreen();
   const { stateIdentification } = useIdentification();
   const { user } = stateIdentification[0];
@@ -59,7 +57,6 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         category: "",
         name: "Home",
         icon: "home",
-        active: true,
         href: "/",
       },
       {
@@ -155,9 +152,9 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     () => (
       <Button
         onClick={() => {
-          setNavBar((prev) => !prev);
+          setIsNavBarVisible((prev) => !prev);
         }}
-        icon={`chevron ${navBar ? "left" : "right"}`}
+        icon={`chevron ${isNavBarVisible ? "left" : "right"}`}
         className={clsx(
           "!w-8 !h-8 !flex !justify-center !items-center",
           "!rounded-md !bg-slate-700 !text-gray-50",
@@ -165,7 +162,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         )}
       />
     ),
-    [navBar, setNavBar]
+    [isNavBarVisible, setIsNavBarVisible]
   );
 
   const renderHeader = useMemo(
@@ -214,7 +211,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
               ]
         )}
         onClick={() => {
-          if (type !== "desktop_lg") setNavBar(false);
+          if (type !== "desktop_lg") setIsNavBarVisible(false);
           router.push(link.href);
         }}
       >
@@ -229,7 +226,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         <span className="ml-2">{link.name}</span>
       </div>
     ),
-    [router, setNavBar, type]
+    [router, setIsNavBarVisible, type]
   );
 
   const renderLinks = useMemo(
@@ -285,7 +282,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 
   const renderNavBarContent = useMemo(
     () =>
-      navBar ? (
+      isNavBarVisible ? (
         <>
           <nav className="space-y-4">
             {renderHeader}
@@ -298,19 +295,19 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         <div className="p-4">{renderToggleButton}</div>
       ),
     [
-      navBar,
       renderAuth,
       renderHeader,
       renderLinks,
       renderSearch,
       renderToggleButton,
+      isNavBarVisible,
     ]
   );
 
   const navBarStyle = useMemo(() => {
-    if (navBar) return NAVBAR_WRAPPER_RESPONSIVE_STYLE["desktop_lg"];
+    if (isNavBarVisible) return NAVBAR_WRAPPER_RESPONSIVE_STYLE["desktop_lg"];
     return NAVBAR_WRAPPER_RESPONSIVE_STYLE[type];
-  }, [navBar, type]);
+  }, [isNavBarVisible, type]);
 
   return (
     <>
