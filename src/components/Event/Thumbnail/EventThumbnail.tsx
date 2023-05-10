@@ -43,6 +43,7 @@ export function EventThumbnail({
   const renderImage = useMemo(
     () => (
       <Image
+        priority={false}
         className="object-cover"
         placeholder="empty"
         src={imageURL}
