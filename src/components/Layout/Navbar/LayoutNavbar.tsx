@@ -93,7 +93,6 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         category: "Events",
         name: "Followed Events",
         icon: "calendar check",
-        permission: "user",
         href: "/event/subscribed",
       },
       {
@@ -179,7 +178,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 
   const renderSearch = useMemo(
     () => (
-      <div className={clsx("px-8 pt-4 text-primary-5 hover:text-primary-5")}>
+      <div className={clsx("px-8 text-primary-5 hover:text-primary-5")}>
         <Link
           className={clsx(
             "flex items-center h-[36px] w-full px-[12px] rounded-md",
@@ -199,7 +198,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     (link: LayoutNavbarItemProps) => (
       <div
         className={clsx(
-          "relative flex items-center h-8 border-l-4",
+          "relative flex items-center h-8 border-l-4 text-sm pl-4",
           router.asPath === link.href
             ? [
                 "text-primary-3 bg-slate-800 hover:bg-slate-700",
@@ -210,20 +209,20 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
                 "cursor-pointer",
               ]
         )}
-        onClick={() => {
-          if (type !== "desktop_lg") setIsNavBarVisible(false);
-          router.push(link.href);
-        }}
       >
-        <span className="ml-4 relative">
-          <Icon.Group>
-            <Icon name={link.icon} />
-            {link.alert && (
-              <Icon name="circle" color="red" corner="top right" />
-            )}
-          </Icon.Group>
-        </span>
-        <span className="ml-2">{link.name}</span>
+        <Icon.Group>
+          <Icon name={link.icon} />
+          {link.alert && <Icon name="circle" color="red" corner="top right" />}
+        </Icon.Group>
+        <Link
+          className="ml-2"
+          href={link.href}
+          onClick={() => {
+            if (type !== "desktop_lg") setIsNavBarVisible(false);
+          }}
+        >
+          {link.name}
+        </Link>
       </div>
     ),
     [router, setIsNavBarVisible, type]
@@ -231,23 +230,29 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 
   const renderLinks = useMemo(
     () => (
-      <div className="divide-y divide-slate-600 space-y-4">
+      <div
+        className={
+          permission !== "guest" ? "divide-y divide-slate-600 space-y-4" : ""
+        }
+      >
         {Object.keys(links).map((categoryName, idx) => (
           <div key={`navbarmain${categoryName}`}>
-            <span
-              className={clsx(
-                idx > 0 && "p-4",
-                "block text-slate-300 italic font-black uppercase"
-              )}
-            >
-              {categoryName}
-            </span>
+            {permission !== "guest" && (
+              <span
+                className={clsx(
+                  idx > 0 && "p-4",
+                  "block text-slate-300 italic font-black uppercase"
+                )}
+              >
+                {categoryName}
+              </span>
+            )}
             {links[categoryName].map((link) => renderNavBarLink(link))}
           </div>
         ))}
       </div>
     ),
-    [links, renderNavBarLink]
+    [links, permission, renderNavBarLink]
   );
 
   const renderAuth = useMemo(
