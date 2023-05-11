@@ -46,7 +46,7 @@ export interface ModalViewEventProps {
   stateIdentification: StateObject<IdentificationType>;
   width: number;
   type: ScreenSizeCategoryType;
-  updateEvent: (id: string, newEvt: Partial<EventType>) => void;
+  newEventData: (id: string, newEvt: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
     userId: string,
     eventId: string,
@@ -63,13 +63,13 @@ export function PageViewEventCard({
   stateIdentification,
   width,
   type,
-  updateEvent,
+  newEventData,
   updateUserSubscribedEventClientSide,
   eventPreviousValues,
   fancy,
 }: ModalViewEventProps) {
   const router = useRouter();
-  const { updateEventNew, createEvent } = useEvent({});
+  const { updateEvent, createEvent } = useEvent();
 
   const stateFocusThumbnail = useState(true);
   const focusThumbnail = stateFocusThumbnail[0];
@@ -87,7 +87,7 @@ export function PageViewEventCard({
   const loading = stateLoading[0];
 
   const { addToastPreset } = useToast();
-  const { stateModalDelete, deleteEvent } = useEvent({});
+  const { stateModalDelete, deleteEvent } = useEvent();
 
   const identification = stateIdentification[0];
   const { user, initialized } = identification;
@@ -124,21 +124,12 @@ export function PageViewEventCard({
 
       const { startDate, endDate } = values as EventType;
       const eventId = mode === "create" ? pushid() : event.id;
-      const defaultValues = {
-        postDate: new Date().getTime(),
-        subscriberCount: 0,
-        guestSubscriberCount: 0,
-        subscriberIds: [],
-      };
 
       const newEvent: EventType = {
-        ...defaultValues,
-        ...(event ?? defaultValues),
+        ...event,
         ...(values as EventType),
         id: eventId,
         authorId: user.id,
-        authorName: user.name,
-        version: (event.version ?? 0) + (mode === "edit" ? 1 : 0),
         tags,
       };
 
@@ -146,8 +137,6 @@ export function PageViewEventCard({
 
       if (endDate) newEvent.endDate = new Date(endDate).getTime();
       else delete newEvent.endDate;
-
-      if (!newEvent.postDate) newEvent.postDate = defaultValues.postDate;
 
       return {
         newEvent,
@@ -187,7 +176,7 @@ export function PageViewEventCard({
             setSubmitting(false);
           });
       } else if (eventPreviousValues && eventPreviousValues.current) {
-        updateEventNew(
+        updateEvent(
           eventPreviousValues.current.id,
           eventPreviousValues.current,
           newEvent,
@@ -220,7 +209,7 @@ export function PageViewEventCard({
       setEvent,
       setMode,
       setSubmitting,
-      updateEventNew,
+      updateEvent,
       user,
     ]
   );
@@ -232,11 +221,8 @@ export function PageViewEventCard({
 
     await sleep(200);
 
-    await deleteEvent({
-      eventId: event.id,
-      onFail: () => {
-        setDeleting(false);
-      },
+    await deleteEvent(event.id).then(() => {
+      setDeleting(false);
     });
   }, [deleteEvent, event.id, setDeleting]);
 
@@ -333,7 +319,7 @@ export function PageViewEventCard({
             stateMode={stateMode}
             stateIdentification={stateIdentification}
             onDelete={handleDeleteEvent}
-            updateEvent={updateEvent}
+            updateEvent={newEventData}
             updateUserSubscribedEventClientSide={
               updateUserSubscribedEventClientSide
             }
@@ -363,7 +349,7 @@ export function PageViewEventCard({
       stateMode,
       stateIdentification,
       handleDeleteEvent,
-      updateEvent,
+      newEventData,
       updateUserSubscribedEventClientSide,
       cardHeight,
       stateFocusThumbnail,

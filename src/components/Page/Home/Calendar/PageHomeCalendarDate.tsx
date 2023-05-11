@@ -5,18 +5,19 @@ import { CalendarDateType, ScreenSizeCategoryType } from "@/types";
 
 export interface PageHomeCalendarDateProps {
   calendarDate?: CalendarDateType;
+  focus: boolean;
   type: ScreenSizeCategoryType;
   onClick: () => void;
 }
 
 export function PageHomeCalendarDate({
   calendarDate,
+  focus = false,
   type,
   onClick,
 }: PageHomeCalendarDateProps) {
   const month = calendarDate && calendarDate.date.getMonth();
   const date = calendarDate && calendarDate.date.getDate();
-  const focus = calendarDate && calendarDate.focus;
   const events = calendarDate && calendarDate.events;
   const differentMonth = calendarDate && calendarDate.differentMonth;
   const count = events ? events.length : 0;
