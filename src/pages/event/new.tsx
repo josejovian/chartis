@@ -20,7 +20,7 @@ export default function CreateEvent() {
   const router = useRouter();
 
   const { handleUpdateEvent } = useEvent({});
-  const { type } = useScreen();
+  const { width, type } = useScreen();
   const { updateUserSubscribedEventClientSide } = useIdentification();
   const { stateIdentification } = useIdentification();
   const isAuthorized = useAuthorization({
@@ -51,6 +51,7 @@ export default function CreateEvent() {
         stateEvent={stateEvent}
         stateMode={stateMode}
         stateIdentification={stateIdentification}
+        width={width}
         type={type}
         updateEvent={handleUpdateEvent}
         updateUserSubscribedEventClientSide={
