@@ -137,9 +137,9 @@ export function EventCard({
   const renderEventCreators = useMemo(
     /** @todo Replace authorId with real username. */
     () => (
-      <span className="text-12px text-secondary-4 tracking-wide">
+      <div className="text-12px text-secondary-4 font-bold tracking-wide">
         <User id={authorId} type="name" />
-      </span>
+      </div>
     ),
     [authorId]
   );

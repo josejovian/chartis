@@ -6,12 +6,23 @@ import { useIdentification } from "@/hooks";
 import Link from "next/link";
 
 export interface UserProps {
+  className?: string;
   id?: string;
   type: "all" | "picture" | "name";
+  truncate?: boolean;
 }
 
-export function User({ id, type }: UserProps) {
+export function User({ className, id, type }: UserProps) {
   const [user, setUser] = useState<UserType>();
+  const displayedName = useMemo(
+    () =>
+      user
+        ? user.name.length < 12
+          ? user.name
+          : `${user.name.slice(0, 12)}...`
+        : "Unknown User",
+    [user]
+  );
 
   const [loading, setLoading] = useState(true);
 
@@ -65,11 +76,11 @@ export function User({ id, type }: UserProps) {
       return <span className="skeleton !w-24 h-4 !rounded-sm"></span>;
     else
       return (
-        <Link href={user ? `/profile/${user.id}` : "#"}>
-          {user ? user.name : "Unknown User"}
+        <Link className={className} href={user ? `/profile/${user.id}` : "#"}>
+          {displayedName}
         </Link>
       );
-  }, [loading, user]);
+  }, [className, displayedName, loading, user]);
 
   const renderUser = useMemo(() => {
     switch (type) {
