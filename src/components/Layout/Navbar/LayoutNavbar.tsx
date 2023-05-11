@@ -210,10 +210,17 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
               ]
         )}
       >
-        <Icon.Group>
-          <Icon name={link.icon} />
-          {link.alert && <Icon name="circle" color="red" corner="top right" />}
-        </Icon.Group>
+        <span
+          className="flex items-center justify-center"
+          style={{
+            maxWidth: "1rem",
+          }}
+        >
+          <Icon.Group>
+            <Icon name={link.icon} />
+            {true && <Icon name="circle" color="red" corner="top right" />}
+          </Icon.Group>
+        </span>
         <Link
           className="ml-2"
           href={link.href}
