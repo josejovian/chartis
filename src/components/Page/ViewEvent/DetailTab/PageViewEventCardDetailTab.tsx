@@ -270,7 +270,7 @@ export function PageViewEventCardDetailTab({
     <div
       className={clsx(
         EVENT_CARD_BODY_WRAPPER_STYLE,
-        mode !== "view" && "ui form div !h-full",
+        mode !== "view" && "ui form div",
         type === "mobile" && "!px-6"
       )}
     >
@@ -279,4 +279,4 @@ export function PageViewEventCardDetailTab({
   );
 }
 
-const EVENT_CARD_BODY_WRAPPER_STYLE = "px-12 pt-4 pb-6 overflow-y-auto";
+const EVENT_CARD_BODY_WRAPPER_STYLE = "!h-full px-12 pt-6 pb-6 overflow-y-auto";

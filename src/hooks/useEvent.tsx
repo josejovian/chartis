@@ -274,9 +274,9 @@ export function useEvent({ type }: useEventProps) {
       newValue: EventType
     ): Promise<EventType> => {
       const thumbnailImage = newValue.thumbnailSrc;
-      if (previousValue.thumbnailSrc !== newValue.thumbnailSrc) {
-        newValue.thumbnailSrc = "";
-      }
+      const different = previousValue.thumbnailSrc !== newValue.thumbnailSrc;
+
+      if (different) newValue.thumbnailSrc = "";
 
       const eventUpdateId = pushid();
       const batchOperations: BatchOperationType[] = [];
@@ -344,7 +344,7 @@ export function useEvent({ type }: useEventProps) {
       });
 
       return writeDataBatch(batchOperations).then(() => {
-        if (previousValue.thumbnailSrc !== newValue.thumbnailSrc) {
+        if (different) {
           return uploadImage(eventId, thumbnailImage as unknown as Blob).then(
             (imageURL) => {
               return updateData(FIREBASE_COLLECTION_EVENTS, eventId, {
