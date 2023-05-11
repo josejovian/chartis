@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo } from "react";
 import { Field } from "formik";
-import { Input, TextArea } from "semantic-ui-react";
+import { Icon, Input, Popup, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventTags,
   FormErrorMessage,
   FormInputDropdown,
   PageViewEventCardDetailTabDetail,
+  User,
 } from "@/components";
-import { useIdentification } from "@/hooks";
 import { getLocalTimeInISO, getTimeDifference, strDateTime } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
 import {
@@ -43,8 +43,6 @@ export function PageViewEventCardDetailTab({
   validateForm,
   setFieldValue,
 }: PageViewEventCardDetailTabProps) {
-  const { stateIdentification } = useIdentification();
-  const { users } = stateIdentification[0];
   const {
     location,
     authorId,
@@ -53,6 +51,7 @@ export function PageViewEventCardDetailTab({
     endDate,
     description,
     postDate,
+    hide,
   } = event;
   const [tags, setTags] = stateTags;
 
@@ -170,17 +169,34 @@ export function PageViewEventCardDetailTab({
     () =>
       mode === "view" && (
         <span className="text-14px text-secondary-4">
-          Posted by <b>{users[authorId] ? users[authorId].name : authorId}</b>{" "}
+          Posted by{" "}
+          <b>
+            <User id={authorId} type="name" />
+          </b>{" "}
           {getTimeDifference(postDate)}
         </span>
       ),
-    [authorId, mode, postDate, users]
+    [authorId, mode, postDate]
   );
 
   const renderEventName = useMemo(
     () =>
       mode === "view" ? (
-        <h2 className="h2 text-secondary-7">{event.name}</h2>
+        <h2 className={clsx("h2 text-secondary-7", hide && "text-secondary-5")}>
+          {hide && (
+            <Popup
+              trigger={
+                <Icon name="eye slash" className="text-secondary-5 !mr-2" />
+              }
+              content="Hidden"
+              size="tiny"
+              offset={[-20, 0]}
+              basic
+              inverted
+            />
+          )}
+          {event.name}
+        </h2>
       ) : (
         <Field name="name">
           {({ field, meta }: any) => (
@@ -198,7 +214,7 @@ export function PageViewEventCardDetailTab({
           )}
         </Field>
       ),
-    [event.name, mode]
+    [event.name, hide, mode]
   );
 
   const renderEventDetails = useMemo(

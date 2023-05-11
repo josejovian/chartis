@@ -48,6 +48,8 @@ export function useEvent({ type }: useEventProps) {
   const stateSortDescending = useState(false);
   const stateUserQuery = useState("");
   const userQuery = stateUserQuery[0];
+  const stateHiddenEventCount = useState(0);
+  const [hiddenEventCount, setHiddenEventCount] = stateHiddenEventCount;
   const { stateIdentification } = useIdentification();
   const [identification] = stateIdentification;
   const { user } = identification;
@@ -103,7 +105,6 @@ export function useEvent({ type }: useEventProps) {
     () => [
       type === "userCreatedEvents" && user && where("authorId", "==", user.id),
       ...filters.map((tag) => where(`tags.${tag}`, "==", true)),
-      where("hide", "!=", true),
     ],
     [filters, type, user]
   );
@@ -147,6 +148,7 @@ export function useEvent({ type }: useEventProps) {
           if (result) {
             eventArray = result.filter((event) => !event.hide || showHidden);
             setEvents(eventArray);
+            setHiddenEventCount(result.filter((event) => event.hide).length);
           }
         })
         .catch(() => {
@@ -155,7 +157,7 @@ export function useEvent({ type }: useEventProps) {
 
       return eventArray;
     },
-    [addToastPreset, setEvents]
+    [addToastPreset, setEvents, setHiddenEventCount]
   );
 
   const getFollowedEvents = useCallback(
@@ -271,7 +273,8 @@ export function useEvent({ type }: useEventProps) {
     async (
       eventId: string,
       previousValue: EventType,
-      newValue: EventType
+      newValue: EventType,
+      authorId: string
     ): Promise<EventType> => {
       const thumbnailImage = newValue.thumbnailSrc;
       const different = previousValue.thumbnailSrc !== newValue.thumbnailSrc;
@@ -337,8 +340,10 @@ export function useEvent({ type }: useEventProps) {
         value: {
           eventId: eventId,
           updates: arrayUnion({
+            authorId,
             updateId: eventUpdateId,
             updates: changes,
+            date: new Date().getTime(),
           }),
         },
       });
@@ -477,6 +482,7 @@ export function useEvent({ type }: useEventProps) {
   return useMemo(
     () => ({
       filteredEvents,
+      hiddenEventCount,
       getEvents,
       getEventsMonthly,
       getFollowedEvents,
@@ -496,6 +502,7 @@ export function useEvent({ type }: useEventProps) {
     }),
     [
       filteredEvents,
+      hiddenEventCount,
       getEvents,
       getEventsMonthly,
       getFollowedEvents,

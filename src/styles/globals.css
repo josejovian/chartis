@@ -312,7 +312,7 @@
       box-shadow: none !important;
     }
   }
-  .FocusedThumbnailEventCard {
+  .EventCardWrapper {
     @apply !w-full !h-full !overflow-y-hidden;
     box-shadow: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5;
     -ms-overflow-style: none;
@@ -322,7 +322,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   } */
-  .FocusedThumbnailEventCard::-webkit-scrollbar {
+  .EventCardWrapper::-webkit-scrollbar {
     display: none;
   }
 

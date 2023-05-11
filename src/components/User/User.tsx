@@ -3,9 +3,10 @@ import { UserType } from "@/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { UserPicture } from "./UserPicture";
 import { useIdentification } from "@/hooks";
+import Link from "next/link";
 
 export interface UserProps {
-  id: string;
+  id?: string;
   type: "all" | "picture" | "name";
 }
 
@@ -21,26 +22,29 @@ export function User({ id, type }: UserProps) {
   const handleFetchUserData = useCallback(async () => {
     if (!initialized) return;
 
-    const existing = users[id];
+    const existing = id ? users[id] : null;
 
     if (existing) {
       setUser(existing);
-    } else {
+    } else if (id) {
       await readData("users", id).then((result) => {
-        if (result)
+        if (result) {
+          const newUser = {
+            id,
+            name: result.name,
+            joinDate: result.joinDate,
+            ban: result.ban,
+            email: result.email,
+          };
           setIdentification((prev) => ({
             ...prev,
             users: {
               ...prev.users,
-              [id]: {
-                id,
-                name: result.name,
-                joinDate: result.joinDate,
-                ban: result.ban,
-                email: result.email,
-              },
+              [id]: newUser,
             },
           }));
+          setUser(newUser);
+        }
       });
     }
 
@@ -57,8 +61,14 @@ export function User({ id, type }: UserProps) {
   );
 
   const renderName = useMemo(() => {
-    if (loading) return <span className="skeleton w-24 h-4 !rounded-sm"></span>;
-    else return <>{user ? user.name : "Unknown User"}</>;
+    if (loading)
+      return <span className="skeleton !w-24 h-4 !rounded-sm"></span>;
+    else
+      return (
+        <Link href={user ? `/profile/${user.id}` : "#"}>
+          {user ? user.name : "Unknown User"}
+        </Link>
+      );
   }, [loading, user]);
 
   const renderUser = useMemo(() => {
