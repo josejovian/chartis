@@ -41,10 +41,14 @@ export function LayoutNavbarItem({
         onClick={onClick}
       >
         <span className="ml-4 relative">
-          <Icon.Group>
+          {alert ? (
+            <Icon.Group>
+              <Icon name={icon} />
+              <Icon name="circle" color="red" corner="top right" />
+            </Icon.Group>
+          ) : (
             <Icon name={icon} />
-            {alert && <Icon name="circle" color="red" corner="top right" />}
-          </Icon.Group>
+          )}
         </span>
         <span className="ml-2">{name}</span>
       </div>
