@@ -218,7 +218,9 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         >
           <Icon.Group>
             <Icon name={link.icon} />
-            {true && <Icon name="circle" color="red" corner="top right" />}
+            {link.alert && (
+              <Icon name="circle" color="red" corner="top right" />
+            )}
           </Icon.Group>
         </span>
         <Link
