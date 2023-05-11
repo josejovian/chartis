@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  createRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Button, Icon, Label } from "semantic-ui-react";
 import clsx from "clsx";
 import {
@@ -20,7 +27,7 @@ import {
 import { EVENT_TAGS } from "@/consts";
 import { useAuthorization, useReport } from "@/hooks";
 import { getAuth } from "firebase/auth";
-import { Field, useFormikContext } from "formik";
+import { Field } from "formik";
 
 export interface PageViewEventHeadProps {
   event: EventType;
@@ -37,6 +44,15 @@ export interface PageViewEventHeadProps {
     eventId: string,
     version?: number
   ) => void;
+  cardHeight?: number;
+  stateFocused: StateObject<boolean>;
+  stateLoading: StateObject<boolean>;
+  setFieldValue?: (
+    field: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: any,
+    shouldValidate?: boolean | undefined
+  ) => void;
 }
 
 export function PageViewEventHead({
@@ -50,12 +66,18 @@ export function PageViewEventHead({
   type,
   updateEvent,
   updateUserSubscribedEventClientSide,
+  cardHeight,
+  stateFocused,
+  stateLoading,
+  setFieldValue,
 }: PageViewEventHeadProps) {
+  const imageRef = createRef<HTMLImageElement>();
+  const [focused, setFocused] = stateFocused;
+  const [loading, setLoading] = stateLoading;
   const [activeTab, setActiveTab] = stateActiveTab;
   const [mode, setMode] = stateMode;
   const thumbnailURLState = useState(event.thumbnailSrc);
   const [thumbnailURL, setThumbnailURL] = thumbnailURLState;
-  const { setFieldValue } = useFormikContext() ?? {};
   const identification = stateIdentification[0];
   const { user } = identification;
   const { showReportModal } = useReport();
@@ -65,7 +87,9 @@ export function PageViewEventHead({
     stateIdentification,
     minPermission: "admin",
   });
+  const [imageSize, setImageSize] = useState<[number, number]>();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const listener = useRef(false);
 
   const crumb = useMemo(
     () =>
@@ -235,7 +259,8 @@ export function PageViewEventHead({
                   ref={imageInputRef}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange={(event: any) => {
-                    setFieldValue("thumbnailSrc", event.target.files[0]);
+                    setFieldValue &&
+                      setFieldValue("thumbnailSrc", event.target.files[0]);
                     setThumbnailURL(URL.createObjectURL(event.target.files[0]));
                   }}
                   style={{ display: "none" }}
@@ -249,6 +274,32 @@ export function PageViewEventHead({
     [setFieldValue, setThumbnailURL]
   );
 
+  const handleAdjustImageSize = useCallback(() => {
+    const element = document.getElementsByClassName("EventThumbnail")[0];
+
+    if (!event.thumbnailSrc) {
+      setFocused(false);
+      setLoading(false);
+    } else if (element && cardHeight) {
+      const image = element as HTMLImageElement;
+
+      const ratio = image.naturalWidth / (image.naturalHeight + 0.01);
+
+      const imgWidth = cardHeight * ratio;
+      const imgHeight = cardHeight;
+
+      if (imgWidth > 0 && imgHeight > 0) {
+        setImageSize([cardHeight * ratio, cardHeight]);
+        if (loading && type !== "mobile") setFocused(true);
+        setLoading(false);
+      }
+    }
+  }, [cardHeight, event.thumbnailSrc, loading, setFocused, setLoading, type]);
+
+  useEffect(() => {
+    handleAdjustImageSize();
+  }, [cardHeight, handleAdjustImageSize]);
+
   const renderCrumb = useMemo(
     () => (
       <span className="p-4 text-16px font-bold text-white drop-shadow-md">
@@ -258,35 +309,100 @@ export function PageViewEventHead({
     [crumb]
   );
 
+  const handleWheelEvent = useCallback(
+    (e: unknown) => {
+      const we = e as WheelEvent;
+      if (we.deltaY > 0) {
+        setFocused(false);
+      } else {
+        setFocused(true);
+      }
+    },
+    [setFocused]
+  );
+
+  useEffect(() => {
+    if (imageRef.current && !listener.current) {
+      imageRef.current.addEventListener("wheel", handleWheelEvent);
+      listener.current = true;
+    }
+  }, [handleWheelEvent, imageRef]);
+
+  const renderToggleThumbnail = useMemo(
+    () => (
+      <div
+        className={clsx(
+          "EventCardThumbnailToggle",
+          "absolute mx-auto flex flex-col items-center z-10",
+          "text-white hover:text-gray-200 cursor-pointer drop-shadow-md",
+          focused
+            ? "EventCardThumbnailToggleFocused"
+            : "transition-all top-0 opacity-20 hover:opacity-100 hover:top-1"
+        )}
+        onClick={() => {
+          setFocused((prev) => !prev);
+        }}
+      >
+        <Icon
+          className="!m-0"
+          name={focused ? "chevron down" : "chevron up"}
+          size="huge"
+        />
+        <span className={clsx("h-8", !focused && "hidden")}>
+          Scroll down to continue
+        </span>
+      </div>
+    ),
+    [focused, setFocused]
+  );
+
   return (
     <div
-      className="relative"
-      style={{
-        height: type !== "mobile" ? "240px" : "320px",
-        minHeight: type !== "mobile" ? "240px" : "320px",
-      }}
+      className={clsx("EventCardHead relative")}
+      style={
+        mode === "view" && focused
+          ? {
+              height: `${cardHeight}px`,
+            }
+          : {
+              height: type !== "mobile" ? "240px" : "320px",
+              minHeight: type !== "mobile" ? "240px" : "320px",
+            }
+      }
     >
       <EventThumbnail
+        imageRef={imageRef}
         className="!absolute !left-0 !top-0"
         type="banner"
         src={thumbnailURL}
         screenType={type}
+        size={imageSize}
+        footer={
+          type !== "mobile" &&
+          mode === "view" &&
+          event.thumbnailSrc &&
+          renderToggleThumbnail
+        }
       />
       <div
         className={clsx(
+          focused && "hidden",
           "absolute w-full h-full",
-          "bg-gradient-to-t from-zinc-900 to-zinc-400",
-          "opacity-60"
+          "opacity-40 from-zinc-900 to-zinc-500",
+          "bg-gradient-to-t",
+          "transition-all duration-200"
         )}
       ></div>
       <div
         className={clsx(
+          focused && "invisible opacity-0",
           "absolute w-full h-full",
-          "flex flex-col justify-between"
+          "flex flex-col justify-between",
+          "transition-all duration-200"
         )}
       >
         {mode === "view" && renderCrumb}
-        <div className={clsx("flex items-end justify-between h-full")}>
+        <div className={clsx("flex items-end justify-between h-fit")}>
           {mode === "view" ? renderViewTabs : renderEditTabs}
         </div>
       </div>

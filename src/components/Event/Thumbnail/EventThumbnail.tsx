@@ -1,20 +1,35 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  ReactNode,
+  RefObject,
+  UIEventHandler,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import { EventThumbnailDisplayType, ScreenSizeCategoryType } from "@/types";
 
 export interface EventThumbnailProps {
+  imageRef?: RefObject<HTMLImageElement>;
   className?: string;
   src?: string;
   screenType?: ScreenSizeCategoryType;
   type?: EventThumbnailDisplayType;
+  size?: [number, number];
+  footer?: ReactNode;
+  onWheel?: UIEventHandler<HTMLDivElement>;
 }
 
 export function EventThumbnail({
+  imageRef,
   className,
   src,
   screenType,
   type = "thumbnail-fixed-width",
+  size,
+  footer,
+  onWheel,
 }: EventThumbnailProps) {
   const placeholderURL = "/placeholder.png";
   const [imageURL, setImageURL] = useState(src ?? placeholderURL);
@@ -23,7 +38,7 @@ export function EventThumbnail({
       case "banner":
         return {
           width: "100%",
-          height: screenType !== "mobile" ? "240px" : "320px",
+          height: "100%",
         };
       case "thumbnail-fixed-height":
         return {
@@ -34,7 +49,7 @@ export function EventThumbnail({
       default:
         return undefined;
     }
-  }, [screenType, type]);
+  }, [type]);
 
   useEffect(() => {
     setImageURL(src ?? placeholderURL);
@@ -43,29 +58,35 @@ export function EventThumbnail({
   const renderImage = useMemo(
     () => (
       <Image
-        className="object-cover"
+        priority
+        className="EventThumbnail object-cover"
         placeholder="empty"
-        src={imageURL}
-        fill
-        alt="Event Picture Placeholder"
+        src={imageURL ?? placeholderURL}
+        fill={!size}
+        alt="Event Thumbnail"
         onError={() => {
           setImageURL(placeholderURL);
         }}
+        width={size ? size[0] : undefined}
+        height={size ? size[1] : undefined}
       />
     ),
-    [imageURL]
+    [imageURL, size]
   );
 
   return src || type === "banner" ? (
     <div
+      ref={imageRef}
       className={clsx(
-        "relative flex items-center overflow-hidden",
+        "relative flex items-center justify-center overflow-hidden bg-gray-700",
         type !== "banner" && "aspect-video",
         className
       )}
       style={style}
+      onWheel={onWheel}
     >
       {renderImage}
+      {footer}
     </div>
   ) : (
     <></>

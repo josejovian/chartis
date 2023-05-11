@@ -37,12 +37,14 @@ import {
   IdentificationType,
 } from "@/types";
 import { EVENT_EMPTY } from "@/consts";
+import clsx from "clsx";
 
 export interface ModalViewEventProps {
   className?: string;
   stateEvent: StateObject<EventType>;
   stateMode: StateObject<EventModeType>;
   stateIdentification: StateObject<IdentificationType>;
+  width: number;
   type: ScreenSizeCategoryType;
   updateEvent: (id: string, newEvt: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
@@ -51,6 +53,7 @@ export interface ModalViewEventProps {
     version?: number
   ) => void;
   eventPreviousValues?: MutableRefObject<EventType>;
+  fancy?: boolean;
 }
 
 export function PageViewEventCard({
@@ -58,13 +61,19 @@ export function PageViewEventCard({
   stateEvent,
   stateMode,
   stateIdentification,
+  width,
   type,
   updateEvent,
   updateUserSubscribedEventClientSide,
   eventPreviousValues,
+  fancy,
 }: ModalViewEventProps) {
-  const [event, setEvent] = stateEvent;
   const router = useRouter();
+  const { updateEventNew, createEvent } = useEvent({});
+
+  const stateFocusThumbnail = useState(true);
+  const focusThumbnail = stateFocusThumbnail[0];
+  const [event, setEvent] = stateEvent;
   const [mode, setMode] = stateMode;
   const stateTags = useState((event && event.tags) ?? []);
   const [tags, setTags] = stateTags;
@@ -74,7 +83,9 @@ export function PageViewEventCard({
   const setDeleting = stateDeleting[1];
   const stateActiveTab = useState<EventCardTabNameType>("detail");
   const activeTab = stateActiveTab[0];
-  const { updateEventNew, createEvent } = useEvent({});
+  const stateLoading = useState(false);
+  const loading = stateLoading[0];
+
   const initialEventData = useMemo(() => {
     if (!event || mode === "create") return EVENT_EMPTY;
 
@@ -98,6 +109,8 @@ export function PageViewEventCard({
 
   const identification = stateIdentification[0];
   const { user, initialized } = identification;
+  const [cardHeight, setCardHeight] = useState(0);
+
   const authorized = useMemo(() => {
     if (!initialized) return undefined;
 
@@ -322,6 +335,10 @@ export function PageViewEventCard({
             updateUserSubscribedEventClientSide={
               updateUserSubscribedEventClientSide
             }
+            cardHeight={cardHeight}
+            stateFocused={stateFocusThumbnail}
+            stateLoading={stateLoading}
+            setFieldValue={setFieldValue}
           />
           {activeTabContent}
           <PageViewEventFoot
@@ -346,6 +363,9 @@ export function PageViewEventCard({
       handleDeleteEvent,
       updateEvent,
       updateUserSubscribedEventClientSide,
+      cardHeight,
+      stateFocusThumbnail,
+      stateLoading,
       stateSubmitting,
       handleLeaveEdit,
     ]
@@ -361,10 +381,27 @@ export function PageViewEventCard({
     handleUpdateTagsOnEditMode();
   }, [handleUpdateTagsOnEditMode]);
 
+  const handleInitializeHeight = useCallback(() => {
+    const card = document.getElementsByClassName(
+      "FocusedThumbnailEventCard"
+    )[0];
+
+    if (card) {
+      const realHeight = card.getBoundingClientRect().height;
+      setCardHeight(realHeight);
+    }
+  }, []);
+
+  useEffect(() => {
+    handleInitializeHeight();
+  });
+
   const renderPage = useMemo(
     () =>
       mode === "view" ? (
-        <LayoutCard className={className}>{renderCardContents({})}</LayoutCard>
+        <LayoutCard className={clsx(className, !focusThumbnail && "!h-full")}>
+          {renderCardContents({})}
+        </LayoutCard>
       ) : (
         <Formik
           initialValues={initialEventData}
@@ -375,7 +412,10 @@ export function PageViewEventCard({
         >
           {/** @todos Submit button seems to not work unless you do this. */}
           {({ submitForm, validateForm, setFieldValue }) => (
-            <LayoutCard className={className} form>
+            <LayoutCard
+              className={clsx(className, !focusThumbnail && "!h-full")}
+              form
+            >
               {renderCardContents({
                 submitForm,
                 validateForm,
@@ -387,6 +427,7 @@ export function PageViewEventCard({
       ),
     [
       className,
+      focusThumbnail,
       handleSubmitForm,
       handleValidateExtraForm,
       initialEventData,
@@ -395,10 +436,20 @@ export function PageViewEventCard({
     ]
   );
 
-  return authorized === undefined ? (
+  const renderAccessiblePage = useMemo(
+    () =>
+      mode === "view" ? (
+        <div className="FocusedThumbnailEventCard">{renderPage}</div>
+      ) : (
+        renderPage
+      ),
+    [mode, renderPage]
+  );
+
+  return loading || authorized === undefined ? (
     <LayoutNotice preset="loader" />
   ) : mode === "view" || authorized ? (
-    renderPage
+    renderAccessiblePage
   ) : (
     <LayoutNotice
       title="No Access"
