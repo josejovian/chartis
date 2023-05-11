@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Icon } from "semantic-ui-react";
+import { Button, Checkbox, Icon } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventButtonFilter, PageHomeCalendarDate } from "@/components";
 import {
@@ -26,7 +26,6 @@ export function LayoutCalendar({
 }: LayoutCalendarProps) {
   const [focusDate, setFocusDate] = stateFocusDate;
   const [calendar, setCalendar] = useState<CalendarDateType[]>();
-  const [countData, setCountData] = useState<number[]>([]);
   const { type } = useScreen();
 
   const handleChangeTime = useCallback(
@@ -72,8 +71,6 @@ export function LayoutCalendar({
 
       date.setDate(date.getDate() + 1);
     }
-
-    setCountData(counts);
 
     const firstDifference = firstDay.getDay();
     const pastDate = new Date(firstDay.getTime());
@@ -157,9 +154,7 @@ export function LayoutCalendar({
           "flex items-center justify-center gap-2"
         )}
       >
-        <span>
-          <b>EVENT COUNT</b>
-        </span>
+        <b>EVENT COUNT</b>
         <span></span>
         {CALENDAR_LEGEND_MARKER_STYLE.map(({ color, text }, idx) => (
           <>
@@ -181,7 +176,6 @@ export function LayoutCalendar({
   );
 
   const renderCalendar = useMemo(() => {
-    let o = 0;
     return (
       <div className="flex flex-col flex-auto gap-4">
         <table className="w-full h-full table-fixed">
@@ -210,7 +204,6 @@ export function LayoutCalendar({
                     <PageHomeCalendarDate
                       key={`Calendar_${idx}_${idx2}`}
                       calendarDate={calendar && calendar[7 * idx + idx2]}
-                      countData={countData[o++]}
                       type={type}
                       onClick={() => {
                         if (calendar)
@@ -224,10 +217,15 @@ export function LayoutCalendar({
               ))}
           </tbody>
         </table>
-        {renderLegend}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center">
+            <Checkbox label={<label>Show hidden events</label>} />
+          </div>
+          {renderLegend}
+        </div>
       </div>
     );
-  }, [calendar, countData, renderLegend, setFocusDate, type]);
+  }, [calendar, renderLegend, setFocusDate, type]);
 
   useEffect(() => {
     handleBuildCalendar();
