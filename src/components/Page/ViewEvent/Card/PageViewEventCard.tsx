@@ -86,6 +86,19 @@ export function PageViewEventCard({
   const stateLoading = useState(false);
   const loading = stateLoading[0];
 
+  const { addToastPreset } = useToast();
+  const { stateModalDelete, deleteEvent } = useEvent({});
+
+  const identification = stateIdentification[0];
+  const { user, initialized } = identification;
+  const [cardHeight, setCardHeight] = useState(0);
+
+  const authorized = useMemo(() => {
+    if (!initialized) return undefined;
+
+    return Boolean(user && !user?.ban);
+  }, [initialized, user]);
+
   const initialEventData = useMemo(() => {
     if (!event || mode === "create") return EVENT_EMPTY;
 
@@ -104,18 +117,6 @@ export function PageViewEventCard({
 
     return object;
   }, [event, mode]);
-  const { addToastPreset } = useToast();
-  const { stateModalDelete, deleteEvent } = useEvent({});
-
-  const identification = stateIdentification[0];
-  const { user, initialized } = identification;
-  const [cardHeight, setCardHeight] = useState(0);
-
-  const authorized = useMemo(() => {
-    if (!initialized) return undefined;
-
-    return Boolean(user && !user?.ban);
-  }, [initialized, user]);
 
   const handleConstructEventValues = useCallback(
     async (values: unknown) => {
@@ -189,7 +190,8 @@ export function PageViewEventCard({
         updateEventNew(
           eventPreviousValues.current.id,
           eventPreviousValues.current,
-          newEvent
+          newEvent,
+          user.id
         )
           .then(async (result) => {
             await sleep(200);
@@ -382,9 +384,7 @@ export function PageViewEventCard({
   }, [handleUpdateTagsOnEditMode]);
 
   const handleInitializeHeight = useCallback(() => {
-    const card = document.getElementsByClassName(
-      "FocusedThumbnailEventCard"
-    )[0];
+    const card = document.getElementsByClassName("EventCardWrapper")[0];
 
     if (card) {
       const realHeight = card.getBoundingClientRect().height;
@@ -436,20 +436,10 @@ export function PageViewEventCard({
     ]
   );
 
-  const renderAccessiblePage = useMemo(
-    () =>
-      mode === "view" ? (
-        <div className="FocusedThumbnailEventCard">{renderPage}</div>
-      ) : (
-        renderPage
-      ),
-    [mode, renderPage]
-  );
-
   return loading || authorized === undefined ? (
     <LayoutNotice preset="loader" />
   ) : mode === "view" || authorized ? (
-    renderAccessiblePage
+    <div className="EventCardWrapper">{renderPage}</div>
   ) : (
     <LayoutNotice
       title="No Access"

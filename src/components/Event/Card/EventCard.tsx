@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { Card } from "semantic-ui-react";
+import { Card, Icon, Popup } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventCardDetail,
@@ -9,8 +9,9 @@ import {
   EventButtonFollow,
   EventButtonMore,
   EventTags,
+  User,
 } from "@/components";
-import { getTimeDifference, strDateTime } from "@/utils";
+import { strDateTime } from "@/utils";
 import {
   EventCardDisplayType,
   EventDetailCompactType,
@@ -41,19 +42,9 @@ export function EventCard({
   updateUserSubscribedEventClientSide,
   updateEvent,
 }: EventCardProps) {
-  const {
-    id,
-    name,
-    description,
-    authorId,
-    organizer,
-    thumbnailSrc,
-    tags,
-    postDate,
-    authorName,
-  } = event;
+  const { id, name, description, authorId, thumbnailSrc, tags, hide } = event;
   const identification = stateIdentification[0];
-  const { users, user } = identification;
+  const { user } = identification;
   const { deleteEvent } = useEvent({});
   const { showReportModal } = useReport();
   const stateDeleting = useState(false);
@@ -147,24 +138,10 @@ export function EventCard({
     /** @todo Replace authorId with real username. */
     () => (
       <span className="text-12px text-secondary-4 tracking-wide">
-        Posted by{" "}
-        <span className="text-secondary-6 font-black">
-          {authorName
-            ? authorName
-            : users[authorId]
-            ? users[authorId].name
-            : authorId}
-        </span>{" "}
-        {getTimeDifference(postDate)}
-        {organizer && (
-          <>
-            &nbsp;- Organized by&nbsp;
-            <span className="text-secondary-6 font-black">{organizer}</span>
-          </>
-        )}
+        <User id={authorId} type="name" />
       </span>
     ),
-    [authorId, authorName, organizer, postDate, users]
+    [authorId]
   );
 
   const renderEventTags = useMemo(
@@ -175,13 +152,30 @@ export function EventCard({
   const renderEventTitle = useMemo(
     () => (
       <div className="inline-block leading-7">
+        {hide && (
+          <Popup
+            trigger={<Icon name="eye slash" className="text-secondary-5" />}
+            content="Hidden"
+            size="tiny"
+            offset={[-25, 0]}
+            basic
+            inverted
+          />
+        )}
         <Link href={eventLink}>
-          <h2 className="inline text-18px pr-1 hover:underline">{name}</h2>
+          <h2
+            className={clsx(
+              "inline text-18px pr-1 hover:underline",
+              hide && "text-secondary-5"
+            )}
+          >
+            {name}
+          </h2>
         </Link>
         {renderEventTags}
       </div>
     ),
-    [eventLink, name, renderEventTags]
+    [eventLink, hide, name, renderEventTags]
   );
 
   const renderEventDescription = useMemo(

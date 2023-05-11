@@ -11,21 +11,28 @@ import {
 } from "@/types";
 import { getDateMonthYear, strDay, strMonth } from "@/utils";
 import { DAYS } from "@/consts";
-import { useScreen } from "@/hooks";
+import { useIdentification, useScreen } from "@/hooks";
 
 export interface LayoutCalendarProps {
+  stateShowHidden: StateObject<boolean>;
   stateFocusDate: StateObject<FocusDateType>;
   stateFilters: StateObject<EventTagNameType[]>;
+  hiddenCount: number;
   events: EventType[];
 }
 
 export function LayoutCalendar({
+  stateShowHidden,
   stateFocusDate,
   stateFilters,
+  hiddenCount,
   events,
 }: LayoutCalendarProps) {
+  const setShowHidden = stateShowHidden[1];
   const [focusDate, setFocusDate] = stateFocusDate;
   const [calendar, setCalendar] = useState<CalendarDateType[]>();
+  const { stateIdentification } = useIdentification();
+  const { user } = stateIdentification[0];
   const { type } = useScreen();
 
   const handleChangeTime = useCallback(
@@ -175,6 +182,23 @@ export function LayoutCalendar({
     [type]
   );
 
+  const renderCalendarFooter = useMemo(
+    () => (
+      <div className="flex flex-col gap-2">
+        {user && user.role === "admin" && (
+          <div className="flex items-center">
+            <Checkbox
+              onChange={(_, data) => setShowHidden(data.checked ?? false)}
+              label={<label>Show hidden events ({hiddenCount})</label>}
+            />
+          </div>
+        )}
+        {renderLegend}
+      </div>
+    ),
+    [hiddenCount, renderLegend, setShowHidden, user]
+  );
+
   const renderCalendar = useMemo(() => {
     return (
       <div className="flex flex-col flex-auto gap-4">
@@ -217,15 +241,10 @@ export function LayoutCalendar({
               ))}
           </tbody>
         </table>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center">
-            <Checkbox label={<label>Show hidden events</label>} />
-          </div>
-          {renderLegend}
-        </div>
+        {renderCalendarFooter}
       </div>
     );
-  }, [calendar, renderLegend, setFocusDate, type]);
+  }, [calendar, renderCalendarFooter, setFocusDate, type]);
 
   useEffect(() => {
     handleBuildCalendar();

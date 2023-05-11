@@ -7,9 +7,16 @@ export default function Home() {
   const stateFocusDate = useState(getDateMonthYear(new Date()));
   const stateSideBar = useState(false);
   const focusDate = stateFocusDate[0];
+  const stateShowHidden = useState(false);
+  const showHidden = stateShowHidden[0];
 
-  const { stateEvents, stateFilters, getEventsMonthly, handleUpdateEvent } =
-    useEvent({});
+  const {
+    stateEvents,
+    stateFilters,
+    getEventsMonthly,
+    handleUpdateEvent,
+    hiddenEventCount,
+  } = useEvent({});
 
   const events = stateEvents[0];
 
@@ -27,9 +34,17 @@ export default function Home() {
         stateFocusDate={stateFocusDate}
         stateFilters={stateFilters}
         events={displayedEvents}
+        stateShowHidden={stateShowHidden}
+        hiddenCount={hiddenEventCount}
       />
     ),
-    [displayedEvents, stateFilters, stateFocusDate]
+    [
+      displayedEvents,
+      hiddenEventCount,
+      stateFilters,
+      stateFocusDate,
+      stateShowHidden,
+    ]
   );
 
   const renderSidebar = useMemo(
@@ -51,8 +66,8 @@ export default function Home() {
   );
 
   const handlePopulateCalendar = useCallback(() => {
-    getEventsMonthly(focusDate.month, focusDate.year);
-  }, [focusDate.month, focusDate.year, getEventsMonthly]);
+    getEventsMonthly(focusDate.month, focusDate.year, showHidden);
+  }, [focusDate.month, focusDate.year, getEventsMonthly, showHidden]);
 
   useEffect(() => {
     handlePopulateCalendar();
