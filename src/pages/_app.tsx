@@ -32,7 +32,8 @@ import {
   UserType,
   NotificationData,
 } from "@/types";
-import { useNotification } from "@/hooks";
+import { useNavBar, useNotification } from "@/hooks";
+import { useRouter } from "next/router";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
@@ -62,6 +63,10 @@ export default function App({ Component, pageProps }: AppProps) {
   const auth = getAuth();
   const listenerRef = useRef<Unsubscribe>();
   const { handleUpdateNotifications } = useNotification();
+  const { togglable } = useNavBar({
+    screen,
+  });
+  const router = useRouter();
 
   const handleAddToast = useCallback((toast: ToastType) => {
     toastCount.current++;
@@ -134,17 +139,13 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [auth, setIdentification]);
 
   const handleAdjustNavbar = useCallback(() => {
-    if (screen.type === "desktop_lg") {
-      setNavBar(true);
-    } else {
-      setNavBar(false);
-    }
-  }, [screen, setNavBar]);
+    setNavBar(!togglable);
+  }, [setNavBar, togglable]);
 
   const renderShadeNavBar = useMemo(
     () => (
       <>
-        {screen.type !== "desktop_lg" && navBar && (
+        {togglable && navBar && (
           <div
             className="fixed left-0 top-0 w-screen h-screen z-20 bg-slate-900 opacity-50"
             onClick={() => {
@@ -154,7 +155,7 @@ export default function App({ Component, pageProps }: AppProps) {
         )}
       </>
     ),
-    [navBar, screen.type, setNavBar]
+    [navBar, setNavBar, togglable]
   );
 
   const renderShadeModal = useMemo(
@@ -222,7 +223,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     handleAdjustNavbar();
-  }, [handleAdjustNavbar, screen]);
+  }, [handleAdjustNavbar, screen, router]);
 
   const handleInitialize = useCallback(() => {
     if (initialize.current) return;

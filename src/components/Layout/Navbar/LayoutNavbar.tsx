@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from "react";
 import clsx from "clsx";
-import { useModal, useNotification, useScreen, useToast } from "@/hooks";
+import {
+  useModal,
+  useNavBar,
+  useNotification,
+  useScreen,
+  useToast,
+} from "@/hooks";
 import {
   ResponsiveInlineStyleType,
   StateObject,
@@ -33,6 +39,10 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [isNavBarVisible, setIsNavBarVisible] = stateNavBar;
   const { type } = useScreen();
   const { stateIdentification } = useIdentification();
+  const screen = useScreen();
+  const { togglable } = useNavBar({
+    screen,
+  });
   const { user } = stateIdentification[0];
   const { notification } = useNotification();
   const router = useRouter();
@@ -170,10 +180,10 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         <Link href="/" className={"mr-auto"}>
           <Image src="Logo.svg" alt="Chartis Logo" width={110} height={32} />
         </Link>
-        {type !== "desktop_lg" && renderToggleButton}
+        {togglable && renderToggleButton}
       </div>
     ),
-    [renderToggleButton, type]
+    [renderToggleButton, togglable]
   );
 
   const renderSearch = useMemo(
@@ -225,14 +235,14 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           className="ml-2"
           href={link.href}
           onClick={() => {
-            if (type !== "desktop_lg") setIsNavBarVisible(false);
+            if (togglable) setIsNavBarVisible(false);
           }}
         >
           {link.name}
         </Link>
       </div>
     ),
-    [router, setIsNavBarVisible, type]
+    [router.asPath, setIsNavBarVisible, togglable]
   );
 
   const renderLinks = useMemo(
@@ -321,9 +331,18 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     return NAVBAR_WRAPPER_RESPONSIVE_STYLE[type];
   }, [isNavBarVisible, type]);
 
+  const navBarFillerStyle = useMemo(() => {
+    if (togglable) {
+      return NAVBAR_WRAPPER_RESPONSIVE_STYLE[type];
+    } else {
+      setIsNavBarVisible(true);
+      return NAVBAR_WRAPPER_RESPONSIVE_STYLE["desktop_lg"];
+    }
+  }, [setIsNavBarVisible, togglable, type]);
+
   return (
     <>
-      <div style={NAVBAR_WRAPPER_RESPONSIVE_STYLE[type]} />
+      <div style={navBarFillerStyle} />
       <div
         style={navBarStyle}
         className={clsx(
