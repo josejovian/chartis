@@ -46,6 +46,7 @@ export interface ModalViewEventProps {
   stateIdentification: StateObject<IdentificationType>;
   width: number;
   type: ScreenSizeCategoryType;
+  newEventData: (id: string, newEvt: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
     userId: string,
     eventId: string,
@@ -62,6 +63,7 @@ export function PageViewEventCard({
   stateIdentification,
   width,
   type,
+  newEventData,
   updateUserSubscribedEventClientSide,
   eventPreviousValues,
   fancy,
@@ -117,7 +119,7 @@ export function PageViewEventCard({
   }, [event, mode]);
 
   const handleConstructEventValues = useCallback(
-    async (values: unknown) => {
+    (values: unknown) => {
       if (!user) return null;
 
       const { startDate, endDate } = values as EventType;
@@ -158,7 +160,7 @@ export function PageViewEventCard({
 
       setSubmitting(true);
 
-      const { newEvent, eventId } = (await data) as any;
+      const { newEvent, eventId } = data;
       await sleep(200);
 
       if (mode === "create") {

@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-console */
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { type UserCredential, updateProfile } from "firebase/auth";
@@ -29,6 +26,9 @@ export function ModalAuthRegister() {
           name: data.name,
           email: data.email,
           joinDate: new Date().getTime(),
+          notificationCount: 0,
+          subscribedEvents: [],
+          unseenEvents: [],
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         cred.user.uid
@@ -62,6 +62,7 @@ export function ModalAuthRegister() {
         ...data,
         onSuccess: (cred) => handleStoreUserData(data, cred),
         onFail: (e) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const errorMessage = getErrorMessage((e as any).code);
           addToast({
             title: "Registration Failed",

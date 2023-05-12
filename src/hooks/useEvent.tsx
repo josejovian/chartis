@@ -70,7 +70,6 @@ export function useEvent() {
     const eventDefault = {
       id: "",
       authorId: "",
-      thumbnailURL: "",
       name: "",
       tags: {},
       organizer: "",
@@ -78,8 +77,8 @@ export function useEvent() {
       startDate: new Date(-1).getTime(),
       endDate: new Date(-1).getTime(),
       description: "",
-      postedAt: new Date(-1).getTime(),
-      lastUpdatedAt: new Date(-1).getTime(),
+      postedAt: new Date().getTime(),
+      lastUpdatedAt: new Date().getTime(),
       subscriberCount: 0,
       subscriberIds: [],
       isHidden: false,
@@ -298,43 +297,39 @@ export function useEvent() {
     []
   );
 
-  const deleteEvent = useCallback(
-    async (
-      eventId: string
-    ): Promise<[PromiseSettledResult<void>, PromiseSettledResult<void>]> => {
-      const batchOperations: BatchOperationType[] = [];
+  const deleteEvent = useCallback(async (eventId: string): Promise<void> => {
+    const batchOperations: BatchOperationType[] = [];
 
-      // delete event document
-      batchOperations.push({
-        collectionName: FIREBASE_COLLECTION_EVENTS,
-        operationType: "delete",
-        documentId: eventId,
-        value: {},
-      });
+    // delete event document
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_EVENTS,
+      operationType: "delete",
+      documentId: eventId,
+      value: {},
+    });
 
-      // delete comment document
-      batchOperations.push({
-        collectionName: FIREBASE_COLLECTION_COMMENTS,
-        operationType: "delete",
-        documentId: eventId,
-        value: {},
-      });
+    // delete comment document
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_COMMENTS,
+      operationType: "delete",
+      documentId: eventId,
+      value: {},
+    });
 
-      // delete update document
-      batchOperations.push({
-        collectionName: FIREBASE_COLLECTION_UPDATES,
-        operationType: "delete",
-        documentId: eventId,
-        value: {},
-      });
+    // delete update document
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_UPDATES,
+      operationType: "delete",
+      documentId: eventId,
+      value: {},
+    });
 
-      return Promise.allSettled([
-        deleteImage(eventId),
-        writeDataBatch(batchOperations),
-      ]);
-    },
-    []
-  );
+    deleteImage(eventId).catch((e) => {
+      return null;
+    });
+
+    return writeDataBatch(batchOperations);
+  }, []);
 
   return useMemo(
     () => ({

@@ -51,6 +51,9 @@ export function PageSearchEventCard({
   const sortBy = useMemo(() => EVENT_SORT_CRITERIA[sort], [sort]);
   const { updateUserSubscribedEventClientSide } = useIdentification();
   const router = useRouter();
+  const { stateIdentification } = useIdentification();
+  const [identification] = stateIdentification;
+  const { user } = identification;
   const { id: authorId } = router.query;
   const queried = useRef(0);
 
@@ -93,11 +96,10 @@ export function PageSearchEventCard({
       queriedEvents.push(...events);
     }
 
-    const filteredEvents = events.filter((event) =>
-      Object.keys(event.tags).some(
-        (tag) => filters.length < 1 || filters.some((filter) => filter === tag)
-      )
-    );
+    const filteredEvents = events.filter((event) => {
+      const eventTags = Object.keys(event.tags);
+      return filters.every((filter) => eventTags.includes(filter));
+    });
 
     const sortedEvents = sortEvents(filteredEvents);
 
@@ -144,9 +146,9 @@ export function PageSearchEventCard({
   useEffect(() => {
     switch (viewType) {
       case "userCreatedEvents":
-        getEvents([where("authorId", "==", authorId)])
+        getEvents([where("authorId", "==", authorId ?? user?.id)])
           .then((event) => setEvents(event))
-          .catch(() => {
+          .catch((e) => {
             addToastPreset("fail-get");
           });
         break;
@@ -171,6 +173,7 @@ export function PageSearchEventCard({
     getEvents,
     getFollowedEvents,
     setEvents,
+    user?.id,
     viewType,
   ]);
 
