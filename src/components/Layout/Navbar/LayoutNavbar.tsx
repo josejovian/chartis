@@ -206,41 +206,42 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 
   const renderNavBarLink = useCallback(
     (link: LayoutNavbarItemProps) => (
-      <div
-        className={clsx(
-          "relative flex items-center h-8 border-l-4 text-sm pl-4",
-          router.asPath === link.href
-            ? [
-                "text-primary-3 bg-slate-800 hover:bg-slate-700",
-                "border-l-4 border-primary-3",
-              ]
-            : [
-                "!text-gray-50 hover:bg-slate-700 border-transparent",
-                "cursor-pointer",
-              ]
-        )}
+      <Link
+        href={link.href}
+        onClick={() => {
+          if (togglable) setIsNavBarVisible(false);
+        }}
       >
         <span
-          className="flex items-center justify-center"
-          style={{
-            maxWidth: "1rem",
-          }}
+          className={clsx(
+            "relative flex items-center h-8 border-l-4 text-sm pl-4",
+            router.asPath === link.href
+              ? [
+                  "text-primary-3 bg-slate-800 hover:bg-slate-700",
+                  "border-l-4 border-primary-3",
+                ]
+              : [
+                  "!text-gray-50 hover:bg-slate-700 border-transparent",
+                  "cursor-pointer",
+                ]
+          )}
         >
-          <Icon.Group>
-            <Icon name={link.icon} />
-            {true && <Icon name="circle" color="red" corner="top right" />}
-          </Icon.Group>
+          <span
+            className="flex items-center justify-center"
+            style={{
+              width: "2rem",
+            }}
+          >
+            <Icon.Group>
+              <Icon name={link.icon} />
+              {link.alert && (
+                <Icon name="circle" color="red" corner="top right" />
+              )}
+            </Icon.Group>
+          </span>
+          <span>{link.name}</span>
         </span>
-        <Link
-          className="ml-2"
-          href={link.href}
-          onClick={() => {
-            if (togglable) setIsNavBarVisible(false);
-          }}
-        >
-          {link.name}
-        </Link>
-      </div>
+      </Link>
     ),
     [router.asPath, setIsNavBarVisible, togglable]
   );
