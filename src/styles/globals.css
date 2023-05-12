@@ -70,8 +70,7 @@
     display: none !important;
   }
   .PageSearchEventCardEmbed {
-    overflow: hidden;
-    max-height: calc(100% - 10rem);
+    overflow: hidden !important;
   }
   [role="listbox"] .ui.label.empty {
     @apply border;
