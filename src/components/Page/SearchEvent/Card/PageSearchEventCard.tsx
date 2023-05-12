@@ -142,8 +142,6 @@ export function PageSearchEventCard({
   // }, [handleGetPathQuery]);
 
   useEffect(() => {
-    // console.log(viewType);
-    // return;
     switch (viewType) {
       case "userCreatedEvents":
         getEvents([where("authorId", "==", authorId)])

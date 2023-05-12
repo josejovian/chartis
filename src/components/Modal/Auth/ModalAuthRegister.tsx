@@ -102,8 +102,7 @@ export function ModalAuthRegister() {
       validate={(values) => {
         const casted = values as FormRegisterProps;
         const errors: Record<string, string> = {};
-
-        if (casted.password !== casted.confirm) {
+        if (casted.password !== casted.confirmPassword) {
           errors.confirm = "Password doesn't match";
         }
         if (casted.password.length < 4) {
