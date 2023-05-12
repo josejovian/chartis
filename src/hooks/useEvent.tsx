@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   FIREBASE_COLLECTION_COMMENTS,
   FIREBASE_COLLECTION_EVENTS,
@@ -7,7 +7,7 @@ import {
 } from "@/consts";
 import { EventType } from "@/types";
 import { compareEventValues } from "@/utils";
-import { useIdentification, useToast } from "@/hooks";
+import { useIdentification } from "@/hooks";
 import {
   QueryConstraint,
   arrayRemove,
@@ -30,24 +30,12 @@ export function useEvent() {
   const { stateIdentification } = useIdentification();
   const [identification] = stateIdentification;
   const { user } = identification;
-  const stateModalDelete = useState(false);
-  const { addToastPreset } = useToast();
 
   const getEvents = useCallback(
     async (queryConstraints: QueryConstraint[]): Promise<EventType[]> => {
-      let eventArray = [] as EventType[];
-      await readData("events", queryConstraints)
-        .then((result) => {
-          if (result) {
-            eventArray = result;
-          }
-        })
-        .catch(() => {
-          addToastPreset("fail-get");
-        });
-      return eventArray;
+      return readData("events", queryConstraints);
     },
-    [addToastPreset]
+    []
   );
 
   const getEventsMonthly = useCallback(
@@ -340,7 +328,6 @@ export function useEvent() {
         value: {},
       });
 
-      // delete event image first
       return Promise.allSettled([
         deleteImage(eventId),
         writeDataBatch(batchOperations),
@@ -358,7 +345,6 @@ export function useEvent() {
       createEvent,
       toggleEventSubscription,
       updateEvent,
-      stateModalDelete,
     }),
     [
       getEvents,
@@ -368,7 +354,6 @@ export function useEvent() {
       createEvent,
       toggleEventSubscription,
       updateEvent,
-      stateModalDelete,
     ]
   );
 }

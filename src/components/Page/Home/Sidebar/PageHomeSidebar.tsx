@@ -15,15 +15,15 @@ import { ASSET_NO_CONTENT } from "@/consts";
 export interface PageHomeSideBarProps {
   focusDate: FocusDateType;
   events: EventType[];
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   stateSideBar: StateObject<boolean>;
+  extraDeleteHandler: (eventId: string) => void;
 }
 
 export function PageHomeSideBar({
   focusDate,
   events,
   stateSideBar,
-  updateEvent,
+  extraDeleteHandler,
 }: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
@@ -73,15 +73,15 @@ export function PageHomeSideBar({
             updateUserSubscribedEventClientSide={
               updateUserSubscribedEventClientSide
             }
-            updateEvent={updateEvent}
+            extraDeleteHandler={extraDeleteHandler}
           />
         ))}
       </div>
     ),
     [
       events,
+      extraDeleteHandler,
       stateIdentification,
-      updateEvent,
       updateUserSubscribedEventClientSide,
     ]
   );

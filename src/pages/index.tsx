@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHomeSideBar, LayoutCalendar, LayoutTemplate } from "@/components";
 import { useEvent, useToast } from "@/hooks";
 import { getDateMonthYear } from "@/utils";
@@ -14,8 +14,11 @@ export default function Home() {
   const stateFilters = useState<EventTagNameType[]>([]);
   const [filters] = stateFilters;
   const { addToastPreset } = useToast();
+  const { getEventsMonthly } = useEvent();
 
-  const { getEventsMonthly, updateEvent } = useEvent();
+  const eventCardExtraDeleteHandler = useCallback((eventId: string) => {
+    setEvents((prev) => prev.filter((event) => event.id !== eventId));
+  }, []);
 
   const displayedCalendarEvents = useMemo((): Record<number, EventType[]> => {
     const calendarEvents: Record<number, EventType[]> = {};
@@ -44,7 +47,7 @@ export default function Home() {
     });
 
     return calendarEvents;
-  }, [events, filters, focusDate.month, focusDate.year, showHidden]);
+  }, [events, filters, showHidden, focusDate.year, focusDate.month]);
 
   const renderSidebar = useMemo(
     () => (
@@ -52,10 +55,15 @@ export default function Home() {
         focusDate={focusDate}
         events={displayedCalendarEvents[focusDate.day]}
         stateSideBar={stateSideBar}
-        updateEvent={() => updateEvent}
+        extraDeleteHandler={eventCardExtraDeleteHandler}
       />
     ),
-    [displayedCalendarEvents, focusDate, stateSideBar, updateEvent]
+    [
+      displayedCalendarEvents,
+      eventCardExtraDeleteHandler,
+      focusDate,
+      stateSideBar,
+    ]
   );
 
   useEffect(() => {

@@ -46,7 +46,6 @@ export interface ModalViewEventProps {
   stateIdentification: StateObject<IdentificationType>;
   width: number;
   type: ScreenSizeCategoryType;
-  newEventData: (id: string, newEvt: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
     userId: string,
     eventId: string,
@@ -63,14 +62,12 @@ export function PageViewEventCard({
   stateIdentification,
   width,
   type,
-  newEventData,
   updateUserSubscribedEventClientSide,
   eventPreviousValues,
   fancy,
 }: ModalViewEventProps) {
   const router = useRouter();
-  const { updateEvent, createEvent } = useEvent();
-
+  const { updateEvent, createEvent, deleteEvent } = useEvent();
   const stateFocusThumbnail = useState(true);
   const focusThumbnail = stateFocusThumbnail[0];
   const [event, setEvent] = stateEvent;
@@ -87,7 +84,8 @@ export function PageViewEventCard({
   const loading = stateLoading[0];
 
   const { addToastPreset } = useToast();
-  const { stateModalDelete, deleteEvent } = useEvent();
+  const stateModalDelete = useState(false);
+  const [, setModalDelete] = stateModalDelete;
 
   const identification = stateIdentification[0];
   const { user, initialized } = identification;
@@ -222,9 +220,10 @@ export function PageViewEventCard({
     await sleep(200);
 
     await deleteEvent(event.id).then(() => {
+      setModalDelete(false);
       setDeleting(false);
     });
-  }, [deleteEvent, event.id, setDeleting]);
+  }, [deleteEvent, event.id, setDeleting, setModalDelete]);
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
@@ -319,7 +318,6 @@ export function PageViewEventCard({
             stateMode={stateMode}
             stateIdentification={stateIdentification}
             onDelete={handleDeleteEvent}
-            updateEvent={newEventData}
             updateUserSubscribedEventClientSide={
               updateUserSubscribedEventClientSide
             }
@@ -349,7 +347,6 @@ export function PageViewEventCard({
       stateMode,
       stateIdentification,
       handleDeleteEvent,
-      newEventData,
       updateUserSubscribedEventClientSide,
       cardHeight,
       stateFocusThumbnail,
