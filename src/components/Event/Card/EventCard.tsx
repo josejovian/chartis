@@ -259,7 +259,11 @@ export function EventCard({
         </Card>
       ) : (
         <Card fluid className="EventCard flex !flex-row h-full">
-          <EventThumbnail src={thumbnailSrc} type="thumbnail-fixed-height" />
+          <EventThumbnail
+            src={thumbnailSrc}
+            type="thumbnail-fixed-height"
+            alwaysShow
+          />
           <div className="flex flex-col py-2 pb-3 px-10 w-full h-full justify-between">
             <div className="flex flex-col">
               {renderEventCreators}

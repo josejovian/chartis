@@ -12,16 +12,16 @@ export interface UserProps {
   truncate?: boolean;
 }
 
-export function User({ className, id, type }: UserProps) {
+export function User({ className, id, type, truncate }: UserProps) {
   const [user, setUser] = useState<UserType>();
   const displayedName = useMemo(
     () =>
       user
-        ? user.name.length < 12
+        ? !truncate || user.name.length < 12
           ? user.name
           : `${user.name.slice(0, 12)}...`
         : "Unknown User",
-    [user]
+    [truncate, user]
   );
 
   const [loading, setLoading] = useState(true);
