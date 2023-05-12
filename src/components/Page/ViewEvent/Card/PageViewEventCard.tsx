@@ -46,7 +46,6 @@ export interface ModalViewEventProps {
   stateIdentification: StateObject<IdentificationType>;
   width: number;
   type: ScreenSizeCategoryType;
-  newEventData: (id: string, newEvt: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
     userId: string,
     eventId: string,
@@ -63,7 +62,6 @@ export function PageViewEventCard({
   stateIdentification,
   width,
   type,
-  newEventData,
   updateUserSubscribedEventClientSide,
   eventPreviousValues,
   fancy,
@@ -168,7 +166,7 @@ export function PageViewEventCard({
           .then(() => {
             sleep(200).then(() => {
               addToastPreset("feat-event-create");
-              router.push(`/event/${eventId}`);
+              router.replace(`/event/${eventId}`);
             });
           })
           .catch((e) => {
