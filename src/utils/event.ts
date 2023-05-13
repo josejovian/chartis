@@ -109,6 +109,7 @@ export function compareEventValues(before: EventType, after: EventType) {
     ["organizer", "update-organizer"],
     ["tags", "update-tags"],
     ["name", "update-title"],
+    ["thumbnailSrc", "update-thumbnail"],
   ];
 
   const updates: Partial<Record<UpdateNameType, UpdateChangedValueType>> = {};

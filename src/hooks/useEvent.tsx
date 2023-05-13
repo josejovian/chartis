@@ -75,9 +75,9 @@ export function useEvent() {
       organizer: "",
       location: "",
       startDate: new Date(-1).getTime(),
-      endDate: new Date(-1).getTime(),
+      endDate: undefined,
       description: "",
-      postedAt: new Date().getTime(),
+      postDate: new Date().getTime(),
       lastUpdatedAt: new Date().getTime(),
       subscriberCount: 0,
       subscriberIds: [],
@@ -95,6 +95,7 @@ export function useEvent() {
       value: {
         ...eventDefault,
         ...event,
+        postDate: new Date().getTime(),
       },
     });
 
@@ -104,9 +105,6 @@ export function useEvent() {
       operationType: "create",
       documentId: event.id,
       value: {
-        authorId: event.authorId,
-        eventId: event.id,
-        lastUpdatedAt: new Date().getTime(),
         updates: [],
       },
     });
@@ -156,6 +154,9 @@ export function useEvent() {
       )) as EventType;
 
       const changes = compareEventValues(previousValue, newValue);
+      if (different) {
+        changes["update-description"] = {};
+      }
 
       if (!updateDocumentExists) {
         batchOperations.push({
@@ -201,7 +202,6 @@ export function useEvent() {
         documentId: eventId,
         operationType: "update",
         value: {
-          eventId: eventId,
           updates: arrayUnion({
             authorId,
             updateId: eventUpdateId,
@@ -220,14 +220,14 @@ export function useEvent() {
               }).then(() => ({
                 ...newValue,
                 thumbnailSrc: imageURL,
-                version: previousValue.version ?? 0 + 1,
+                version: previousValue.version ? previousValue.version + 1 : 1,
               }));
             }
           );
         } else {
           return {
             ...newValue,
-            version: previousValue.version ?? 0 + 1,
+            version: previousValue.version ? previousValue.version + 1 : 1,
           };
         }
       }) as Promise<EventType>;

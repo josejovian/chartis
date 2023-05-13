@@ -6,6 +6,7 @@ export type UpdateNameType =
   | "update-tags"
   | "update-location"
   | "update-organizer"
+  | "update-thumbnail"
   | "initial-post";
 
 export type DatabaseUpdateChangesType = {

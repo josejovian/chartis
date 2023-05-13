@@ -178,14 +178,6 @@ export function EventCard({
           >
             {name}
           </h2>
-          <h2
-            className={clsx(
-              "inline text-18px pr-1 hover:underline",
-              hide && "text-secondary-5"
-            )}
-          >
-            {name}
-          </h2>
         </Link>
         {renderEventTags}
       </div>
