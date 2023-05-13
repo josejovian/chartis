@@ -5,7 +5,7 @@ import {
   FIREBASE_COLLECTION_UPDATES,
   FIREBASE_COLLECTION_USERS,
 } from "@/consts";
-import { EventType } from "@/types";
+import { CommentType, DatabaseCommentType, EventType } from "@/types";
 import { compareEventValues } from "@/utils";
 import { useIdentification } from "@/hooks";
 import {
@@ -331,6 +331,60 @@ export function useEvent() {
     return writeDataBatch(batchOperations);
   }, []);
 
+  const getComments = useCallback(
+    async (eventId: string): Promise<CommentType[]> => {
+      return readData(FIREBASE_COLLECTION_COMMENTS, eventId).then(
+        (comments) => {
+          return Object.entries(comments ?? {})
+            .reduce(
+              (
+                arr: CommentType[],
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                [k, v]: any
+              ) => {
+                arr.push({ commentId: k, ...v });
+                return arr;
+              },
+              []
+            )
+            .sort((a, b) => b.postDate - a.postDate) as CommentType[];
+        }
+      );
+    },
+    []
+  );
+
+  const createComment = useCallback(
+    async (eventId: string, comment: DatabaseCommentType): Promise<void> => {
+      const batchOperations: BatchOperationType[] = [];
+
+      // delete event document
+      batchOperations.push({
+        collectionName: FIREBASE_COLLECTION_COMMENTS,
+        operationType: "update-merge",
+        documentId: eventId,
+        value: comment,
+      });
+
+      batchOperations.push({
+        collectionName: FIREBASE_COLLECTION_EVENTS,
+        documentId: eventId,
+        operationType: "update",
+        value: {
+          commentCount: increment(1),
+        },
+      });
+
+      return writeDataBatch(batchOperations);
+    },
+    []
+  );
+
+  // const deleteComment = useCallback(
+  //   (eventId: string, commentId: string): Promise<void> => {},
+  //   []
+  // );
+
   return useMemo(
     () => ({
       getEvents,
@@ -340,6 +394,8 @@ export function useEvent() {
       createEvent,
       toggleEventSubscription,
       updateEvent,
+      getComments,
+      createComment,
     }),
     [
       getEvents,
@@ -349,6 +405,8 @@ export function useEvent() {
       createEvent,
       toggleEventSubscription,
       updateEvent,
+      getComments,
+      createComment,
     ]
   );
 }

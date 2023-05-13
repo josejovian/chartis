@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAuth } from "firebase/auth";
-import { increment } from "firebase/firestore";
-import { createData, readData, updateData } from "@/firebase";
 import { Field, Formik } from "formik";
 import * as Yup from "yup";
 import pushid from "pushid";
@@ -20,7 +18,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
-import { useReport, useToast } from "@/hooks";
+import { useEvent, useReport, useToast } from "@/hooks";
 
 interface PageViewEventCardDiscussionTabProps {
   stateEvent: StateObject<EventType>;
@@ -33,6 +31,7 @@ export function PageViewEventCardDiscussionTab({
   type,
   identification,
 }: PageViewEventCardDiscussionTabProps) {
+  const { getComments, createComment } = useEvent();
   const [event, setEvent] = stateEvent;
   const { commentCount, id } = event;
   const [comments, setComments] = useState<CommentType[]>([]);
@@ -48,20 +47,6 @@ export function PageViewEventCardDiscussionTab({
     return Boolean(user && !user.ban);
   }, [initialized, user]);
 
-  const handleGetEventUpdates = useCallback(async () => {
-    if (commentCount === 0) return;
-
-    const rawData = await readData("comments", id);
-    const data = Object.entries(rawData ?? {})
-      .reduce((arr: CommentType[], [k, v]: any) => {
-        arr.push({ commentId: k, ...v });
-        return arr;
-      }, [])
-      .sort((a, b) => b.postDate - a.postDate) as CommentType[];
-
-    setComments(data);
-  }, [commentCount, id]);
-
   const handlePostComment = useCallback(
     async (values: any) => {
       const poster = auth.currentUser;
@@ -75,32 +60,35 @@ export function PageViewEventCardDiscussionTab({
         text: values.comment,
       };
       newCommentObject[commentId] = newComment;
-      setLoading(true);
-      await sleep(200);
 
-      createData(`comments`, newCommentObject, id, true)
-        .then(async () => {
-          await updateData("events", id, { commentCount: increment(1) as any });
+      setLoading(true);
+      createComment(id, newCommentObject)
+        .then(() => {
           setComments((prev) => [newComment, ...prev]);
           setEvent((prev) => ({
             ...prev,
             commentCount: (prev.commentCount ?? 0) + 1,
           }));
-
-          await sleep(100);
-          setLoading(false);
         })
-        .catch(() => {
-          setLoading(false);
+        .catch((e) => {
           addToastPreset("fail-post");
+        })
+        .finally(() => {
+          sleep(100);
+          setLoading(false);
         });
     },
-    [addToastPreset, auth.currentUser, id, setEvent]
+    [addToastPreset, auth.currentUser, createComment, id, setEvent]
   );
 
   useEffect(() => {
-    handleGetEventUpdates();
-  }, [handleGetEventUpdates]);
+    if (commentCount && commentCount > 0)
+      getComments(id)
+        .then((comments) => setComments(comments))
+        .catch((e) => {
+          addToastPreset("fail-get");
+        });
+  }, [addToastPreset, commentCount, getComments, id]);
 
   const renderCommentCard = useCallback(
     (comment: CommentType, last?: boolean) => (
