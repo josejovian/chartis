@@ -86,17 +86,17 @@ export function PageSearchEventCard({
   const displayedEvents = useMemo(() => {
     const queriedEvents: EventType[] = [];
 
-    if (queried && query) {
+    if (queried && query.length > 3) {
       queriedEvents.push(
         ...events.filter((event) =>
           event.name.toLowerCase().includes(query.toLowerCase())
         )
       );
-    } else {
+    } else if (viewType !== "default" && query.length < 4) {
       queriedEvents.push(...events);
     }
 
-    const filteredEvents = events.filter((event) => {
+    const filteredEvents = queriedEvents.filter((event) => {
       const eventTags = Object.keys(event.tags);
       return filters.every((filter) => eventTags.includes(filter));
     });
@@ -104,7 +104,7 @@ export function PageSearchEventCard({
     const sortedEvents = sortEvents(filteredEvents);
 
     return sortedEvents;
-  }, [events, filters, query, sortEvents]);
+  }, [events, filters, query, sortEvents, viewType]);
 
   // const handleUpdatePathQueries = useCallback(() => {
   //   if (queried.current <= 1) return;
