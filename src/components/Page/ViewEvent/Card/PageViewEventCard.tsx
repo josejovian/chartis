@@ -37,20 +37,22 @@ import {
   IdentificationType,
 } from "@/types";
 import { EVENT_EMPTY } from "@/consts";
+import clsx from "clsx";
 
 export interface ModalViewEventProps {
   className?: string;
   stateEvent: StateObject<EventType>;
   stateMode: StateObject<EventModeType>;
   stateIdentification: StateObject<IdentificationType>;
+  width: number;
   type: ScreenSizeCategoryType;
-  updateEvent: (id: string, newEvt: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
     userId: string,
     eventId: string,
     version?: number
   ) => void;
   eventPreviousValues?: MutableRefObject<EventType>;
+  fancy?: boolean;
 }
 
 export function PageViewEventCard({
@@ -58,13 +60,17 @@ export function PageViewEventCard({
   stateEvent,
   stateMode,
   stateIdentification,
+  width,
   type,
-  updateEvent,
   updateUserSubscribedEventClientSide,
   eventPreviousValues,
+  fancy,
 }: ModalViewEventProps) {
-  const [event, setEvent] = stateEvent;
   const router = useRouter();
+  const { updateEvent, createEvent, deleteEvent } = useEvent();
+  const stateFocusThumbnail = useState(true);
+  const focusThumbnail = stateFocusThumbnail[0];
+  const [event, setEvent] = stateEvent;
   const [mode, setMode] = stateMode;
   const stateTags = useState((event && event.tags) ?? []);
   const [tags, setTags] = stateTags;
@@ -74,7 +80,23 @@ export function PageViewEventCard({
   const setDeleting = stateDeleting[1];
   const stateActiveTab = useState<EventCardTabNameType>("detail");
   const activeTab = stateActiveTab[0];
-  const { updateEventNew, createEvent } = useEvent({});
+  const stateLoading = useState(false);
+  const loading = stateLoading[0];
+
+  const { addToastPreset } = useToast();
+  const stateModalDelete = useState(false);
+  const [, setModalDelete] = stateModalDelete;
+
+  const identification = stateIdentification[0];
+  const { user, initialized } = identification;
+  const [cardHeight, setCardHeight] = useState(0);
+
+  const authorized = useMemo(() => {
+    if (!initialized) return undefined;
+
+    return Boolean(user && !user?.ban);
+  }, [initialized, user]);
+
   const initialEventData = useMemo(() => {
     if (!event || mode === "create") return EVENT_EMPTY;
 
@@ -93,38 +115,19 @@ export function PageViewEventCard({
 
     return object;
   }, [event, mode]);
-  const { addToastPreset } = useToast();
-  const { stateModalDelete, deleteEvent } = useEvent({});
-
-  const identification = stateIdentification[0];
-  const { user, initialized } = identification;
-  const authorized = useMemo(() => {
-    if (!initialized) return undefined;
-
-    return Boolean(user && !user?.ban);
-  }, [initialized, user]);
 
   const handleConstructEventValues = useCallback(
-    async (values: unknown) => {
+    (values: unknown) => {
       if (!user) return null;
 
       const { startDate, endDate } = values as EventType;
       const eventId = mode === "create" ? pushid() : event.id;
-      const defaultValues = {
-        postDate: new Date().getTime(),
-        subscriberCount: 0,
-        guestSubscriberCount: 0,
-        subscriberIds: [],
-      };
 
       const newEvent: EventType = {
-        ...defaultValues,
-        ...(event ?? defaultValues),
+        ...event,
         ...(values as EventType),
         id: eventId,
         authorId: user.id,
-        authorName: user.name,
-        version: (event.version ?? 0) + (mode === "edit" ? 1 : 0),
         tags,
       };
 
@@ -132,8 +135,6 @@ export function PageViewEventCard({
 
       if (endDate) newEvent.endDate = new Date(endDate).getTime();
       else delete newEvent.endDate;
-
-      if (!newEvent.postDate) newEvent.postDate = defaultValues.postDate;
 
       return {
         newEvent,
@@ -157,7 +158,7 @@ export function PageViewEventCard({
 
       setSubmitting(true);
 
-      const { newEvent, eventId } = (await data) as any;
+      const { newEvent, eventId } = data;
       await sleep(200);
 
       if (mode === "create") {
@@ -165,7 +166,7 @@ export function PageViewEventCard({
           .then(() => {
             sleep(200).then(() => {
               addToastPreset("feat-event-create");
-              router.push(`/event/${eventId}`);
+              router.replace(`/event/${eventId}`);
             });
           })
           .catch((e) => {
@@ -173,10 +174,11 @@ export function PageViewEventCard({
             setSubmitting(false);
           });
       } else if (eventPreviousValues && eventPreviousValues.current) {
-        updateEventNew(
+        updateEvent(
           eventPreviousValues.current.id,
           eventPreviousValues.current,
-          newEvent
+          newEvent,
+          user.id
         )
           .then(async (result) => {
             await sleep(200);
@@ -205,7 +207,7 @@ export function PageViewEventCard({
       setEvent,
       setMode,
       setSubmitting,
-      updateEventNew,
+      updateEvent,
       user,
     ]
   );
@@ -217,13 +219,11 @@ export function PageViewEventCard({
 
     await sleep(200);
 
-    await deleteEvent({
-      eventId: event.id,
-      onFail: () => {
-        setDeleting(false);
-      },
+    await deleteEvent(event.id).then(() => {
+      setModalDelete(false);
+      setDeleting(false);
     });
-  }, [deleteEvent, event.id, setDeleting]);
+  }, [deleteEvent, event.id, setDeleting, setModalDelete]);
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
@@ -318,10 +318,13 @@ export function PageViewEventCard({
             stateMode={stateMode}
             stateIdentification={stateIdentification}
             onDelete={handleDeleteEvent}
-            updateEvent={updateEvent}
             updateUserSubscribedEventClientSide={
               updateUserSubscribedEventClientSide
             }
+            cardHeight={cardHeight}
+            stateFocused={stateFocusThumbnail}
+            stateLoading={stateLoading}
+            setFieldValue={setFieldValue}
           />
           {activeTabContent}
           <PageViewEventFoot
@@ -344,8 +347,10 @@ export function PageViewEventCard({
       stateMode,
       stateIdentification,
       handleDeleteEvent,
-      updateEvent,
       updateUserSubscribedEventClientSide,
+      cardHeight,
+      stateFocusThumbnail,
+      stateLoading,
       stateSubmitting,
       handleLeaveEdit,
     ]
@@ -361,10 +366,25 @@ export function PageViewEventCard({
     handleUpdateTagsOnEditMode();
   }, [handleUpdateTagsOnEditMode]);
 
+  const handleInitializeHeight = useCallback(() => {
+    const card = document.getElementsByClassName("EventCardWrapper")[0];
+
+    if (card) {
+      const realHeight = card.getBoundingClientRect().height;
+      setCardHeight(realHeight);
+    }
+  }, []);
+
+  useEffect(() => {
+    handleInitializeHeight();
+  });
+
   const renderPage = useMemo(
     () =>
       mode === "view" ? (
-        <LayoutCard className={className}>{renderCardContents({})}</LayoutCard>
+        <LayoutCard className={clsx(className, !focusThumbnail && "!h-full")}>
+          {renderCardContents({})}
+        </LayoutCard>
       ) : (
         <Formik
           initialValues={initialEventData}
@@ -375,7 +395,10 @@ export function PageViewEventCard({
         >
           {/** @todos Submit button seems to not work unless you do this. */}
           {({ submitForm, validateForm, setFieldValue }) => (
-            <LayoutCard className={className} form>
+            <LayoutCard
+              className={clsx(className, !focusThumbnail && "!h-full")}
+              form
+            >
               {renderCardContents({
                 submitForm,
                 validateForm,
@@ -387,6 +410,7 @@ export function PageViewEventCard({
       ),
     [
       className,
+      focusThumbnail,
       handleSubmitForm,
       handleValidateExtraForm,
       initialEventData,
@@ -395,10 +419,10 @@ export function PageViewEventCard({
     ]
   );
 
-  return authorized === undefined ? (
+  return loading || authorized === undefined ? (
     <LayoutNotice preset="loader" />
   ) : mode === "view" || authorized ? (
-    renderPage
+    <div className="EventCardWrapper">{renderPage}</div>
   ) : (
     <LayoutNotice
       title="No Access"

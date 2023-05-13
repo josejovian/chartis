@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { Card } from "semantic-ui-react";
+import { Card, Icon, Popup } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventCardDetail,
@@ -9,20 +9,18 @@ import {
   EventButtonFollow,
   EventButtonMore,
   EventTags,
+  User,
 } from "@/components";
-import { getTimeDifference, strDateTime } from "@/utils";
+import { strDateTime } from "@/utils";
 import {
   EventCardDisplayType,
   EventDetailCompactType,
   EventType,
-  IdentificationType,
-  StateObject,
 } from "@/types";
-import { useEvent, useReport } from "@/hooks";
+import { useEvent, useIdentification, useReport } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
-  stateIdentification: StateObject<IdentificationType>;
   event: EventType;
   type?: EventCardDisplayType;
   updateUserSubscribedEventClientSide: (
@@ -30,31 +28,22 @@ export interface EventCardProps {
     eventId: string,
     version?: number
   ) => void;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
+  extraDeleteHandler?: (eventId: string) => void;
 }
 
 export function EventCard({
   className,
-  stateIdentification,
   event,
   type = "vertical",
   updateUserSubscribedEventClientSide,
-  updateEvent,
+  extraDeleteHandler,
 }: EventCardProps) {
-  const {
-    id,
-    name,
-    description,
-    authorId,
-    organizer,
-    thumbnailSrc,
-    tags,
-    postDate,
-    authorName,
-  } = event;
+  const [wasDeleted, setWasDeleted] = useState(false);
+  const { id, name, description, authorId, thumbnailSrc, tags, hide } = event;
+  const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
-  const { users, user } = identification;
-  const { deleteEvent } = useEvent({});
+  const { user } = identification;
+  const { deleteEvent } = useEvent();
   const { showReportModal } = useReport();
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
@@ -74,17 +63,25 @@ export function EventCard({
     if (!event.id) return;
 
     setDeleting(true);
-
-    await deleteEvent({
-      eventId: id,
-      onSuccess: () => {
-        setModalDelete(false);
-      },
-      onFail: () => {
+    deleteEvent(id)
+      .then(() => {
+        extraDeleteHandler && extraDeleteHandler(id);
+        setWasDeleted(true);
+      })
+      .catch(() => {
         setDeleting(false);
-      },
-    });
-  }, [deleteEvent, event.id, id, setDeleting, setModalDelete]);
+      })
+      .finally(() => {
+        setModalDelete(false);
+      });
+  }, [
+    deleteEvent,
+    event.id,
+    extraDeleteHandler,
+    id,
+    setDeleting,
+    setModalDelete,
+  ]);
 
   const handleEditEvent = useCallback(() => {
     if (!event.id) return;
@@ -147,24 +144,10 @@ export function EventCard({
     /** @todo Replace authorId with real username. */
     () => (
       <span className="text-12px text-secondary-4 tracking-wide">
-        Posted by{" "}
-        <span className="text-secondary-6 font-black">
-          {authorName
-            ? authorName
-            : users[authorId]
-            ? users[authorId].name
-            : authorId}
-        </span>{" "}
-        {getTimeDifference(postDate)}
-        {organizer && (
-          <>
-            &nbsp;- Organized by&nbsp;
-            <span className="text-secondary-6 font-black">{organizer}</span>
-          </>
-        )}
+        <User id={authorId} type="name" />
       </span>
     ),
-    [authorId, authorName, organizer, postDate, users]
+    [authorId]
   );
 
   const renderEventTags = useMemo(
@@ -175,13 +158,30 @@ export function EventCard({
   const renderEventTitle = useMemo(
     () => (
       <div className="inline-block leading-7">
+        {hide && (
+          <Popup
+            trigger={<Icon name="eye slash" className="text-secondary-5" />}
+            content="Hidden"
+            size="tiny"
+            offset={[-25, 0]}
+            basic
+            inverted
+          />
+        )}
         <Link href={eventLink}>
-          <h2 className="inline text-18px pr-1 hover:underline">{name}</h2>
+          <h2
+            className={clsx(
+              "inline text-18px pr-1 hover:underline",
+              hide && "text-secondary-5"
+            )}
+          >
+            {name}
+          </h2>
         </Link>
         {renderEventTags}
       </div>
     ),
-    [eventLink, name, renderEventTags]
+    [eventLink, hide, name, renderEventTags]
   );
 
   const renderEventDescription = useMemo(
@@ -207,7 +207,6 @@ export function EventCard({
       >
         <EventButtonFollow
           event={event}
-          updateEvent={updateEvent}
           identification={identification}
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
@@ -235,7 +234,6 @@ export function EventCard({
     [
       type,
       event,
-      updateEvent,
       identification,
       updateUserSubscribedEventClientSide,
       stateModalDelete,
@@ -289,7 +287,9 @@ export function EventCard({
     ]
   );
 
-  return (
+  return wasDeleted ? (
+    <></>
+  ) : (
     <div
       className={className}
       style={{

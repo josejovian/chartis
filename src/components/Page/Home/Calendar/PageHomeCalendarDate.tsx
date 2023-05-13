@@ -5,30 +5,27 @@ import { CalendarDateType, ScreenSizeCategoryType } from "@/types";
 
 export interface PageHomeCalendarDateProps {
   calendarDate?: CalendarDateType;
-  countData: number;
+  focus: boolean;
   type: ScreenSizeCategoryType;
   onClick: () => void;
 }
 
 export function PageHomeCalendarDate({
   calendarDate,
-  countData,
+  focus = false,
   type,
   onClick,
 }: PageHomeCalendarDateProps) {
   const month = calendarDate && calendarDate.date.getMonth();
   const date = calendarDate && calendarDate.date.getDate();
-  const focus = calendarDate && calendarDate.focus;
   const events = calendarDate && calendarDate.events;
   const differentMonth = calendarDate && calendarDate.differentMonth;
   const count = events ? events.length : 0;
   const density = useMemo(() => {
-    if (!countData) return 0;
-    if (countData >= 6) return 3;
-    if (countData >= 4) return 2;
-    if (countData >= 1) return 1;
-    return 0;
-  }, [countData]);
+    if (count >= 6) return 3;
+    if (count >= 4) return 2;
+    return 1;
+  }, [count]);
 
   const renderDate = useMemo(() => {
     if (calendarDate && calendarDate.differentMonth)
@@ -65,7 +62,7 @@ export function PageHomeCalendarDate({
         <span
           className={clsx(
             CALENDAR_CELL_DATE_CURRENT_MONTH_STYLE,
-            !focus && CALENDAR_CELL_DATE_DENSITY_COLORS[density]
+            CALENDAR_CELL_DATE_DENSITY_COLORS[density]
           )}
           style={CALENDAR_CELL_DATE_INLINE_STYLE}
         >
@@ -73,7 +70,7 @@ export function PageHomeCalendarDate({
         </span>
       </div>
     );
-  }, [calendarDate, date, density, focus, month, type]);
+  }, [calendarDate, date, density, month, type]);
 
   const renderDesktopCell = useMemo(
     () => (
@@ -180,19 +177,19 @@ const CALENDAR_CELL_CAPTION_STYLE = "text-right italic";
 
 const CALENDAR_CELL_DENSITY_COLORS = [
   "bg-emerald-100 hover:bg-gray-50",
-  "bg-emerald-300 hover:bg-emerald-200",
-  "bg-emerald-600 hover:bg-emerald-500 text-secondary-2",
-  "bg-emerald-800 hover:bg-emerald-700 text-secondary-2",
+  "bg-emerald-200 hover:bg-emerald-100",
+  "bg-emerald-500 hover:bg-emerald-400",
+  "bg-emerald-700 hover:bg-emerald-600",
 ];
 const CALENDAR_CELL_CAPTION_DENSITY_COLORS = [
   "text-secondary-5",
   "text-secondary-6",
-  "text-secondary-2",
-  "text-secondary-1",
+  "text-white",
+  "text-white",
 ];
 const CALENDAR_CELL_DATE_DENSITY_COLORS = [
   "text-secondary-9",
   "text-secondary-9",
-  "text-secondary-1",
-  "text-secondary-1",
+  "text-white",
+  "text-white",
 ];

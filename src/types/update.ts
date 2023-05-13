@@ -15,6 +15,7 @@ export type DatabaseUpdateChangesType = {
 
 export type UpdateVersion = {
   date: number;
+  authorId: string;
   updateId: string;
   updates: UpdateChangesType;
 };

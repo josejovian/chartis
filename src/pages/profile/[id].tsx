@@ -12,7 +12,7 @@ import {
   PageProfileDetailTab,
   PageProfileEdit,
 } from "@/components";
-import { useEvent, useScreen } from "@/hooks";
+import { useScreen } from "@/hooks";
 import { UserType, UserProfileTabNameType, ResponsiveStyleType } from "@/types";
 
 export default function Profile() {
@@ -70,19 +70,6 @@ export default function Profile() {
       eventSearcherEmbed as HTMLDivElement
     ).style.maxHeight = `calc(100% - ${profileCardHeight}px)`;
   }, [profileCardRef, type]);
-
-  const {
-    filteredEvents,
-    getEvents,
-    handleUpdateEvent,
-    stateFilters,
-    stateQuery,
-    stateSort,
-  } = useEvent({});
-
-  useEffect(() => {
-    getEvents();
-  }, [getEvents]);
 
   useEffect(() => {
     handleGetProfile();
@@ -154,23 +141,11 @@ export default function Profile() {
           className={clsx(
             "PageSearchEventCard PageSearchEventCardEmbed !bg-sky-50 !pb-0 !mx-0 !overflow-visible"
           )}
-          stateQuery={stateQuery}
-          stateFilters={stateFilters}
-          stateSort={stateSort}
-          events={filteredEvents}
           type={type}
-          updateEvent={handleUpdateEvent}
+          viewType="userCreatedEvents"
         />
       ),
-    [
-      activeCard,
-      filteredEvents,
-      handleUpdateEvent,
-      stateFilters,
-      stateQuery,
-      stateSort,
-      type,
-    ]
+    [activeCard, type]
   );
 
   return (

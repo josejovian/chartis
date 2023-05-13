@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Button,
-  Label,
-  type SemanticSIZES,
-  type SemanticCOLORS,
-} from "semantic-ui-react";
+import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
 import { useEvent, useToast } from "@/hooks";
 
@@ -12,8 +7,6 @@ export interface EventButtonFollowProps {
   event: EventType;
   identification: IdentificationType;
   size?: SemanticSIZES;
-  color?: SemanticCOLORS;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
     userId: string,
     eventId: string,
@@ -25,8 +18,6 @@ export function EventButtonFollow({
   event,
   identification,
   size,
-  color = "yellow",
-  updateEvent,
   updateUserSubscribedEventClientSide,
 }: EventButtonFollowProps) {
   const { addToastPreset } = useToast();
@@ -47,7 +38,7 @@ export function EventButtonFollow({
   const [loading, setLoading] = useState(false);
   const initialized = useRef(false);
 
-  const { toggleEventSubscription } = useEvent({});
+  const { toggleEventSubscription } = useEvent();
 
   const handleFollowEvent = useCallback(async () => {
     if (loading) return;

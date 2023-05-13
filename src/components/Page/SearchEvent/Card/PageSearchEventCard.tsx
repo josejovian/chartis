@@ -1,52 +1,181 @@
 import {
+  ButtonDropdownSelect,
   EventCard,
   LayoutCard,
   LayoutNotice,
-  PageSearchEventCardHead,
+  TemplateSearchInput,
 } from "@/components";
 import {
+  EventSearchType,
   EventSortNameType,
   EventTagNameType,
   EventType,
   ScreenSizeCategoryType,
-  StateObject,
 } from "@/types";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { useIdentification } from "@/hooks";
+import { useEvent, useIdentification, useToast } from "@/hooks";
 import { validateEventQuery } from "@/utils";
 import {
   ASSET_CALENDAR,
   ASSET_NO_CONTENT,
   EVENT_QUERY_LENGTH_CONSTRAINTS,
   EVENT_SORT_CRITERIA,
+  EVENT_TAGS,
 } from "@/consts";
+import { where } from "firebase/firestore";
+import { useRouter } from "next/router";
 
 export interface PageSearchEventCardProps {
+  viewType?: EventSearchType;
   className?: string;
-  events: EventType[];
+  userId?: string;
   type: ScreenSizeCategoryType;
-  stateQuery: StateObject<string>;
-  stateFilters: StateObject<EventTagNameType[]>;
-  stateSort: StateObject<EventSortNameType>;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
 }
 
 export function PageSearchEventCard({
+  viewType,
   className,
-  events,
   type,
-  stateQuery,
-  stateFilters,
-  stateSort,
-  updateEvent,
 }: PageSearchEventCardProps) {
-  const query = stateQuery[0];
-  const sort = stateSort[0];
+  const stateEvents = useState<EventType[]>([]);
+  const [events, setEvents] = stateEvents;
+  const { getEvents, getFollowedEvents } = useEvent();
+  const stateFilters = useState<EventTagNameType[]>([]);
+  const [filters] = stateFilters;
+  const stateQuery = useState("");
+  const [query] = stateQuery;
+  const stateSort = useState<EventSortNameType>("newest");
+  const [sort] = stateSort;
+  const { addToastPreset } = useToast();
   const sortBy = useMemo(() => EVENT_SORT_CRITERIA[sort], [sort]);
-  const filters = stateFilters[0];
-  const { stateIdentification, updateUserSubscribedEventClientSide } =
-    useIdentification();
+  const { updateUserSubscribedEventClientSide } = useIdentification();
+  const router = useRouter();
+  const { stateIdentification } = useIdentification();
+  const [identification] = stateIdentification;
+  const { user } = identification;
+  const { id: authorId } = router.query;
+  const queried = useRef(0);
+
+  const sortEvents = useCallback(
+    (events: EventType[]): EventType[] => {
+      const { key, descending } = sortBy;
+      let eventArray = [] as EventType[];
+      const isDescending = descending ? 1 : -1;
+      eventArray = events.sort((a, b) => {
+        const left = a[key] ?? 0;
+        const right = b[key] ?? 0;
+        if (
+          (typeof left === "number" && typeof right === "number") ||
+          (typeof left === "string" && typeof right === "string")
+        )
+          if (left > right) {
+            return -1 * isDescending;
+          }
+        if (right > left) {
+          return 1 * isDescending;
+        }
+        return 0;
+      });
+
+      return eventArray;
+    },
+    [sortBy]
+  );
+
+  const displayedEvents = useMemo(() => {
+    const queriedEvents: EventType[] = [];
+
+    if (queried && query) {
+      queriedEvents.push(
+        ...events.filter((event) =>
+          event.name.toLowerCase().includes(query.toLowerCase())
+        )
+      );
+    } else {
+      queriedEvents.push(...events);
+    }
+
+    const filteredEvents = events.filter((event) => {
+      const eventTags = Object.keys(event.tags);
+      return filters.every((filter) => eventTags.includes(filter));
+    });
+
+    const sortedEvents = sortEvents(filteredEvents);
+
+    return sortedEvents;
+  }, [events, filters, query, sortEvents]);
+
+  // const handleUpdatePathQueries = useCallback(() => {
+  //   if (queried.current <= 1) return;
+
+  //   sessionStorage.setItem(
+  //     viewTypeString,
+  //     JSON.stringify({
+  //       filters,
+  //       query,
+  //       sort,
+  //     })
+  //   );
+  // }, [filters, query, sort, viewTypeString]);
+
+  // const handleGetPathQuery = useCallback(() => {
+  //   const rawQuery = sessionStorage.getItem(viewTypeString);
+
+  //   if (rawQuery && queried.current <= 1) {
+  //     const parsedQuery = JSON.parse(rawQuery);
+
+  //     const parsedFilters = parsedQuery.filters;
+
+  //     setFilters(parsedFilters);
+  //     setQuery(parsedQuery.query);
+  //     setSort(parsedQuery.sort);
+  //   }
+
+  //   queried.current++;
+  // }, [setFilters, setQuery, setSort, viewTypeString]);
+
+  // useEffect(() => {
+  //   handleUpdatePathQueries();
+  // }, [handleUpdatePathQueries]);
+
+  // useEffect(() => {
+  //   handleGetPathQuery();
+  // }, [handleGetPathQuery]);
+
+  useEffect(() => {
+    switch (viewType) {
+      case "userCreatedEvents":
+        getEvents([where("authorId", "==", authorId ?? user?.id)])
+          .then((event) => setEvents(event))
+          .catch((e) => {
+            addToastPreset("fail-get");
+          });
+        break;
+      case "userFollowedEvents":
+        getFollowedEvents()
+          .then((events) => {
+            setEvents(
+              events.filter((event) => event !== undefined) as EventType[]
+            );
+          })
+          .catch(() => {
+            addToastPreset("fail-get");
+          });
+        break;
+      case "default":
+        getEvents([]).then((events) => setEvents(events));
+        break;
+    }
+  }, [
+    addToastPreset,
+    authorId,
+    getEvents,
+    getFollowedEvents,
+    setEvents,
+    user?.id,
+    viewType,
+  ]);
 
   const filterCaption = useMemo(
     () => (
@@ -86,25 +215,17 @@ export function PageSearchEventCard({
 
   const renderEvents = useMemo(
     () =>
-      events.map((event) => (
+      displayedEvents.map((event) => (
         <EventCard
           key={`PageSearchEventCard_${event.id}`}
           type={type === "mobile" ? "vertical" : "horizontal"}
           event={event}
-          stateIdentification={stateIdentification}
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }
-          updateEvent={updateEvent}
         />
       )),
-    [
-      events,
-      stateIdentification,
-      type,
-      updateEvent,
-      updateUserSubscribedEventClientSide,
-    ]
+    [displayedEvents, type, updateUserSubscribedEventClientSide]
   );
 
   const renderEmpty = useMemo(
@@ -123,18 +244,39 @@ export function PageSearchEventCard({
   );
 
   const renderContents = useMemo(
-    () => (events.length > 0 ? renderEvents : renderEmpty),
-    [events.length, renderEmpty, renderEvents]
+    () => (displayedEvents.length > 0 ? renderEvents : renderEmpty),
+    [displayedEvents.length, renderEmpty, renderEvents]
   );
 
   return (
     <LayoutCard className={className}>
-      <PageSearchEventCardHead
-        type={type}
-        stateQuery={stateQuery}
-        stateFilters={stateFilters}
-        stateSort={stateSort}
-      />
+      <div
+        className={clsx(
+          "flex gap-4 pl-4 pr-4",
+          type === "mobile" ? "flex-col" : "flex-row"
+        )}
+      >
+        <TemplateSearchInput
+          placeholder="Search events..."
+          stateQuery={stateQuery}
+        />
+        <div className="flex grow-0 gap-4 justify-end">
+          <ButtonDropdownSelect
+            name="Filter"
+            stateActive={stateFilters}
+            options={EVENT_TAGS}
+            size={type === "mobile" ? "tiny" : undefined}
+            type="multiple"
+          />
+          <ButtonDropdownSelect
+            name="Sort"
+            stateActive={stateSort}
+            options={EVENT_SORT_CRITERIA}
+            size={type === "mobile" ? "tiny" : undefined}
+            type="single"
+          />
+        </div>
+      </div>
       <div className="mt-4 mb-6 pl-4">{renderCaption}</div>
       <div
         className={clsx(

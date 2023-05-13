@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { PageSearchEventInput } from "@/components";
 import {
   EventSortNameType,
   EventTagNameType,

@@ -42,7 +42,7 @@ export function PageViewEventCardUpdatesTab({
             ([type, { valueNew, valuePrevious }], idx) => (
               <EventUpdate
                 key={`Update_${batch.updateId}_${idx}`}
-                authorId={event.authorName}
+                authorId={batch.authorId}
                 date={batch.date}
                 eventId={event.id}
                 type={type as UpdateNameType}
@@ -56,7 +56,7 @@ export function PageViewEventCardUpdatesTab({
             )
           )
       ),
-    [event.authorName, event.id, updates]
+    [event.id, updates]
   );
 
   return (
