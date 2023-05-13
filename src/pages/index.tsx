@@ -30,7 +30,7 @@ export default function Home() {
     );
 
     const visibleEvents = filteredEvents.filter((event) =>
-      event.hide && showHidden ? false : true
+      event.hide && !showHidden ? false : true
     );
 
     // build default values {1:[], 2:[], ..., 31:[]}

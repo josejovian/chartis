@@ -169,16 +169,6 @@ export function EventCard({
             inverted
           />
         )}
-        {hide && (
-          <Popup
-            trigger={<Icon name="eye slash" className="text-secondary-5" />}
-            content="Hidden"
-            size="tiny"
-            offset={[-25, 0]}
-            basic
-            inverted
-          />
-        )}
         <Link href={eventLink}>
           <h2
             className={clsx(
