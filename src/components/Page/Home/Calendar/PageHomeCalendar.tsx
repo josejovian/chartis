@@ -13,9 +13,9 @@ import { DAYS } from "@/consts";
 import { useIdentification, useScreen } from "@/hooks";
 
 export interface LayoutCalendarProps {
+  stateShowHidden: StateObject<boolean>;
   stateFocusDate: StateObject<FocusDateType>;
   stateFilters: StateObject<EventTagNameType[]>;
-  stateShowHidden: StateObject<boolean>;
   events: Record<number, EventType[]>;
 }
 

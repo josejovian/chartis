@@ -145,6 +145,7 @@ export function EventCard({
     () => (
       <span className="text-12px text-secondary-4 tracking-wide">
         <User id={authorId} type="name" />
+        <User id={authorId} type="name" />
       </span>
     ),
     [authorId]
@@ -168,7 +169,25 @@ export function EventCard({
             inverted
           />
         )}
+        {hide && (
+          <Popup
+            trigger={<Icon name="eye slash" className="text-secondary-5" />}
+            content="Hidden"
+            size="tiny"
+            offset={[-25, 0]}
+            basic
+            inverted
+          />
+        )}
         <Link href={eventLink}>
+          <h2
+            className={clsx(
+              "inline text-18px pr-1 hover:underline",
+              hide && "text-secondary-5"
+            )}
+          >
+            {name}
+          </h2>
           <h2
             className={clsx(
               "inline text-18px pr-1 hover:underline",
