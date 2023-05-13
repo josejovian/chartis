@@ -6,12 +6,7 @@ import {
   PageViewEventCard,
   TemplatePageGuestNotAllowed,
 } from "@/components";
-import {
-  useScreen,
-  useEvent,
-  useIdentification,
-  useAuthorization,
-} from "@/hooks";
+import { useScreen, useIdentification, useAuthorization } from "@/hooks";
 import { EVENT_EMPTY } from "@/consts";
 import { EventModeType, ResponsiveStyleType } from "@/types";
 
@@ -19,7 +14,6 @@ export default function CreateEvent() {
   const auth = getAuth();
   const router = useRouter();
 
-  const { handleUpdateEvent } = useEvent({});
   const { width, type } = useScreen();
   const { updateUserSubscribedEventClientSide } = useIdentification();
   const { stateIdentification } = useIdentification();
@@ -53,7 +47,6 @@ export default function CreateEvent() {
         stateIdentification={stateIdentification}
         width={width}
         type={type}
-        updateEvent={handleUpdateEvent}
         updateUserSubscribedEventClientSide={
           updateUserSubscribedEventClientSide
         }

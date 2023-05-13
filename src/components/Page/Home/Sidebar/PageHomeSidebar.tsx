@@ -15,20 +15,19 @@ import { ASSET_NO_CONTENT } from "@/consts";
 export interface PageHomeSideBarProps {
   focusDate: FocusDateType;
   events: EventType[];
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   stateSideBar: StateObject<boolean>;
+  extraDeleteHandler: (eventId: string) => void;
 }
 
 export function PageHomeSideBar({
   focusDate,
   events,
   stateSideBar,
-  updateEvent,
+  extraDeleteHandler,
 }: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
-  const { stateIdentification, updateUserSubscribedEventClientSide } =
-    useIdentification();
+  const { updateUserSubscribedEventClientSide } = useIdentification();
 
   const renderTitle = useMemo(
     () => (
@@ -69,21 +68,15 @@ export function PageHomeSideBar({
           <EventCard
             key={`EventCard_${event.id}`}
             event={event}
-            stateIdentification={stateIdentification}
             updateUserSubscribedEventClientSide={
               updateUserSubscribedEventClientSide
             }
-            updateEvent={updateEvent}
+            extraDeleteHandler={extraDeleteHandler}
           />
         ))}
       </div>
     ),
-    [
-      events,
-      stateIdentification,
-      updateEvent,
-      updateUserSubscribedEventClientSide,
-    ]
+    [events, extraDeleteHandler, updateUserSubscribedEventClientSide]
   );
 
   const renderEmpty = useMemo(

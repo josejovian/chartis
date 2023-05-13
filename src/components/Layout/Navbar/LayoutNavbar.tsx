@@ -218,7 +218,9 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         >
           <Icon.Group>
             <Icon name={link.icon} />
-            {true && <Icon name="circle" color="red" corner="top right" />}
+            {link.alert && (
+              <Icon name="circle" color="red" corner="top right" />
+            )}
           </Icon.Group>
         </span>
         <Link
@@ -337,7 +339,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 }
 
 const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
-  desktop_lg: { minWidth: "300px" },
-  desktop_sm: { minWidth: "64px" },
+  desktop_lg: { width: "300px" },
+  desktop_sm: { width: "64px" },
   mobile: { display: "none" },
 };

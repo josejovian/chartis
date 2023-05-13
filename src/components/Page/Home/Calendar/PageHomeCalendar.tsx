@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Checkbox, Icon } from "semantic-ui-react";
+import { useCallback, useMemo } from "react";
+import { Button, Checkbox } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventButtonFilter, PageHomeCalendarDate } from "@/components";
 import {
-  CalendarDateType,
   EventTagNameType,
   EventType,
   FocusDateType,
@@ -17,23 +16,20 @@ export interface LayoutCalendarProps {
   stateShowHidden: StateObject<boolean>;
   stateFocusDate: StateObject<FocusDateType>;
   stateFilters: StateObject<EventTagNameType[]>;
-  hiddenCount: number;
-  events: EventType[];
+  events: Record<number, EventType[]>;
 }
 
 export function LayoutCalendar({
-  stateShowHidden,
-  stateFocusDate,
-  stateFilters,
-  hiddenCount,
   events,
+  stateFocusDate,
+  stateShowHidden,
+  stateFilters,
 }: LayoutCalendarProps) {
-  const setShowHidden = stateShowHidden[1];
   const [focusDate, setFocusDate] = stateFocusDate;
-  const [calendar, setCalendar] = useState<CalendarDateType[]>();
   const { stateIdentification } = useIdentification();
   const { user } = stateIdentification[0];
   const { type } = useScreen();
+  const [, setShowHidden] = stateShowHidden;
 
   const handleChangeTime = useCallback(
     (direction: number) => {
@@ -47,59 +43,38 @@ export function LayoutCalendar({
     [setFocusDate]
   );
 
-  const handleBuildCalendar = useCallback(() => {
-    const firstDay = new Date();
-    firstDay.setFullYear(focusDate.year);
-    firstDay.setMonth(focusDate.month);
-    firstDay.setDate(1);
+  const calendar = useMemo(() => {
+    const firstDateOfTheMonth = new Date(focusDate.year, focusDate.month, 1);
+    const firstDateOnTheCalendar = new Date(focusDate.year, focusDate.month, 1);
+    firstDateOnTheCalendar.setDate(
+      firstDateOfTheMonth.getDate() - firstDateOfTheMonth.getDay()
+    );
+    const lastDateOnTheCalendar = new Date(
+      firstDateOnTheCalendar.getFullYear(),
+      firstDateOnTheCalendar.getMonth(),
+      firstDateOnTheCalendar.getDate() - 1 + 6 * 7
+    );
 
-    const newCalendar: CalendarDateType[] = [];
-    const date = new Date(firstDay.getTime());
-    let i = firstDay.getDay();
-
-    const counts = [];
-    while (date.getMonth() === firstDay.getMonth()) {
-      const current = new Date(date.getTime());
-      const eventsToday = events.filter(
-        (event) =>
-          new Date(event.startDate).getDate() === date.getDate() &&
-          new Date(event.startDate).getMonth() === date.getMonth()
-      );
-
-      counts.push(eventsToday.length);
-      newCalendar[i] = {
-        date: current,
-        events: eventsToday,
-        focus:
-          date.getDate() === focusDate.day &&
-          date.getMonth() === focusDate.month,
+    const dateArr = [];
+    for (
+      let d = firstDateOnTheCalendar;
+      d <= lastDateOnTheCalendar;
+      d.setDate(d.getDate() + 1)
+    ) {
+      const currentDate = new Date(d);
+      const calendarDate = {
+        date: currentDate,
+        events: [] as EventType[],
+        differentMonth: currentDate.getMonth() !== focusDate.month,
       };
-      i++;
-
-      date.setDate(date.getDate() + 1);
+      if (currentDate.getMonth() === focusDate.month) {
+        calendarDate.events.push(...events[currentDate.getDate()]);
+      }
+      dateArr.push(calendarDate);
     }
 
-    const firstDifference = firstDay.getDay();
-    const pastDate = new Date(firstDay.getTime());
-    for (i = 1; i <= firstDifference; i++) {
-      pastDate.setDate(pastDate.getDate() - 1);
-      newCalendar[firstDifference - i] = {
-        date: new Date(pastDate.getTime()),
-        differentMonth: true,
-      };
-    }
-
-    const secondDifference = 7 * 6 - newCalendar.length;
-    for (i = 1; i <= secondDifference; i++) {
-      newCalendar.push({
-        date: new Date(date.getTime()),
-        differentMonth: true,
-      });
-      date.setDate(date.getDate() + 1);
-    }
-
-    setCalendar(newCalendar);
-  }, [events, focusDate]);
+    return dateArr;
+  }, [events, focusDate.month, focusDate.year]);
 
   const renderMonthControls = useMemo(
     () => (
@@ -107,16 +82,14 @@ export function LayoutCalendar({
         <Button
           basic
           circular
-          icon
+          icon={"chevron left"}
           onClick={() => handleChangeTime(-1)}
           size={type === "mobile" ? "tiny" : undefined}
-        >
-          <Icon name="chevron left" />
-        </Button>
+        />
         <h1
           className={clsx(
             "text-secondary-7 w-40 text-center",
-            type === "mobile" && "!w-20 !text-lg"
+            type === "mobile" && "!w-24 !text-lg"
           )}
         >
           {strMonth(focusDate.month, 3)} {focusDate.year}
@@ -124,33 +97,25 @@ export function LayoutCalendar({
         <Button
           basic
           circular
-          icon
+          icon={"chevron right"}
           onClick={() => handleChangeTime(1)}
           size={type === "mobile" ? "tiny" : undefined}
-        >
-          <Icon name="chevron right" />
-        </Button>
+        />
       </div>
     ),
-    [focusDate, handleChangeTime, type]
+    [focusDate.month, focusDate.year, handleChangeTime, type]
   );
-
-  const renderMenu = useMemo(() => {
-    return (
-      <div className="flex gap-4">
-        <EventButtonFilter stateFilters={stateFilters} />
-      </div>
-    );
-  }, [stateFilters]);
 
   const renderHead = useMemo(
     () => (
-      <div className="flex justify-between">
+      <div className="flex justify-between z-0">
         {renderMonthControls}
-        {renderMenu}
+        <div className="flex gap-4">
+          <EventButtonFilter stateFilters={stateFilters} />
+        </div>
       </div>
     ),
-    [renderMenu, renderMonthControls]
+    [renderMonthControls, stateFilters]
   );
 
   const renderLegend = useMemo(
@@ -189,14 +154,14 @@ export function LayoutCalendar({
           <div className="flex items-center">
             <Checkbox
               onChange={(_, data) => setShowHidden(data.checked ?? false)}
-              label={<label>Show hidden events ({hiddenCount})</label>}
+              label={<label>Show hidden events ()</label>}
             />
           </div>
         )}
         {renderLegend}
       </div>
     ),
-    [hiddenCount, renderLegend, setShowHidden, user]
+    [renderLegend, setShowHidden, user]
   );
 
   const renderCalendar = useMemo(() => {
@@ -228,6 +193,13 @@ export function LayoutCalendar({
                     <PageHomeCalendarDate
                       key={`Calendar_${idx}_${idx2}`}
                       calendarDate={calendar && calendar[7 * idx + idx2]}
+                      focus={
+                        calendar &&
+                        calendar[7 * idx + idx2].date.getDate() ===
+                          focusDate.day &&
+                        calendar[7 * idx + idx2].date.getMonth() ===
+                          focusDate.month
+                      }
                       type={type}
                       onClick={() => {
                         if (calendar)
@@ -244,11 +216,14 @@ export function LayoutCalendar({
         {renderCalendarFooter}
       </div>
     );
-  }, [calendar, renderCalendarFooter, setFocusDate, type]);
-
-  useEffect(() => {
-    handleBuildCalendar();
-  }, [handleBuildCalendar]);
+  }, [
+    calendar,
+    focusDate.day,
+    focusDate.month,
+    renderCalendarFooter,
+    setFocusDate,
+    type,
+  ]);
 
   return (
     <div

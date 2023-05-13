@@ -38,7 +38,6 @@ export interface PageViewEventHeadProps {
   stateModalDelete: StateObject<boolean>;
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
   updateUserSubscribedEventClientSide: (
     userId: string,
     eventId: string,
@@ -64,7 +63,6 @@ export function PageViewEventHead({
   stateModalDelete,
   stateMode,
   type,
-  updateEvent,
   updateUserSubscribedEventClientSide,
   cardHeight,
   stateFocused,
@@ -182,7 +180,6 @@ export function PageViewEventHead({
             updateUserSubscribedEventClientSide
           }
           size={type === "mobile" ? "tiny" : undefined}
-          updateEvent={updateEvent}
         />
         <EventButtonMore
           event={event}
@@ -208,7 +205,6 @@ export function PageViewEventHead({
       identification,
       updateUserSubscribedEventClientSide,
       type,
-      updateEvent,
       stateDeleting,
       stateModalDelete,
       handleEdit,

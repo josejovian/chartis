@@ -37,6 +37,8 @@ export function EventUpdate({
     const phrase =
       type === "update-description" ? (
         <span className="underline">description</span>
+      ) : type === "update-thumbnail" ? (
+        <span className="underline">thumbnail image</span>
       ) : (
         <>
           <b>{EVENT_UPDATE_TERM[type]}</b> from <b>{valuePrevious ?? "-"}</b> to{" "}

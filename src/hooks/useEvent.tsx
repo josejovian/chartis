@@ -1,31 +1,23 @@
-import { useCallback, useMemo, useState } from "react";
-import _ from "lodash";
+import { useCallback, useMemo } from "react";
 import {
-  EVENT_SORT_CRITERIA,
+  FIREBASE_COLLECTION_COMMENTS,
   FIREBASE_COLLECTION_EVENTS,
   FIREBASE_COLLECTION_UPDATES,
   FIREBASE_COLLECTION_USERS,
 } from "@/consts";
-import {
-  EventSearchType,
-  EventSortNameType,
-  EventTagNameType,
-  EventType,
-} from "@/types";
-import { compareEventValues, sleep } from "@/utils";
-import { useIdentification, useToast } from "@/hooks";
+import { EventType } from "@/types";
+import { compareEventValues } from "@/utils";
+import { useIdentification } from "@/hooks";
 import {
   QueryConstraint,
   arrayRemove,
   arrayUnion,
   deleteField,
   increment,
-  orderBy,
   where,
 } from "firebase/firestore";
 import {
   BatchOperationType,
-  deleteData,
   deleteImage,
   readData,
   updateData,
@@ -34,219 +26,80 @@ import {
 } from "@/firebase";
 import pushid from "pushid";
 
-interface useEventProps {
-  type?: EventSearchType;
-}
-
-export function useEvent({ type }: useEventProps) {
-  const stateFilters = useState<EventTagNameType[]>([]);
-  const filters = stateFilters[0];
-  const atLeastOneFilter = useMemo(() => filters.length > 0, [filters.length]);
-  const stateSort = useState<EventSortNameType>("newest");
-  const sort = stateSort[0];
-  const sortBy = EVENT_SORT_CRITERIA[sort];
-  const stateSortDescending = useState(false);
-  const stateUserQuery = useState("");
-  const userQuery = stateUserQuery[0];
-  const stateHiddenEventCount = useState(0);
-  const [hiddenEventCount, setHiddenEventCount] = stateHiddenEventCount;
+export function useEvent() {
   const { stateIdentification } = useIdentification();
   const [identification] = stateIdentification;
   const { user } = identification;
 
-  const stateEvents = useState<EventType[]>([]);
-  const [events, setEvents] = stateEvents;
-  const stateModalDelete = useState(false);
-  const setModalDelete = stateModalDelete[1];
-  const { addToastPreset } = useToast();
-
-  const validatedEvents = useMemo(() => {
-    if (
-      userQuery !== "" ||
-      atLeastOneFilter ||
-      type === "userFollowedEvents" ||
-      type === "userCreatedEvents"
-    ) {
-      return events;
-    }
-    return [];
-  }, [atLeastOneFilter, events, type, userQuery]);
-
-  const filteredEvents = useMemo(() => {
-    return validatedEvents
-      .filter(({ id, name, subscriberIds = [], hide = false }) => {
-        if (hide) {
-          return false;
-        }
-        let extraValidation = true;
-        if (type === "userFollowedEvents" && user && user.id) {
-          extraValidation = subscriberIds.includes(user.id);
-        } else if (type === "userFollowedEvents") {
-          const subscribe = JSON.parse(
-            localStorage.getItem("subscribe") ?? "{}"
-          );
-          extraValidation = subscribe[id];
-        }
-
-        const reg = new RegExp(_.escapeRegExp(userQuery), "i");
-
-        return reg.test(name) && extraValidation;
-      })
-      .sort((a, b) => {
-        const left = a[sortBy.key] ?? 0;
-        const right = b[sortBy.key] ?? 0;
-        if (typeof left === "number" && typeof right === "number")
-          return (left - right) * (sortBy.descending ? -1 : 1);
-        return 0;
-      });
-  }, [validatedEvents, type, user, userQuery, sortBy.key, sortBy.descending]);
-
-  const filterByMethod = useMemo(
-    () => [
-      type === "userCreatedEvents" && user && where("authorId", "==", user.id),
-      ...filters.map((tag) => where(`tags.${tag}`, "==", true)),
-    ],
-    [filters, type, user]
+  const getEvents = useCallback(
+    async (queryConstraints: QueryConstraint[]): Promise<EventType[]> => {
+      return readData("events", queryConstraints);
+    },
+    []
   );
-
-  const queryConstraints = useMemo(
-    () => [
-      ...(filterByMethod.filter(
-        (constraint) => constraint
-      ) as QueryConstraint[]),
-    ],
-    [filterByMethod]
-  );
-
-  const getEvents = useCallback(async (): Promise<EventType[]> => {
-    let eventArray = [] as EventType[];
-    await readData("events", queryConstraints).then((result) => {
-      if (result) {
-        eventArray = result;
-        setEvents(result);
-      }
-    });
-    return eventArray;
-  }, [queryConstraints, setEvents]);
 
   const getEventsMonthly = useCallback(
-    async (
-      month: number,
-      year: number,
-      showHidden = false
-    ): Promise<EventType[]> => {
+    async (month: number, year: number): Promise<EventType[]> => {
       const firstDayOfTheMonth = new Date(year, month, 1, 0, 0, 0);
       const lastDayOfTheMonth = new Date(year, month + 1, 1, 0, 0, 0);
 
-      let eventArray = [] as EventType[];
-
-      await readData("events", [
+      return readData("events", [
         where("startDate", ">=", firstDayOfTheMonth.getTime()),
         where("startDate", "<", lastDayOfTheMonth.getTime()),
-      ])
-        .then((result) => {
-          if (result) {
-            eventArray = result.filter((event) => !event.hide || showHidden);
-            setEvents(eventArray);
-            setHiddenEventCount(result.filter((event) => event.hide).length);
-          }
-        })
-        .catch(() => {
-          addToastPreset("fail-get");
-        });
-
-      return eventArray;
-    },
-    [addToastPreset, setEvents, setHiddenEventCount]
-  );
-
-  const getFollowedEvents = useCallback(
-    async (events?: EventType[]): Promise<EventType[]> => {
-      const subscribedEventIds =
-        user && user.id
-          ? identification.users[user.id].subscribedEvents
-          : JSON.parse(localStorage.getItem("subscribe") ?? "{}");
-
-      let eventArray = [] as EventType[];
-      if (!events) {
-        eventArray = await readData("events", [
-          where("id", "in", subscribedEventIds),
-        ]);
-      } else {
-        eventArray = events.filter((event) => subscribedEventIds[event.id]);
-      }
-
-      return eventArray;
-    },
-    [identification.users, user]
-  );
-
-  const sortEvents = useCallback(
-    async (
-      events: EventType[] | undefined = undefined,
-      orderCriterion: keyof EventType,
-      sort: "asc" | "desc" = "desc"
-    ): Promise<EventType[]> => {
-      let eventArray = [] as EventType[];
-      if (events) {
-        const sortBy = sort === "desc" ? 1 : -1;
-        eventArray = events.sort((a, b) => {
-          const left = a[orderCriterion] ?? 0;
-          const right = b[orderCriterion] ?? 0;
-          if (
-            (typeof left === "number" && typeof right === "number") ||
-            (typeof left === "string" && typeof right === "string")
-          )
-            if (left > right) {
-              return -1 * sortBy;
-            }
-          if (right > left) {
-            return 1 * sortBy;
-          }
-          return 0;
-        });
-      } else {
-        eventArray = await readData("events", [orderBy(orderCriterion, sort)]);
-      }
-
-      return eventArray;
+      ]);
     },
     []
   );
 
-  const filterEvents = useCallback(
-    async (
-      events: EventType[] | undefined = undefined,
-      filterCriteria: EventTagNameType[]
-    ): Promise<EventType[]> => {
-      let eventArray = [] as EventType[];
-      if (events) {
-        eventArray = events.filter((event) =>
-          filterCriteria.every((criterion) =>
-            Object.keys(event.tags).includes(criterion)
-          )
-        );
-      } else {
-        eventArray = await readData("events", [
-          ...filterCriteria.map((tag) => where(`tags.${tag}`, "==", true)),
-        ]);
-      }
+  const getFollowedEvents = useCallback(async (): Promise<
+    (EventType | undefined)[]
+  > => {
+    const subscribedEventIds: Record<string, number> =
+      user && user.id
+        ? identification.users[user.id].subscribedEvents
+        : JSON.parse(localStorage.getItem("subscribe") ?? "{}");
 
-      return eventArray;
-    },
-    []
-  );
+    return Promise.all(
+      Object.keys(subscribedEventIds).map((eventId) =>
+        readData(FIREBASE_COLLECTION_EVENTS, eventId)
+      )
+    );
+  }, [identification.users, user]);
 
   const createEvent = useCallback(async (event: EventType): Promise<void> => {
+    const eventDefault = {
+      id: "",
+      authorId: "",
+      name: "",
+      tags: {},
+      organizer: "",
+      location: "",
+      startDate: new Date(-1).getTime(),
+      endDate: undefined,
+      description: "",
+      postDate: new Date().getTime(),
+      lastUpdatedAt: new Date().getTime(),
+      subscriberCount: 0,
+      subscriberIds: [],
+      isHidden: false,
+    };
     const thumbnailImage = event.thumbnailSrc;
     event.thumbnailSrc = "";
     const batchOperations: BatchOperationType[] = [];
+
+    // create event document
     batchOperations.push({
       collectionName: FIREBASE_COLLECTION_EVENTS,
       operationType: "create",
       documentId: event.id,
-      value: event,
+      value: {
+        ...eventDefault,
+        ...event,
+        postDate: new Date().getTime(),
+      },
     });
+
+    // create update document
     batchOperations.push({
       collectionName: FIREBASE_COLLECTION_UPDATES,
       operationType: "create",
@@ -254,6 +107,14 @@ export function useEvent({ type }: useEventProps) {
       value: {
         updates: [],
       },
+    });
+
+    // create comment document
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_COMMENTS,
+      operationType: "create",
+      documentId: event.id,
+      value: {},
     });
 
     return writeDataBatch(batchOperations).then(() => {
@@ -269,7 +130,7 @@ export function useEvent({ type }: useEventProps) {
     });
   }, []);
 
-  const updateEventNew = useCallback(
+  const updateEvent = useCallback(
     async (
       eventId: string,
       previousValue: EventType,
@@ -293,6 +154,9 @@ export function useEvent({ type }: useEventProps) {
       )) as EventType;
 
       const changes = compareEventValues(previousValue, newValue);
+      if (different) {
+        changes["update-description"] = {};
+      }
 
       if (!updateDocumentExists) {
         batchOperations.push({
@@ -338,7 +202,6 @@ export function useEvent({ type }: useEventProps) {
         documentId: eventId,
         operationType: "update",
         value: {
-          eventId: eventId,
           updates: arrayUnion({
             authorId,
             updateId: eventUpdateId,
@@ -357,14 +220,14 @@ export function useEvent({ type }: useEventProps) {
               }).then(() => ({
                 ...newValue,
                 thumbnailSrc: imageURL,
-                version: previousValue.version ?? 0 + 1,
+                version: previousValue.version ? previousValue.version + 1 : 1,
               }));
             }
           );
         } else {
           return {
             ...newValue,
-            version: previousValue.version ?? 0 + 1,
+            version: previousValue.version ? previousValue.version + 1 : 1,
           };
         }
       }) as Promise<EventType>;
@@ -434,91 +297,58 @@ export function useEvent({ type }: useEventProps) {
     []
   );
 
-  const handleUpdateEvent = useCallback(
-    (id: string, newEvt: Partial<EventType>) => {
-      setEvents((prev) => {
-        const temp = [...prev];
-        const inst = temp.filter((instance) => instance.id === id);
+  const deleteEvent = useCallback(async (eventId: string): Promise<void> => {
+    const batchOperations: BatchOperationType[] = [];
 
-        if (inst.length !== 1) return prev;
+    // delete event document
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_EVENTS,
+      operationType: "delete",
+      documentId: eventId,
+      value: {},
+    });
 
-        const index = temp.indexOf(inst[0]);
-        temp[index] = {
-          ...temp[index],
-          ...newEvt,
-        };
-        return temp;
-      });
-    },
-    [setEvents]
-  );
+    // delete comment document
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_COMMENTS,
+      operationType: "delete",
+      documentId: eventId,
+      value: {},
+    });
 
-  const handleDeleteEvent = useCallback(
-    async ({
-      eventId,
-      onSuccess,
-      onFail,
-    }: {
-      eventId: string;
-      onSuccess?: () => void;
-      onFail?: () => void;
-    }) => {
-      await Promise.all([deleteData("events", eventId), deleteImage(eventId)])
-        .then(async () => {
-          onSuccess && onSuccess();
-          setModalDelete(false);
-          addToastPreset("feat-event-delete");
-          await sleep(200);
-          window.location.reload();
-        })
-        .catch(() => {
-          onFail && onFail();
-          addToastPreset("fail-post");
-        });
-    },
-    [addToastPreset, setModalDelete]
-  );
+    // delete update document
+    batchOperations.push({
+      collectionName: FIREBASE_COLLECTION_UPDATES,
+      operationType: "delete",
+      documentId: eventId,
+      value: {},
+    });
+
+    deleteImage(eventId).catch((e) => {
+      return null;
+    });
+
+    return writeDataBatch(batchOperations);
+  }, []);
 
   return useMemo(
     () => ({
-      filteredEvents,
-      hiddenEventCount,
       getEvents,
       getEventsMonthly,
       getFollowedEvents,
-      handleUpdateEvent,
-      updateEventNew,
-      deleteEvent: handleDeleteEvent,
+      deleteEvent,
       createEvent,
-      sortEvents,
-      filterEvents,
       toggleEventSubscription,
-      stateQuery: stateUserQuery,
-      stateEvents,
-      stateFilters,
-      stateSort,
-      stateSortDescending,
-      stateModalDelete,
+      updateEvent,
     }),
     [
-      filteredEvents,
-      hiddenEventCount,
       getEvents,
       getEventsMonthly,
       getFollowedEvents,
-      handleUpdateEvent,
-      updateEventNew,
-      handleDeleteEvent,
+      deleteEvent,
       createEvent,
-      sortEvents,
-      filterEvents,
       toggleEventSubscription,
-      stateUserQuery,
-      stateEvents,
-      stateFilters,
-      stateSort,
-      stateSortDescending,
-      stateModalDelete,
+      updateEvent,
     ]
   );
 }

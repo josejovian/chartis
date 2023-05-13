@@ -16,14 +16,11 @@ import {
   EventCardDisplayType,
   EventDetailCompactType,
   EventType,
-  IdentificationType,
-  StateObject,
 } from "@/types";
-import { useEvent, useReport } from "@/hooks";
+import { useEvent, useIdentification, useReport } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
-  stateIdentification: StateObject<IdentificationType>;
   event: EventType;
   type?: EventCardDisplayType;
   updateUserSubscribedEventClientSide: (
@@ -31,21 +28,22 @@ export interface EventCardProps {
     eventId: string,
     version?: number
   ) => void;
-  updateEvent: (id: string, newEvent: Partial<EventType>) => void;
+  extraDeleteHandler?: (eventId: string) => void;
 }
 
 export function EventCard({
   className,
-  stateIdentification,
   event,
   type = "vertical",
   updateUserSubscribedEventClientSide,
-  updateEvent,
+  extraDeleteHandler,
 }: EventCardProps) {
+  const [wasDeleted, setWasDeleted] = useState(false);
   const { id, name, description, authorId, thumbnailSrc, tags, hide } = event;
+  const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
-  const { deleteEvent } = useEvent({});
+  const { deleteEvent } = useEvent();
   const { showReportModal } = useReport();
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
@@ -65,17 +63,25 @@ export function EventCard({
     if (!event.id) return;
 
     setDeleting(true);
-
-    await deleteEvent({
-      eventId: id,
-      onSuccess: () => {
-        setModalDelete(false);
-      },
-      onFail: () => {
+    deleteEvent(id)
+      .then(() => {
+        extraDeleteHandler && extraDeleteHandler(id);
+        setWasDeleted(true);
+      })
+      .catch(() => {
         setDeleting(false);
-      },
-    });
-  }, [deleteEvent, event.id, id, setDeleting, setModalDelete]);
+      })
+      .finally(() => {
+        setModalDelete(false);
+      });
+  }, [
+    deleteEvent,
+    event.id,
+    extraDeleteHandler,
+    id,
+    setDeleting,
+    setModalDelete,
+  ]);
 
   const handleEditEvent = useCallback(() => {
     if (!event.id) return;
@@ -139,6 +145,7 @@ export function EventCard({
     () => (
       <span className="text-12px text-secondary-4 tracking-wide">
         <User id={authorId} type="name" />
+        <User id={authorId} type="name" />
       </span>
     ),
     [authorId]
@@ -201,7 +208,6 @@ export function EventCard({
       >
         <EventButtonFollow
           event={event}
-          updateEvent={updateEvent}
           identification={identification}
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
@@ -229,7 +235,6 @@ export function EventCard({
     [
       type,
       event,
-      updateEvent,
       identification,
       updateUserSubscribedEventClientSide,
       stateModalDelete,
@@ -283,7 +288,9 @@ export function EventCard({
     ]
   );
 
-  return (
+  return wasDeleted ? (
+    <></>
+  ) : (
     <div
       className={className}
       style={{
