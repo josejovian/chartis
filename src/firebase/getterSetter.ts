@@ -34,7 +34,6 @@ import {
   FIREBASE_COLLECTION_USERS,
 } from "@/consts";
 
-
 type FIREBASE_COLLECTION = {
   [FIREBASE_COLLECTION_USERS]: UserType;
   [FIREBASE_COLLECTION_EVENTS]: EventType;
@@ -146,10 +145,10 @@ export async function writeDataBatch(
   return batch.commit();
 }
 
-export async function uploadImage(id:string, image: Blob):Promise<string> {
+export async function uploadImage(id: string, image: Blob): Promise<string> {
   const imageRef = refStorage(storage, id);
 
-  return uploadBytes(imageRef, image).then(()=>getDownloadURL(imageRef));
+  return uploadBytes(imageRef, image).then(() => getDownloadURL(imageRef));
 }
 
 export async function deleteImage(id: string): Promise<void> {

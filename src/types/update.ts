@@ -6,6 +6,7 @@ export type UpdateNameType =
   | "update-tags"
   | "update-location"
   | "update-organizer"
+  | "update-thumbnail"
   | "initial-post";
 
 export type DatabaseUpdateChangesType = {
@@ -15,6 +16,7 @@ export type DatabaseUpdateChangesType = {
 
 export type UpdateVersion = {
   date: number;
+  authorId: string;
   updateId: string;
   updates: UpdateChangesType;
 };

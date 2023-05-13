@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import clsx from "clsx";
-import { UserPicture } from "@/components";
+import { User } from "@/components";
 import { getTimeDifference } from "@/utils";
 import { EVENT_UPDATE_TERM } from "@/consts";
 import { UpdateNameType } from "@/types";
@@ -23,10 +23,22 @@ export function EventUpdate({
   valuePrevious,
   last,
 }: EventUpdateProps) {
+  const authorName = useMemo(
+    () => <User id={authorId} type="name" />,
+    [authorId]
+  );
+
+  const authorPicture = useMemo(
+    () => <User id={authorId} type="picture" />,
+    [authorId]
+  );
+
   const entryText = useMemo(() => {
     const phrase =
       type === "update-description" ? (
         <span className="underline">description</span>
+      ) : type === "update-thumbnail" ? (
+        <span className="underline">thumbnail image</span>
       ) : (
         <>
           <b>{EVENT_UPDATE_TERM[type]}</b> from <b>{valuePrevious ?? "-"}</b> to{" "}
@@ -52,10 +64,10 @@ export function EventUpdate({
           ]
         )}
       >
-        <UserPicture fullName="Unknown User" />
+        {authorPicture}
       </div>
       <p className="pl-4 mt-1.5">
-        <b>{authorId}</b> {entryText}{" "}
+        <b>{authorName}</b> {entryText}{" "}
         <span className="inline-block">{getTimeDifference(date)}.</span>
       </p>
     </div>

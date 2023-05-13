@@ -309,6 +309,44 @@
       box-shadow: none !important;
     }
   }
+  .EventCardWrapper {
+    @apply !w-full !h-full !overflow-y-hidden;
+    box-shadow: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  /* .EventCardInnerWrapper > div:not(.EventCardHead) {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  } */
+  .EventCardWrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .EventCardHead .EventCardThumbnailToggleFocused i {
+    animation: test 0.75s ease-out infinite alternate;
+    /* transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1); */
+  }
+  @keyframes test {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-30px);
+    }
+  }
+  .EventCardHead .EventCardThumbnailToggleFocused {
+    bottom: 0px;
+  }
+  .EventCardHead .EventCardThumbnailToggle * {
+    opacity: 0.2;
+  }
+  .EventCardHead:hover .EventCardThumbnailToggle * {
+    opacity: 1;
+  }
+  /* .EventCardInnerWrapper > div:not(.EventCardHead)::-webkit-scrollbar {
+    display: none;
+  } */
 }
 
 @tailwind components;

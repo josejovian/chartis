@@ -230,7 +230,7 @@ export function PageViewEventCardDiscussionTab({
   );
 }
 
-const EVENT_CARD_BODY_WRAPPER_STYLE = "px-12 pt-6 pb-6 overflow-y-auto";
+const EVENT_CARD_BODY_WRAPPER_STYLE = "!h-full px-12 pt-6 pb-6 overflow-y-auto";
 
 const COMMENT_ICON_STYLE =
   "z-10 relative flex justify-center row-span-3 after:-z-2 text-white";
