@@ -83,7 +83,7 @@ export function LayoutCalendar({
           basic
           circular
           icon={"chevron left"}
-          onClick={() => handleChangeTime(1)}
+          onClick={() => handleChangeTime(-1)}
           size={type === "mobile" ? "tiny" : undefined}
         />
         <h1
@@ -98,7 +98,7 @@ export function LayoutCalendar({
           basic
           circular
           icon={"chevron right"}
-          onClick={() => handleChangeTime(-1)}
+          onClick={() => handleChangeTime(1)}
           size={type === "mobile" ? "tiny" : undefined}
         />
       </div>

@@ -43,7 +43,12 @@ export default function Home() {
     }
 
     visibleEvents.forEach((event) => {
-      calendarEvents[new Date(event.startDate).getDate()].push(event);
+      const eventStartDate = new Date(event.startDate);
+      if (
+        focusDate.year === eventStartDate.getFullYear() &&
+        focusDate.month === eventStartDate.getMonth()
+      )
+        calendarEvents[new Date(event.startDate).getDate()].push(event);
     });
 
     return calendarEvents;
