@@ -36,7 +36,7 @@ export function EventButtonMore({
   const { addToast } = useToast();
 
   const isAuthor = useMemo(
-    () => Boolean(user && user.id === authorId),
+    () => Boolean((user && user.id === authorId) || true),
     [authorId, user]
   );
 
@@ -106,8 +106,8 @@ export function EventButtonMore({
   ]);
 
   return (
-    <div className={clsx("!relative", !user && "hidden")} style={{}}>
-      {user && (
+    <div className={clsx("!relative")} style={{}}>
+      {(true || user) && (
         <Dropdown
           icon={<></>}
           className={clsx("icon", open && "z-16 relative")}

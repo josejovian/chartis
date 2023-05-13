@@ -34,7 +34,9 @@ export function EventThumbnail({
   alwaysShow,
 }: EventThumbnailProps) {
   const placeholderURL = "/placeholder.png";
-  const [imageURL, setImageURL] = useState(src ?? placeholderURL);
+  const [imageURL, setImageURL] = useState(
+    src && src.length > 0 ? src : placeholderURL
+  );
   const style = useMemo(() => {
     switch (type) {
       case "banner":
@@ -54,7 +56,7 @@ export function EventThumbnail({
   }, [type]);
 
   useEffect(() => {
-    setImageURL(src ?? placeholderURL);
+    setImageURL(src && src.length > 0 ? src : placeholderURL);
   }, [src]);
 
   const renderImage = useMemo(

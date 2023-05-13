@@ -68,8 +68,8 @@ export const EVENT_TAGS: Record<EventTagNameType, DropdownOptionType> = {
   },
   other: {
     name: "Other",
-    color: "grey"
-  }
+    color: "grey",
+  },
 };
 
 export const EVENT_SORT_CRITERIA: Record<
@@ -101,4 +101,5 @@ export const EVENT_UPDATE_TERM: Record<UpdateNameType, string> = {
   "update-tags": "tags",
   "update-title": "title",
   "initial-post": "post",
+  "update-thumbnail": "thumbnail",
 };

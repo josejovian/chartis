@@ -357,7 +357,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 }
 
 const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
-  desktop_lg: { minWidth: "300px" },
-  desktop_sm: { minWidth: "64px" },
+  desktop_lg: { width: "300px" },
+  desktop_sm: { width: "64px" },
   mobile: { display: "none" },
 };

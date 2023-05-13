@@ -6,7 +6,7 @@ import {
 } from "@/components";
 import { ASSET_NO_CONTENT, EVENT_DUMMY_1 } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useIdentification, useScreen, useEvent } from "@/hooks";
+import { useIdentification, useScreen } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
 import { Button } from "semantic-ui-react";
 import { readData } from "@/firebase";
@@ -15,15 +15,9 @@ import clsx from "clsx";
 export default function ViewEvent() {
   const router = useRouter();
   const { id } = router.query;
-
-  const { handleUpdateEvent } = useEvent({});
   const stateMode = useState<EventModeType>("view");
   const setMode = stateMode[1];
-  const stateActiveTab = useState(0);
   const { width, type } = useScreen();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const activeTab = stateActiveTab[0];
-
   const stateEvent = useState(EVENT_DUMMY_1);
   const [event, setEvent] = stateEvent;
   const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
@@ -96,7 +90,6 @@ export default function ViewEvent() {
         stateMode={stateMode}
         width={width}
         type={type}
-        updateEvent={handleUpdateEvent}
         updateUserSubscribedEventClientSide={
           updateUserSubscribedEventClientSide
         }
@@ -105,7 +98,6 @@ export default function ViewEvent() {
     );
   }, [
     error,
-    handleUpdateEvent,
     loading,
     router,
     stateEvent,

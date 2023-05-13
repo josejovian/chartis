@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { PageSearchEventInput } from "@/components";
 import {
   EventSortNameType,
   EventTagNameType,
@@ -8,6 +7,7 @@ import {
 } from "@/types";
 import { ButtonDropdownSelect } from "@/components/Button";
 import { EVENT_SORT_CRITERIA, EVENT_TAGS } from "@/consts";
+import { PageSearchEventInput } from "@/components";
 
 export interface PageSearchEventHeadProps {
   stateQuery: StateObject<string>;
