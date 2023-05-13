@@ -17,11 +17,15 @@ import {
   LayoutNotice,
   PageViewEventCardDetailTab,
   PageViewEventHead,
+  User,
+  EventButtonFollow,
+  EventButtonMore,
 } from "@/components";
-import { useEvent, useToast } from "@/hooks";
+import { useEvent, useReport, useToast } from "@/hooks";
 import {
   SchemaEvent,
   getLocalTimeInISO,
+  getTimeDifference,
   sleep,
   validateEndDate,
   validateImage,
@@ -38,6 +42,7 @@ import {
 } from "@/types";
 import { EVENT_EMPTY } from "@/consts";
 import clsx from "clsx";
+import { Icon, Popup } from "semantic-ui-react";
 
 export interface ModalViewEventProps {
   className?: string;
@@ -71,6 +76,7 @@ export function PageViewEventCard({
   const stateFocusThumbnail = useState(true);
   const focusThumbnail = stateFocusThumbnail[0];
   const [event, setEvent] = stateEvent;
+  const { authorId, name, postDate, hide } = event;
   const [mode, setMode] = stateMode;
   const stateTags = useState((event && event.tags) ?? []);
   const [tags, setTags] = stateTags;
@@ -79,7 +85,7 @@ export function PageViewEventCard({
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
   const stateActiveTab = useState<EventCardTabNameType>("detail");
-  const activeTab = stateActiveTab[0];
+  const [activeTab, setActiveTab] = stateActiveTab;
   const stateLoading = useState(false);
   const loading = stateLoading[0];
 
@@ -90,6 +96,7 @@ export function PageViewEventCard({
   const identification = stateIdentification[0];
   const { user, initialized } = identification;
   const [cardHeight, setCardHeight] = useState(0);
+  const { showReportModal } = useReport();
 
   const authorized = useMemo(() => {
     if (!initialized) return undefined;
@@ -287,6 +294,103 @@ export function PageViewEventCard({
     [activeTab, event, identification, mode, stateEvent, stateTags, type]
   );
 
+  const handleEdit = useCallback(() => {
+    setActiveTab("detail");
+    setMode("edit");
+  }, [setActiveTab, setMode]);
+
+  const handleReport = useCallback(() => {
+    showReportModal({
+      eventId: event.id,
+      authorId: event.authorId,
+      contentType: "event",
+      reportedBy: user ? user.id : "",
+    });
+  }, [event.authorId, event.id, showReportModal, user]);
+
+  const renderActionTabs = useMemo(
+    () => (
+      <div
+        className="flex items-between align-self-end !h-fit gap-4"
+        style={{ paddingTop: "0.32rem" }}
+      >
+        <EventButtonFollow
+          event={event}
+          identification={identification}
+          updateUserSubscribedEventClientSide={
+            updateUserSubscribedEventClientSide
+          }
+          size={type === "mobile" ? "tiny" : undefined}
+        />
+        <EventButtonMore
+          event={event}
+          identification={identification}
+          size={type === "mobile" ? "tiny" : undefined}
+          stateDeleting={stateDeleting}
+          stateModalDelete={stateModalDelete}
+          onEdit={handleEdit}
+          onDelete={handleDeleteEvent}
+          onReport={handleReport}
+        />
+      </div>
+    ),
+    [
+      event,
+      identification,
+      updateUserSubscribedEventClientSide,
+      type,
+      stateDeleting,
+      stateModalDelete,
+      handleEdit,
+      handleDeleteEvent,
+      handleReport,
+    ]
+  );
+
+  const renderEventTitle = useMemo(
+    () =>
+      mode === "view" && (
+        <div
+          className={clsx(
+            "flex flex-wrap justify-between py-3 px-12 gap-4 shadow-md",
+            type === "mobile" && "!px-6"
+          )}
+        >
+          <div>
+            <span className="text-14px text-secondary-4">
+              Posted by{" "}
+              <b>
+                <User id={authorId} type="name" />
+              </b>{" "}
+              {getTimeDifference(postDate)}
+            </span>
+            <h2
+              className={clsx(
+                "h2 text-secondary-7",
+                hide && "text-secondary-5"
+              )}
+            >
+              {hide && (
+                <Popup
+                  trigger={
+                    <Icon name="eye slash" className="text-secondary-5 !mr-2" />
+                  }
+                  content="Hidden"
+                  size="tiny"
+                  offset={[-20, 0]}
+                  basic
+                  inverted
+                />
+              )}
+              {name}
+            </h2>
+          </div>
+          {renderActionTabs}
+        </div>
+      ),
+    [authorId, hide, mode, name, postDate, renderActionTabs, type]
+  );
+
   const renderCardContents = useCallback(
     ({
       submitForm,
@@ -326,6 +430,7 @@ export function PageViewEventCard({
             stateLoading={stateLoading}
             setFieldValue={setFieldValue}
           />
+          {renderEventTitle}
           {activeTabContent}
           <PageViewEventFoot
             event={event}
@@ -351,6 +456,7 @@ export function PageViewEventCard({
       cardHeight,
       stateFocusThumbnail,
       stateLoading,
+      renderEventTitle,
       stateSubmitting,
       handleLeaveEdit,
     ]

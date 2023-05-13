@@ -7,11 +7,13 @@ import { EventDetailType, EventDetailUnionType, EventModeType } from "@/types";
 export interface PageViewEventCardDetailTabDetailProps {
   details: EventDetailType[];
   mode: EventModeType;
+  className?: string;
 }
 
 export function PageViewEventCardDetailTabDetail({
   details,
   mode,
+  className,
 }: PageViewEventCardDetailTabDetailProps) {
   const renderEntries = useMemo(
     () =>
@@ -61,7 +63,9 @@ export function PageViewEventCardDetailTabDetail({
   );
 
   return (
-    <table className="EventDetailsTable border-collapse mt-4">
+    <table
+      className={clsx("EventDetailsTable border-collapse mt-4", className)}
+    >
       <tbody>{renderEntries}</tbody>
     </table>
   );

@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo } from "react";
 import { Field } from "formik";
-import { Icon, Input, Popup, TextArea } from "semantic-ui-react";
+import { Input, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventTags,
   FormErrorMessage,
   FormInputDropdown,
   PageViewEventCardDetailTabDetail,
-  User,
 } from "@/components";
-import { getLocalTimeInISO, getTimeDifference, strDateTime } from "@/utils";
+import { getLocalTimeInISO, strDateTime } from "@/utils";
 import { EVENT_TAGS } from "@/consts";
 import {
   EventDetailType,
@@ -43,21 +42,12 @@ export function PageViewEventCardDetailTab({
   validateForm,
   setFieldValue,
 }: PageViewEventCardDetailTabProps) {
-  const {
-    location,
-    authorId,
-    organizer,
-    startDate,
-    endDate,
-    description,
-    postDate,
-    hide,
-  } = event;
+  const { location, organizer, startDate, endDate, description } = event;
   const [tags, setTags] = stateTags;
 
   const renderEventTags = useMemo(
     () => (
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <EventTags
           id={event.id}
           tags={event.tags}
@@ -164,40 +154,9 @@ export function PageViewEventCardDetailTab({
     ]
   );
 
-  const renderEventCreators = useMemo(
-    /** @todo Replace authorId with real username. */
-    () =>
-      mode === "view" && (
-        <span className="text-14px text-secondary-4">
-          Posted by{" "}
-          <b>
-            <User id={authorId} type="name" />
-          </b>{" "}
-          {getTimeDifference(postDate)}
-        </span>
-      ),
-    [authorId, mode, postDate]
-  );
-
   const renderEventName = useMemo(
     () =>
-      mode === "view" ? (
-        <h2 className={clsx("h2 text-secondary-7", hide && "text-secondary-5")}>
-          {hide && (
-            <Popup
-              trigger={
-                <Icon name="eye slash" className="text-secondary-5 !mr-2" />
-              }
-              content="Hidden"
-              size="tiny"
-              offset={[-20, 0]}
-              basic
-              inverted
-            />
-          )}
-          {event.name}
-        </h2>
-      ) : (
+      mode !== "view" && (
         <Field name="name">
           {({ field, meta }: any) => (
             <div className="mt-5">
@@ -214,11 +173,17 @@ export function PageViewEventCardDetailTab({
           )}
         </Field>
       ),
-    [event.name, hide, mode]
+    [mode]
   );
 
   const renderEventDetails = useMemo(
-    () => <PageViewEventCardDetailTabDetail details={details} mode={mode} />,
+    () => (
+      <PageViewEventCardDetailTabDetail
+        details={details}
+        mode={mode}
+        className="!mt-0"
+      />
+    ),
     [details, mode]
   );
 
@@ -257,19 +222,18 @@ export function PageViewEventCardDetailTab({
 
   const renderEventCardContent = useMemo(
     () => (
-      <>
-        {renderEventCreators}
+      <div
+        className={clsx(
+          "overflow-y-auto !h-full px-12 py-6",
+          type === "mobile" && "!px-6"
+        )}
+      >
         {renderEventName}
         {renderEventDetails}
         {renderEventDescription}
-      </>
+      </div>
     ),
-    [
-      renderEventCreators,
-      renderEventDescription,
-      renderEventDetails,
-      renderEventName,
-    ]
+    [renderEventDescription, renderEventDetails, renderEventName, type]
   );
 
   const handleUpdateDate = useCallback(() => {
@@ -285,14 +249,11 @@ export function PageViewEventCardDetailTab({
   return (
     <div
       className={clsx(
-        EVENT_CARD_BODY_WRAPPER_STYLE,
-        mode !== "view" && "ui form div",
-        type === "mobile" && "!px-6"
+        "!flex !flex-col !h-0 !flex-auto",
+        mode !== "view" && "ui form div"
       )}
     >
       {renderEventCardContent}
     </div>
   );
 }
-
-const EVENT_CARD_BODY_WRAPPER_STYLE = "!h-full px-12 pt-6 pb-6 overflow-y-auto";

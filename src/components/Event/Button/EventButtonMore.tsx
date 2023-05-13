@@ -107,7 +107,7 @@ export function EventButtonMore({
 
   return (
     <div className={clsx("!relative")} style={{}}>
-      {(true || user) && (
+      {user && (
         <Dropdown
           icon={<></>}
           className={clsx("icon", open && "z-16 relative")}
