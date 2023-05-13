@@ -66,7 +66,9 @@ export function PageSearchEventCard({
     () => (
       <>
         {!validateEventQuery(query) &&
-          `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0]}-${EVENT_QUERY_LENGTH_CONSTRAINTS[1]} characters. `}
+          `Search query must be ${EVENT_QUERY_LENGTH_CONSTRAINTS[0] + 1}-${
+            EVENT_QUERY_LENGTH_CONSTRAINTS[1]
+          } characters. `}
         {query !== "" ? (
           <>
             Searching for {query}
