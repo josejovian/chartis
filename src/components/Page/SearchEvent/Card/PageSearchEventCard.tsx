@@ -38,17 +38,18 @@ export function PageSearchEventCard({
   noWrapper,
   viewType,
   className,
+  userId,
   type,
 }: PageSearchEventCardProps) {
   const stateEvents = useState<EventType[]>([]);
   const [events, setEvents] = stateEvents;
   const { getEvents, getFollowedEvents } = useEvent();
   const stateFilters = useState<EventTagNameType[]>([]);
-  const [filters] = stateFilters;
+  const [filters, setFilters] = stateFilters;
   const stateQuery = useState("");
-  const [query] = stateQuery;
+  const [query, setQuery] = stateQuery;
   const stateSort = useState<EventSortNameType>("newest");
-  const [sort] = stateSort;
+  const [sort, setSort] = stateSort;
   const { addToastPreset } = useToast();
   const sortBy = useMemo(() => EVENT_SORT_CRITERIA[sort], [sort]);
   const { updateUserSubscribedEventClientSide } = useIdentification();
@@ -108,47 +109,47 @@ export function PageSearchEventCard({
     return sortedEvents;
   }, [events, filters, query, sortEvents, viewType]);
 
-  // const handleUpdatePathQueries = useCallback(() => {
-  //   if (queried.current <= 1) return;
+  const handleUpdatePathQueries = useCallback(() => {
+    if (queried.current <= 1) return;
 
-  //   sessionStorage.setItem(
-  //     viewTypeString,
-  //     JSON.stringify({
-  //       filters,
-  //       query,
-  //       sort,
-  //     })
-  //   );
-  // }, [filters, query, sort, viewTypeString]);
+    sessionStorage.setItem(
+      viewType ?? "default",
+      JSON.stringify({
+        filters,
+        query,
+        sort,
+      })
+    );
+  }, [filters, query, sort, viewType]);
 
-  // const handleGetPathQuery = useCallback(() => {
-  //   const rawQuery = sessionStorage.getItem(viewTypeString);
+  const handleGetPathQuery = useCallback(() => {
+    const rawQuery = sessionStorage.getItem(viewType ?? "default");
 
-  //   if (rawQuery && queried.current <= 1) {
-  //     const parsedQuery = JSON.parse(rawQuery);
+    if (rawQuery && queried.current <= 1) {
+      const parsedQuery = JSON.parse(rawQuery);
 
-  //     const parsedFilters = parsedQuery.filters;
+      const parsedFilters = parsedQuery.filters;
 
-  //     setFilters(parsedFilters);
-  //     setQuery(parsedQuery.query);
-  //     setSort(parsedQuery.sort);
-  //   }
+      setFilters(parsedFilters);
+      setQuery(parsedQuery.query);
+      setSort(parsedQuery.sort);
+    }
 
-  //   queried.current++;
-  // }, [setFilters, setQuery, setSort, viewTypeString]);
+    queried.current++;
+  }, [setFilters, setQuery, setSort, viewType]);
 
-  // useEffect(() => {
-  //   handleUpdatePathQueries();
-  // }, [handleUpdatePathQueries]);
+  useEffect(() => {
+    handleUpdatePathQueries();
+  }, [handleUpdatePathQueries]);
 
-  // useEffect(() => {
-  //   handleGetPathQuery();
-  // }, [handleGetPathQuery]);
+  useEffect(() => {
+    handleGetPathQuery();
+  }, [handleGetPathQuery]);
 
   useEffect(() => {
     switch (viewType) {
       case "userCreatedEvents":
-        getEvents([where("authorId", "==", authorId ?? user?.id)])
+        getEvents([where("authorId", "==", userId ?? authorId ?? user?.id)])
           .then((event) => setEvents(event))
           .catch((e) => {
             addToastPreset("fail-get");
@@ -176,6 +177,7 @@ export function PageSearchEventCard({
     getFollowedEvents,
     setEvents,
     user?.id,
+    userId,
     viewType,
   ]);
 
