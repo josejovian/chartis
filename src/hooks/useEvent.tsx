@@ -56,7 +56,9 @@ export function useEvent() {
   > => {
     const subscribedEventIds: Record<string, number> =
       user && user.id
-        ? identification.users[user.id].subscribedEvents
+        ? await readData(FIREBASE_COLLECTION_USERS, user.id)
+            .then((res) => res?.subscribedEvents || {})
+            .catch((e) => ({}))
         : JSON.parse(localStorage.getItem("subscribe") ?? "{}");
 
     return Promise.all(
@@ -64,7 +66,7 @@ export function useEvent() {
         readData(FIREBASE_COLLECTION_EVENTS, eventId)
       )
     );
-  }, [identification.users, user]);
+  }, [user]);
 
   const createEvent = useCallback(async (event: EventType): Promise<void> => {
     const eventDefault = {
