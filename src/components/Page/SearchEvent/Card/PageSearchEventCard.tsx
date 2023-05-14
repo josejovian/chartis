@@ -146,11 +146,12 @@ export function PageSearchEventCard({
   useEffect(() => {
     switch (viewType) {
       case "userCreatedEvents":
-        getEvents([where("authorId", "==", authorId ?? user?.id)])
-          .then((event) => setEvents(event))
-          .catch((e) => {
-            addToastPreset("fail-get");
-          });
+        authorId &&
+          getEvents([where("authorId", "==", authorId)])
+            .then((event) => setEvents(event))
+            .catch((e) => {
+              addToastPreset("fail-get");
+            });
         break;
       case "userFollowedEvents":
         getFollowedEvents()

@@ -2,6 +2,7 @@ import { ModalAuthInput } from "@/components/Modal";
 import { UserProfile } from "@/components/User";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
 import { updateData } from "@/firebase";
+import { useIdentification } from "@/hooks";
 import { ScreenSizeCategoryType, UserType } from "@/types";
 import { FieldChangeName, FieldProfileEmail } from "@/utils";
 import { Form, Formik } from "formik";
@@ -21,16 +22,21 @@ export function PageProfileEdit({
   onCancelEdit,
 }: PageProfileEditProps) {
   const router = useRouter();
+  const { stateIdentification } = useIdentification();
+  const [identification] = stateIdentification;
+  const { user } = identification;
 
   const handleSubmit = useCallback(
     (values: { name: string; email: string }) => {
-      updateData(FIREBASE_COLLECTION_USERS, profile.id, {
-        name: values.name,
-      }).then(() => {
-        router.reload();
-      });
+      if (user && user.id) {
+        updateData(FIREBASE_COLLECTION_USERS, user.id, {
+          name: values.name,
+        }).then(() => {
+          router.reload();
+        });
+      }
     },
-    [profile.id, router]
+    [router, user]
   );
 
   const renderForm = useMemo(
