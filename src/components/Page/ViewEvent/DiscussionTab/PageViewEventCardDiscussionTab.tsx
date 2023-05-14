@@ -7,7 +7,13 @@ import pushid from "pushid";
 import { Button, Form, Icon, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import { ModalConfirmation, UserPicture } from "@/components";
-import { getTimeDifference, sleep } from "@/utils";
+import {
+  createComment,
+  deleteComment,
+  getComments,
+  getTimeDifference,
+  sleep,
+} from "@/utils";
 import {
   CommentReportType,
   CommentType,
@@ -18,7 +24,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
-import { useEvent, useReport, useToast } from "@/hooks";
+import { useReport, useToast } from "@/hooks";
 
 interface PageViewEventCardDiscussionTabProps {
   stateEvent: StateObject<EventType>;
@@ -31,7 +37,6 @@ export function PageViewEventCardDiscussionTab({
   type,
   identification,
 }: PageViewEventCardDiscussionTabProps) {
-  const { getComments, createComment, deleteComment } = useEvent();
   const [event, setEvent] = stateEvent;
   const { commentCount, id } = event;
   const [comments, setComments] = useState<CommentType[]>([]);
@@ -81,7 +86,7 @@ export function PageViewEventCardDiscussionTab({
           setLoading(false);
         });
     },
-    [addToastPreset, auth.currentUser, createComment, id, setEvent]
+    [addToastPreset, auth.currentUser, id, setEvent]
   );
 
   useEffect(() => {
@@ -91,7 +96,7 @@ export function PageViewEventCardDiscussionTab({
         .catch((e) => {
           addToastPreset("fail-get");
         });
-  }, [addToastPreset, commentCount, getComments, id]);
+  }, [addToastPreset, commentCount, id]);
 
   const renderDeleteButton = useCallback(
     (commentId: string) => {
@@ -120,7 +125,7 @@ export function PageViewEventCardDiscussionTab({
         />
       );
     },
-    [deleteComment, deleting, id]
+    [deleting, id]
   );
 
   const renderCommentCard = useCallback(
