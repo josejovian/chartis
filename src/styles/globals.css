@@ -221,7 +221,7 @@
   }
   .StickyHeaderTable
     :is(th, td)
-    button.ui.red.button:is(:hover, :focus, :active) {
+    button.ui.red.basic.button:is(:hover, :focus, :active) {
     box-shadow: none !important;
     @apply !bg-red-200;
   }

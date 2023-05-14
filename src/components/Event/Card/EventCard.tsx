@@ -200,9 +200,8 @@ export function EventCard({
     () => (
       <div
         className={clsx(
-          "flex flex-auto gap-4  w-48 !relative",
-          type === "vertical" && "mt-2",
-          type === "horizontal" && "justify-end"
+          "flex flex-auto gap-4 w-fit !relative",
+          type === "vertical" && "mt-2"
         )}
         style={{
           maxWidth: "192px",
@@ -276,7 +275,7 @@ export function EventCard({
               {renderEventCreators}
               {renderEventTitle}
             </div>
-            <div className="flex justify-between place-items-end !w-full">
+            <div className="flex flex-wrap justify-between place-items-end !w-full gap-2">
               {renderEventExtraDetails}
               {renderEventActions}
             </div>

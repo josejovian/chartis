@@ -7,6 +7,7 @@ import {
   StickyHeaderTable,
   LayoutNotice,
   ModalConfirmation,
+  User,
 } from "@/components";
 import { useReport, useScreen, useToast } from "@/hooks";
 import { sleep, strDateTime, validateEventQuery } from "@/utils";
@@ -292,7 +293,9 @@ export function PageManageReports({
         important: true,
       },
       {
-        cellElement: ({ authorId }) => <>{authorId ?? "Unknown User"}</>,
+        cellElement: ({ authorId }) => (
+          <User id={authorId} type="name" className="font-bold" />
+        ),
         cellWidth: {
           desktop_lg: 2,
           desktop_sm: 2,
@@ -322,7 +325,7 @@ export function PageManageReports({
         cellElement: ({ reportedBy }) => (
           <>
             {type === "mobile" && <b>Reported by: </b>}
-            {reportedBy ?? "Unknown User"}
+            {<User id={reportedBy} type="name" className="font-bold" />}
           </>
         ),
         cellWidth: {
@@ -345,7 +348,7 @@ export function PageManageReports({
       },
       {
         cellElement: (data) => (
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-wrap flex-row gap-2">
             <Button
               size="mini"
               color={data.status === "resolved" ? "yellow" : "green"}
@@ -438,7 +441,7 @@ export function PageManageReports({
     () => (
       <div
         className={clsx(
-          "flex gap-4",
+          "flex gap-4 flex-wrap",
           type === "mobile" ? "flex-col" : "flex-row"
         )}
       >
@@ -448,17 +451,17 @@ export function PageManageReports({
         />
         <div className="flex grow-0 gap-4 justify-end">
           <ButtonDropdownSelect
-            name="Category"
+            name="Status"
             stateActive={stateReportStatus}
             options={MODERATION_REPORT_STATUS_FILTER_TYPE}
-            size={type === "mobile" ? "tiny" : undefined}
+            size={type === "mobile" ? "mini" : undefined}
             type="single"
           />
           <ButtonDropdownSelect
-            name="Content Type"
+            name="Type"
             stateActive={stateReportType}
             options={MODERATION_REPORT_CONTENT_TYPE_FILTER}
-            size={type === "mobile" ? "tiny" : undefined}
+            size={type === "mobile" ? "mini" : undefined}
             type="single"
           />
           <ButtonDropdownSelect
@@ -466,7 +469,7 @@ export function PageManageReports({
             options={MODERATION_REPORT_SORT}
             type="single"
             stateActive={stateSort}
-            size={type === "mobile" ? "tiny" : undefined}
+            size={type === "mobile" ? "mini" : undefined}
           />
         </div>
       </div>
