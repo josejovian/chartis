@@ -380,10 +380,15 @@ export function useEvent() {
     []
   );
 
-  // const deleteComment = useCallback(
-  //   (eventId: string, commentId: string): Promise<void> => {},
-  //   []
-  // );
+  const deleteComment = useCallback(
+    (eventId: string, commentId: string): Promise<void> => {
+      return updateData(FIREBASE_COLLECTION_COMMENTS, eventId, {
+        [commentId]: deleteField(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+    },
+    []
+  );
 
   return useMemo(
     () => ({
@@ -396,6 +401,7 @@ export function useEvent() {
       updateEvent,
       getComments,
       createComment,
+      deleteComment,
     }),
     [
       getEvents,
@@ -407,6 +413,7 @@ export function useEvent() {
       updateEvent,
       getComments,
       createComment,
+      deleteComment,
     ]
   );
 }

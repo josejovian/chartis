@@ -6,7 +6,7 @@ import * as Yup from "yup";
 import pushid from "pushid";
 import { Button, Form, Icon, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
-import { UserPicture } from "@/components";
+import { ModalConfirmation, UserPicture } from "@/components";
 import { getTimeDifference, sleep } from "@/utils";
 import {
   CommentReportType,
@@ -31,7 +31,7 @@ export function PageViewEventCardDiscussionTab({
   type,
   identification,
 }: PageViewEventCardDiscussionTabProps) {
-  const { getComments, createComment } = useEvent();
+  const { getComments, createComment, deleteComment } = useEvent();
   const [event, setEvent] = stateEvent;
   const { commentCount, id } = event;
   const [comments, setComments] = useState<CommentType[]>([]);
@@ -41,6 +41,9 @@ export function PageViewEventCardDiscussionTab({
   const { addToastPreset } = useToast();
   const { showReportModal } = useReport();
   const { user, initialized } = identification;
+
+  const [deleting, setDeleting] = useState(false);
+
   const authorized = useMemo(() => {
     if (!initialized) return undefined;
 
@@ -90,6 +93,36 @@ export function PageViewEventCardDiscussionTab({
         });
   }, [addToastPreset, commentCount, getComments, id]);
 
+  const renderDeleteButton = useCallback(
+    (commentId: string) => {
+      return (
+        <ModalConfirmation
+          trigger={
+            <span className="pl-2 cursor-pointer hover:text-slate-600">
+              Delete
+            </span>
+          }
+          onConfirm={() => {
+            deleteComment(id, commentId)
+              .then(() => {
+                setComments((prev) =>
+                  prev.filter((c) => c.commentId !== commentId)
+                );
+              })
+              .finally(() => {
+                setDeleting(false);
+              });
+          }}
+          loading={deleting}
+          color="red"
+          modalText="Are you sure you want to delete this event? This cannot be undone later."
+          confirmText="Delete"
+        />
+      );
+    },
+    [deleteComment, deleting, id]
+  );
+
   const renderCommentCard = useCallback(
     (comment: CommentType, last?: boolean) => (
       <div className={COMMENT_WRAPPER_STYLE} key={comment.commentId}>
@@ -105,23 +138,26 @@ export function PageViewEventCardDiscussionTab({
           </span>
         </div>
         <div className="flex items-center">{comment.text}</div>
-        <div
-          onClick={() =>
-            showReportModal({
-              commentId: comment.commentId,
-              eventId: id,
-              authorId: comment.authorId,
-              contentType: "comment",
-              reportedBy: auth.currentUser ? auth.currentUser.uid : "invalid",
-            } as ReportBaseType & CommentReportType)
-          }
-          className={COMMENT_REPORT_STYLE}
-        >
-          Report
+        <div className={COMMENT_REPORT_STYLE}>
+          <span
+            onClick={() =>
+              showReportModal({
+                commentId: comment.commentId,
+                eventId: id,
+                authorId: comment.authorId,
+                contentType: "comment",
+                reportedBy: auth.currentUser ? auth.currentUser.uid : "invalid",
+              } as ReportBaseType & CommentReportType)
+            }
+            className={"cursor-pointer hover:text-slate-600"}
+          >
+            Report
+          </span>
+          {renderDeleteButton(comment.commentId)}
         </div>
       </div>
     ),
-    [auth.currentUser, id, showReportModal]
+    [auth.currentUser, id, renderDeleteButton, showReportModal]
   );
 
   const renderCommentInput = useMemo(
@@ -231,4 +267,4 @@ const COMMENT_SIDELINE_STYLE = [
 const COMMENT_WRAPPER_STYLE = "grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4";
 
 const COMMENT_REPORT_STYLE =
-  "flex items-center text-slate-400 hover:text-slate-600 text-16px cursor-pointer";
+  "flex items-center text-slate-400 text-16px divide-x-2 space-x-2";
