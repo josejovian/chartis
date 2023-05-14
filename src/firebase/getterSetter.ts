@@ -45,6 +45,7 @@ type FIREBASE_COLLECTION = {
 type OPERATION_TYPE = {
   create: FIREBASE_COLLECTION;
   update: Partial<FIREBASE_COLLECTION>;
+  "update-merge": Partial<FIREBASE_COLLECTION>;
   delete: object;
 };
 
@@ -135,6 +136,9 @@ export async function writeDataBatch(
         break;
       case "update":
         batch.update(operationTarget, operation.value);
+        break;
+      case "update-merge":
+        batch.set(operationTarget, operation.value, { merge: true });
         break;
       case "delete":
         batch.delete(operationTarget);

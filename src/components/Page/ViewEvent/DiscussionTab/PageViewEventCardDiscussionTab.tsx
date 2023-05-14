@@ -1,15 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAuth } from "firebase/auth";
-import { increment } from "firebase/firestore";
-import { createData, readData, updateData } from "@/firebase";
 import { Field, Formik } from "formik";
 import * as Yup from "yup";
 import pushid from "pushid";
 import { Button, Form, Icon, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
-import { UserPicture } from "@/components";
-import { getTimeDifference, sleep } from "@/utils";
+import { ModalConfirmation, UserPicture } from "@/components";
+import {
+  createComment,
+  deleteComment,
+  getComments,
+  getTimeDifference,
+  sleep,
+} from "@/utils";
 import {
   CommentReportType,
   CommentType,
@@ -42,25 +46,14 @@ export function PageViewEventCardDiscussionTab({
   const { addToastPreset } = useToast();
   const { showReportModal } = useReport();
   const { user, initialized } = identification;
+
+  const [deleting, setDeleting] = useState(false);
+
   const authorized = useMemo(() => {
     if (!initialized) return undefined;
 
     return Boolean(user && !user.ban);
   }, [initialized, user]);
-
-  const handleGetEventUpdates = useCallback(async () => {
-    if (commentCount === 0) return;
-
-    const rawData = await readData("comments", id);
-    const data = Object.entries(rawData ?? {})
-      .reduce((arr: CommentType[], [k, v]: any) => {
-        arr.push({ commentId: k, ...v });
-        return arr;
-      }, [])
-      .sort((a, b) => b.postDate - a.postDate) as CommentType[];
-
-    setComments(data);
-  }, [commentCount, id]);
 
   const handlePostComment = useCallback(
     async (values: any) => {
@@ -75,32 +68,65 @@ export function PageViewEventCardDiscussionTab({
         text: values.comment,
       };
       newCommentObject[commentId] = newComment;
-      setLoading(true);
-      await sleep(200);
 
-      createData(`comments`, newCommentObject, id, true)
-        .then(async () => {
-          await updateData("events", id, { commentCount: increment(1) as any });
+      setLoading(true);
+      createComment(id, newCommentObject)
+        .then(() => {
           setComments((prev) => [newComment, ...prev]);
           setEvent((prev) => ({
             ...prev,
             commentCount: (prev.commentCount ?? 0) + 1,
           }));
-
-          await sleep(100);
-          setLoading(false);
         })
-        .catch(() => {
-          setLoading(false);
+        .catch((e) => {
           addToastPreset("fail-post");
+        })
+        .finally(() => {
+          sleep(100);
+          setLoading(false);
         });
     },
     [addToastPreset, auth.currentUser, id, setEvent]
   );
 
   useEffect(() => {
-    handleGetEventUpdates();
-  }, [handleGetEventUpdates]);
+    if (commentCount && commentCount > 0)
+      getComments(id)
+        .then((comments) => setComments(comments))
+        .catch((e) => {
+          addToastPreset("fail-get");
+        });
+  }, [addToastPreset, commentCount, id]);
+
+  const renderDeleteButton = useCallback(
+    (commentId: string) => {
+      return (
+        <ModalConfirmation
+          trigger={
+            <span className="pl-2 cursor-pointer hover:text-slate-600">
+              Delete
+            </span>
+          }
+          onConfirm={() => {
+            deleteComment(id, commentId)
+              .then(() => {
+                setComments((prev) =>
+                  prev.filter((c) => c.commentId !== commentId)
+                );
+              })
+              .finally(() => {
+                setDeleting(false);
+              });
+          }}
+          loading={deleting}
+          color="red"
+          modalText="Are you sure you want to delete this event? This cannot be undone later."
+          confirmText="Delete"
+        />
+      );
+    },
+    [deleting, id]
+  );
 
   const renderCommentCard = useCallback(
     (comment: CommentType, last?: boolean) => (
@@ -117,23 +143,26 @@ export function PageViewEventCardDiscussionTab({
           </span>
         </div>
         <div className="flex items-center">{comment.text}</div>
-        <div
-          onClick={() =>
-            showReportModal({
-              commentId: comment.commentId,
-              eventId: id,
-              authorId: comment.authorId,
-              contentType: "comment",
-              reportedBy: auth.currentUser ? auth.currentUser.uid : "invalid",
-            } as ReportBaseType & CommentReportType)
-          }
-          className={COMMENT_REPORT_STYLE}
-        >
-          Report
+        <div className={COMMENT_REPORT_STYLE}>
+          <span
+            onClick={() =>
+              showReportModal({
+                commentId: comment.commentId,
+                eventId: id,
+                authorId: comment.authorId,
+                contentType: "comment",
+                reportedBy: auth.currentUser ? auth.currentUser.uid : "invalid",
+              } as ReportBaseType & CommentReportType)
+            }
+            className={"cursor-pointer hover:text-slate-600"}
+          >
+            Report
+          </span>
+          {renderDeleteButton(comment.commentId)}
         </div>
       </div>
     ),
-    [auth.currentUser, id, showReportModal]
+    [auth.currentUser, id, renderDeleteButton, showReportModal]
   );
 
   const renderCommentInput = useMemo(
@@ -241,4 +270,4 @@ const COMMENT_SIDELINE_STYLE = [
 const COMMENT_WRAPPER_STYLE = "grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4";
 
 const COMMENT_REPORT_STYLE =
-  "flex items-center text-slate-400 hover:text-slate-600 text-16px cursor-pointer";
+  "flex items-center text-slate-400 text-16px divide-x-2 space-x-2";

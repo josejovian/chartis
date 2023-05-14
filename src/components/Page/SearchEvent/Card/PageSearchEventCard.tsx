@@ -14,8 +14,8 @@ import {
 } from "@/types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { useEvent, useIdentification, useToast } from "@/hooks";
-import { validateEventQuery } from "@/utils";
+import { useIdentification, useToast } from "@/hooks";
+import { getEvents, getFollowedEvents, validateEventQuery } from "@/utils";
 import {
   ASSET_CALENDAR,
   ASSET_NO_CONTENT,
@@ -43,7 +43,6 @@ export function PageSearchEventCard({
 }: PageSearchEventCardProps) {
   const stateEvents = useState<EventType[]>([]);
   const [events, setEvents] = stateEvents;
-  const { getEvents, getFollowedEvents } = useEvent();
   const stateFilters = useState<EventTagNameType[]>([]);
   const [filters, setFilters] = stateFilters;
   const stateQuery = useState("");
@@ -149,37 +148,31 @@ export function PageSearchEventCard({
   useEffect(() => {
     switch (viewType) {
       case "userCreatedEvents":
-        getEvents([where("authorId", "==", userId ?? authorId ?? user?.id)])
-          .then((event) => setEvents(event))
-          .catch((e) => {
-            addToastPreset("fail-get");
-          });
+        authorId &&
+          getEvents([where("authorId", "==", authorId)])
+            .then((event) => setEvents(event))
+            .catch((e) => {
+              addToastPreset("fail-get");
+            });
         break;
       case "userFollowedEvents":
-        getFollowedEvents()
-          .then((events) => {
-            setEvents(
-              events.filter((event) => event !== undefined) as EventType[]
-            );
-          })
-          .catch(() => {
-            addToastPreset("fail-get");
-          });
+        user &&
+          user.id &&
+          getFollowedEvents(user.id)
+            .then((events) => {
+              setEvents(
+                events.filter((event) => event !== undefined) as EventType[]
+              );
+            })
+            .catch(() => {
+              addToastPreset("fail-get");
+            });
         break;
       case "default":
         getEvents([]).then((events) => setEvents(events));
         break;
     }
-  }, [
-    addToastPreset,
-    authorId,
-    getEvents,
-    getFollowedEvents,
-    setEvents,
-    user?.id,
-    userId,
-    viewType,
-  ]);
+  }, [addToastPreset, authorId, setEvents, user, viewType]);
 
   const filterCaption = useMemo(
     () => (

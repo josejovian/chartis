@@ -11,13 +11,13 @@ import {
   EventTags,
   User,
 } from "@/components";
-import { strDateTime } from "@/utils";
+import { deleteEvent, strDateTime } from "@/utils";
 import {
   EventCardDisplayType,
   EventDetailCompactType,
   EventType,
 } from "@/types";
-import { useEvent, useIdentification, useReport, useToast } from "@/hooks";
+import { useIdentification, useReport, useToast } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
@@ -43,7 +43,6 @@ export function EventCard({
   const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
-  const { deleteEvent } = useEvent();
   const { showReportModal } = useReport();
   const { addToastPreset } = useToast();
   const stateDeleting = useState(false);
@@ -78,7 +77,6 @@ export function EventCard({
       });
   }, [
     addToastPreset,
-    deleteEvent,
     event.id,
     extraDeleteHandler,
     id,

@@ -35,7 +35,7 @@ export function PageProfileChangePasswordTab({
   onCancelEdit,
 }: PageProfileChangePasswordTabProps) {
   const router = useRouter();
-  const { addToast } = useToast();
+  const { addToast, addToastPreset } = useToast();
 
   const handleChangePassword = useCallback(
     (currentPass: string, newPass: string) => {
@@ -61,17 +61,31 @@ export function PageProfileChangePasswordTab({
             })
             .catch((error: any) => {
               // There was an error updating the user's password
-              /* eslint-disable no-console */
-              console.error(error);
+              addToastPreset("fail-generic");
             });
         })
-        .catch((error: any) => {
-          // There was an error reauthenticating the user
-          /* eslint-disable no-console */
-          console.error(error);
+        .catch((error: Error) => {
+          if (error.message === "Firebase: Error (auth/wrong-password).") {
+            addToast({
+              title: "Your current password is incorrect",
+              description: "Please enter your current password again",
+              variant: "danger",
+            });
+          } else if (
+            error.message ===
+            "Firebase: Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later. (auth/too-many-requests)."
+          ) {
+            addToast({
+              title: "Too many attempts",
+              description: "Please try again later",
+              variant: "danger",
+            });
+          } else {
+            addToastPreset("fail-generic");
+          }
         });
     },
-    [addToast, router, user]
+    [addToast, addToastPreset, router, user]
   );
 
   const renderForm = useMemo(
@@ -101,7 +115,6 @@ export function PageProfileChangePasswordTab({
           if (values.confirmPassword === "") {
             errors.confirmPassword = "Fill in confirm password!";
           }
-          console.log(errors);
           return errors;
         }}
         validationSchema={SchemaChangePassword}
