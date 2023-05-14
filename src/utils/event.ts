@@ -143,7 +143,6 @@ export async function createEvent(event: EventType): Promise<void> {
     description: "",
     postDate: new Date().getTime(),
     lastUpdatedAt: new Date().getTime(),
-    subscriberCount: 0,
     subscriberIds: [],
     isHidden: false,
   };
