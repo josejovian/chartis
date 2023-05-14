@@ -143,6 +143,7 @@ export async function createEvent(event: EventType): Promise<void> {
     description: null,
     postDate: new Date().getTime(),
     lastUpdatedAt: new Date().getTime(),
+    guestSubscriberCount: 0,
     subscriberIds: [],
     isHidden: false,
   };
@@ -348,7 +349,6 @@ export async function toggleEventSubscription(
         subscriberIds: currentlySubscribed
           ? arrayRemove(userId)
           : arrayUnion(userId),
-        subscriberCount: currentlySubscribed ? increment(-1) : increment(1),
       },
     },
   ]);
