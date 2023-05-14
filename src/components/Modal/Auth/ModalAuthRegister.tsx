@@ -104,7 +104,7 @@ export function ModalAuthRegister() {
         const casted = values as FormRegisterProps;
         const errors: Record<string, string> = {};
         if (casted.password !== casted.confirmPassword) {
-          errors.confirm = "Password doesn't match";
+          errors.confirmPassword = "Password doesn't match";
         }
         if (casted.password.length < 4) {
           errors.password = "Password's length must be more than 4!";

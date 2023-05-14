@@ -11,13 +11,13 @@ import {
   EventTags,
   User,
 } from "@/components";
-import { strDateTime } from "@/utils";
+import { deleteEvent, strDateTime } from "@/utils";
 import {
   EventCardDisplayType,
   EventDetailCompactType,
   EventType,
 } from "@/types";
-import { useEvent, useIdentification, useReport } from "@/hooks";
+import { useIdentification, useReport } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
@@ -43,7 +43,6 @@ export function EventCard({
   const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
-  const { deleteEvent } = useEvent();
   const { showReportModal } = useReport();
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
@@ -74,14 +73,7 @@ export function EventCard({
       .finally(() => {
         setModalDelete(false);
       });
-  }, [
-    deleteEvent,
-    event.id,
-    extraDeleteHandler,
-    id,
-    setDeleting,
-    setModalDelete,
-  ]);
+  }, [event.id, extraDeleteHandler, id, setDeleting, setModalDelete]);
 
   const handleEditEvent = useCallback(() => {
     if (!event.id) return;
