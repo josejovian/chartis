@@ -132,15 +132,15 @@ export async function getFollowedEvents(
 
 export async function createEvent(event: EventType): Promise<void> {
   const eventDefault = {
-    id: "",
-    authorId: "",
-    name: "",
+    id: null,
+    authorId: null,
+    name: null,
     tags: {},
-    organizer: "",
-    location: "",
-    startDate: new Date(-1).getTime(),
-    endDate: undefined,
-    description: "",
+    organizer: null,
+    location: null,
+    startDate: null,
+    endDate: null,
+    description: null,
     postDate: new Date().getTime(),
     lastUpdatedAt: new Date().getTime(),
     subscriberIds: [],
