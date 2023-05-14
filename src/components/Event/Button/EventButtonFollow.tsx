@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
-import { useEvent, useToast } from "@/hooks";
+import { useToast } from "@/hooks";
+import { toggleEventSubscription } from "@/utils";
 
 export interface EventButtonFollowProps {
   event: EventType;
@@ -38,8 +39,6 @@ export function EventButtonFollow({
   const [loading, setLoading] = useState(false);
   const initialized = useRef(false);
 
-  const { toggleEventSubscription } = useEvent();
-
   const handleFollowEvent = useCallback(async () => {
     if (loading) return;
 
@@ -59,15 +58,7 @@ export function EventButtonFollow({
       .finally(async () => {
         setLoading(false);
       });
-  }, [
-    addToastPreset,
-    event.version,
-    id,
-    loading,
-    subscribed,
-    toggleEventSubscription,
-    user?.id,
-  ]);
+  }, [addToastPreset, event.version, id, loading, subscribed, user?.id]);
 
   const handleInitializeSubscribeState = useCallback(() => {
     if (initialized.current || typeof window === "undefined") return;

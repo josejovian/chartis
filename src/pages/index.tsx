@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHomeSideBar, LayoutCalendar, LayoutTemplate } from "@/components";
-import { useEvent, useToast } from "@/hooks";
-import { getDateMonthYear } from "@/utils";
+import { useToast } from "@/hooks";
+import { getDateMonthYear, getEventsMonthly } from "@/utils";
 import { EventTagNameType, EventType } from "@/types";
 
 export default function Home() {
@@ -14,7 +14,6 @@ export default function Home() {
   const stateFilters = useState<EventTagNameType[]>([]);
   const [filters] = stateFilters;
   const { addToastPreset } = useToast();
-  const { getEventsMonthly } = useEvent();
 
   const eventCardExtraDeleteHandler = useCallback((eventId: string) => {
     setEvents((prev) => prev.filter((event) => event.id !== eventId));
@@ -79,7 +78,7 @@ export default function Home() {
       .catch(() => {
         addToastPreset("fail-get");
       });
-  }, [addToastPreset, focusDate.month, focusDate.year, getEventsMonthly]);
+  }, [addToastPreset, focusDate.month, focusDate.year]);
 
   return (
     <LayoutTemplate title="Home" classNameMain="!bg-white" side={renderSidebar}>

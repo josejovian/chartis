@@ -18,11 +18,14 @@ import {
   PageViewEventCardDetailTab,
   PageViewEventHead,
 } from "@/components";
-import { useEvent, useToast } from "@/hooks";
+import { useToast } from "@/hooks";
 import {
   SchemaEvent,
+  createEvent,
+  deleteEvent,
   getLocalTimeInISO,
   sleep,
+  updateEvent,
   validateEndDate,
   validateImage,
   validateStartDate,
@@ -67,7 +70,6 @@ export function PageViewEventCard({
   fancy,
 }: ModalViewEventProps) {
   const router = useRouter();
-  const { updateEvent, createEvent, deleteEvent } = useEvent();
   const stateFocusThumbnail = useState(true);
   const focusThumbnail = stateFocusThumbnail[0];
   const [event, setEvent] = stateEvent;
@@ -197,7 +199,6 @@ export function PageViewEventCard({
     },
     [
       addToastPreset,
-      createEvent,
       event.id,
       eventPreviousValues,
       handleConstructEventValues,
@@ -207,7 +208,6 @@ export function PageViewEventCard({
       setEvent,
       setMode,
       setSubmitting,
-      updateEvent,
       user,
     ]
   );
@@ -223,7 +223,7 @@ export function PageViewEventCard({
       setModalDelete(false);
       setDeleting(false);
     });
-  }, [deleteEvent, event.id, setDeleting, setModalDelete]);
+  }, [event.id, setDeleting, setModalDelete]);
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
