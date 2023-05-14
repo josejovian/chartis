@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo } from "react";
 import { NotificationContext } from "@/contexts";
-import { readData } from "@/firebase";
+import { readData } from "@/utils";
 import {
   NotificationData,
   UpdateChangedValueType,

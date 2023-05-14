@@ -53,8 +53,8 @@ export function PageProfileChangePasswordTab({
             .then(() => {
               // Password successfully updated
               addToast({
-                title: "Password changed",
-                description: "Please login again",
+                title: "Change password successful",
+                description: "Your password has been changed",
                 variant: "success",
               });
               router.push("/");
@@ -64,17 +64,14 @@ export function PageProfileChangePasswordTab({
               addToastPreset("fail-generic");
             });
         })
-        .catch((error: Error) => {
-          if (error.message === "Firebase: Error (auth/wrong-password).") {
+        .catch((error: any) => {
+          if (error.code === "auth/wrong-password") {
             addToast({
               title: "Your current password is incorrect",
               description: "Please enter your current password again",
               variant: "danger",
             });
-          } else if (
-            error.message ===
-            "Firebase: Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later. (auth/too-many-requests)."
-          ) {
+          } else if (error.code === "auth/too-many-requests") {
             addToast({
               title: "Too many attempts",
               description: "Please try again later",

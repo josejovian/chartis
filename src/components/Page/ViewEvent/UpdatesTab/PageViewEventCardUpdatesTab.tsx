@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { readData } from "@/firebase";
 import clsx from "clsx";
 import { EventUpdate } from "@/components";
 import {
@@ -8,6 +7,7 @@ import {
   ScreenSizeCategoryType,
   UpdateVersion,
 } from "@/types";
+import { readData } from "@/utils";
 
 interface PageViewEventCardUpdatesTabProps {
   event: EventType;

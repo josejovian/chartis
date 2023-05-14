@@ -21,7 +21,7 @@ import {
   updateData,
   uploadImage,
   writeDataBatch,
-} from "@/firebase";
+} from "@/utils";
 import {
   QueryConstraint,
   arrayRemove,

@@ -4,7 +4,8 @@ import { ModalReportProps } from "@/components";
 import { useModal } from "./useModal";
 import { Loader } from "semantic-ui-react";
 import { collection, getDocs } from "firebase/firestore";
-import { deleteData, fs, readData, updateData } from "@/firebase";
+import { fs } from "@/firebase";
+import { deleteData, readData, updateData } from "@/utils";
 import { ReportExtendedType, ReportStatusType, ReportType } from "@/types";
 
 const ModalReport = dynamic(
