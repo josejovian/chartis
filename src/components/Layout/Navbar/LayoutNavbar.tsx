@@ -139,12 +139,12 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   }, [isNotificationAlertVisible, permission, user]);
 
   const handleShowLoginModal = useCallback(() => {
-    setModal(<ModalAuthLogin />);
-  }, [setModal]);
+    if (!user) setModal(<ModalAuthLogin />);
+  }, [setModal, user]);
 
   const handleShowRegisterModal = useCallback(() => {
-    setModal(<ModalAuthRegister />);
-  }, [setModal]);
+    if (!user) setModal(<ModalAuthRegister />);
+  }, [setModal, user]);
 
   const handleLogout = useCallback(async () => {
     await logout()

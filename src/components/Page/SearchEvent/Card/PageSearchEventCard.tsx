@@ -25,6 +25,7 @@ import {
 } from "@/consts";
 import { where } from "firebase/firestore";
 import { useRouter } from "next/router";
+import { useEventsObject } from "@/hooks/useEventsObject";
 
 export interface PageSearchEventCardProps {
   noWrapper?: boolean;
@@ -41,8 +42,12 @@ export function PageSearchEventCard({
   userId,
   type,
 }: PageSearchEventCardProps) {
-  const stateEvents = useState<EventType[]>([]);
-  const [events, setEvents] = stateEvents;
+  const {
+    eventsArray,
+    setEventsObjectFromArray,
+    updateClientSideEvent,
+    deleteClientSideEvent,
+  } = useEventsObject();
   const stateFilters = useState<EventTagNameType[]>([]);
   const [filters, setFilters] = stateFilters;
   const stateQuery = useState("");
@@ -60,11 +65,11 @@ export function PageSearchEventCard({
   const queried = useRef(0);
 
   const sortEvents = useCallback(
-    (events: EventType[]): EventType[] => {
+    (eventsArray: EventType[]): EventType[] => {
       const { key, descending } = sortBy;
       let eventArray = [] as EventType[];
       const isDescending = descending ? 1 : -1;
-      eventArray = events.sort((a, b) => {
+      eventArray = eventsArray.sort((a, b) => {
         const left = a[key] ?? 0;
         const right = b[key] ?? 0;
         if (
@@ -90,12 +95,12 @@ export function PageSearchEventCard({
 
     if (queried && query.length > 3) {
       queriedEvents.push(
-        ...events.filter((event) =>
+        ...eventsArray.filter((event) =>
           event.name.toLowerCase().includes(query.toLowerCase())
         )
       );
     } else if (viewType !== "default" && query.length < 4) {
-      queriedEvents.push(...events);
+      queriedEvents.push(...eventsArray);
     }
 
     const filteredEvents = queriedEvents.filter((event) => {
@@ -106,7 +111,7 @@ export function PageSearchEventCard({
     const sortedEvents = sortEvents(filteredEvents);
 
     return sortedEvents;
-  }, [events, filters, query, sortEvents, viewType]);
+  }, [eventsArray, filters, query, sortEvents, viewType]);
 
   const handleUpdatePathQueries = useCallback(() => {
     if (queried.current <= 1) return;
@@ -150,7 +155,7 @@ export function PageSearchEventCard({
       case "userCreatedEvents":
         authorId &&
           getEvents([where("authorId", "==", authorId)])
-            .then((event) => setEvents(event))
+            .then((event) => setEventsObjectFromArray(event))
             .catch((e) => {
               addToastPreset("fail-get");
             });
@@ -160,7 +165,7 @@ export function PageSearchEventCard({
           user.id &&
           getFollowedEvents(user.id)
             .then((events) => {
-              setEvents(
+              setEventsObjectFromArray(
                 events.filter((event) => event !== undefined) as EventType[]
               );
             })
@@ -169,10 +174,19 @@ export function PageSearchEventCard({
             });
         break;
       case "default":
-        getEvents([]).then((events) => setEvents(events));
+        getEvents([]).then((eventsArray) =>
+          setEventsObjectFromArray(eventsArray)
+        );
         break;
     }
-  }, [addToastPreset, authorId, setEvents, user, viewType]);
+  }, [
+    addToastPreset,
+    authorId,
+    setEventsObjectFromArray,
+    user,
+    userId,
+    viewType,
+  ]);
 
   const filterCaption = useMemo(
     () => (
@@ -222,9 +236,15 @@ export function PageSearchEventCard({
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }
+          updateClientSideEvent={updateClientSideEvent}
         />
       )),
-    [displayedEvents, type, updateUserSubscribedEventClientSide]
+    [
+      displayedEvents,
+      type,
+      updateClientSideEvent,
+      updateUserSubscribedEventClientSide,
+    ]
   );
 
   const renderEmpty = useMemo(
@@ -234,7 +254,7 @@ export function PageSearchEventCard({
         title={query !== "" ? "No Events" : "Start Searching"}
         description={
           query !== ""
-            ? "No events found with such query."
+            ? "No eventsArray found with such query."
             : "Select a filter or type in any key word."
         }
       />
@@ -257,7 +277,7 @@ export function PageSearchEventCard({
         )}
       >
         <TemplateSearchInput
-          placeholder="Search events..."
+          placeholder="Search eventsArray..."
           stateQuery={stateQuery}
         />
         <div className="flex grow-0 gap-4 justify-end">

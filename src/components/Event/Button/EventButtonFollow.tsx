@@ -9,10 +9,10 @@ export interface EventButtonFollowProps {
   identification: IdentificationType;
   size?: SemanticSIZES;
   updateUserSubscribedEventClientSide: (
-    userId: string,
     eventId: string,
     version?: number
   ) => void;
+  updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
 }
 
 export function EventButtonFollow({
@@ -20,12 +20,14 @@ export function EventButtonFollow({
   identification,
   size,
   updateUserSubscribedEventClientSide,
+  updateClientSideEvent,
 }: EventButtonFollowProps) {
   const { addToastPreset } = useToast();
 
   const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
 
-  const { user, users } = identification;
+  const { user, users, initialized } = identification;
+  const test = useMemo(() => (user ? users[user.id] : null), [user, users]);
 
   const isAuthor = useMemo(
     () => Boolean(user && user.id === authorId),
@@ -37,31 +39,73 @@ export function EventButtonFollow({
   );
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const initialized = useRef(false);
+  const initializedSubscription = useRef(false);
 
   const handleFollowEvent = useCallback(async () => {
     if (loading) return;
 
-    setSubscriberCount((prev) => prev + (subscribed ? -1 : 1));
+    const currentCount = subscriberCount;
+    const currentSubscribed = subscribed;
+    const nextCount = currentCount + (currentSubscribed ? -1 : 1);
+    setSubscriberCount(nextCount);
     setLoading(true);
+
+    if (user) {
+      const newSubscriberIds = subscribed
+        ? subscriberIds.filter((sid) => sid !== user.id)
+        : [...subscriberIds, user.id];
+
+      // updateClientSideEvent(id, {
+      //   subscriberIds: newSubscriberIds,
+      //   subscriberCount: newSubscriberIds.length + (guestSubscriberCount ?? 0),
+      // });
+    }
 
     toggleEventSubscription(id, event.version ?? 0, subscribed, user?.id)
       .then(() => {
+        if (user) {
+          updateUserSubscribedEventClientSide(
+            event.id,
+            currentSubscribed ? undefined : event.version
+          );
+          console.log(currentSubscribed ? undefined : event.version);
+        }
         setSubscribed((prev) => !prev);
+
+        setLoading(false);
       })
       .catch((e) => {
+        if (user) {
+          // updateClientSideEvent(id, {
+          //   subscriberIds,
+          //   subscriberCount,
+          // });
+        }
         addToastPreset("fail-post");
         setLoading(false);
         setSubscribed((prev) => !prev);
-        setSubscriberCount((prev) => prev + (subscribed ? -1 : 1));
-      })
-      .finally(async () => {
-        setLoading(false);
+        setSubscriberCount(currentCount);
       });
-  }, [addToastPreset, event.version, id, loading, subscribed, user?.id]);
+  }, [
+    addToastPreset,
+    event.id,
+    event.version,
+    id,
+    loading,
+    subscribed,
+    subscriberCount,
+    subscriberIds,
+    updateUserSubscribedEventClientSide,
+    user,
+  ]);
 
   const handleInitializeSubscribeState = useCallback(() => {
-    if (initialized.current || typeof window === "undefined") return;
+    if (
+      !initialized ||
+      initializedSubscription.current ||
+      typeof window === "undefined"
+    )
+      return;
 
     let status = false;
     if (!user) {
@@ -69,12 +113,14 @@ export function EventButtonFollow({
         localStorage.getItem("subscribe") ?? "{}"
       ) as Record<string, boolean>;
       status = subscribe[id];
-    } else if (user && user.id && users[user.id]) {
-      status = subscriberIds.includes(user.id);
+    } else if (users && user) {
+      status =
+        subscriberIds.includes(user.id) ||
+        Object.keys(users[user.id].subscribedEvents ?? {}).includes(event.id);
     }
     setSubscribed(status);
-    initialized.current = true;
-  }, [id, subscriberIds, user, users]);
+    initializedSubscription.current = true;
+  }, [event.id, id, initialized, subscriberIds, user, users]);
 
   useEffect(() => {
     handleInitializeSubscribeState();

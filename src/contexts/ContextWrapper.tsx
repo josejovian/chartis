@@ -6,6 +6,7 @@ import {
   IdentificationType,
   ToastContextPropsType,
   NotificationContextPropsType,
+  EventsContextPropsType,
 } from "@/types";
 
 const IDENTIFICATION_CONTEXT_DEFAULT: StateObject<IdentificationType> = [
@@ -32,11 +33,16 @@ const TOAST_CONTEXT_DEFAULT: ToastContextPropsType = {
 
 const NOTIFICATION_CONTEXT_DEFAULT: NotificationContextPropsType = {
   stateNotification: [[], (newNotifications) => {}],
+  stateSubscribedIds: [{}, () => {}],
+};
+const EVENTS_CONTEXT_DEFAULT: EventsContextPropsType = {
+  stateEventsObject: [{}, (newEventsObject) => {}],
 };
 
 export const IdentificationContext = createContext(
   IDENTIFICATION_CONTEXT_DEFAULT
 );
+export const EventsContext = createContext(EVENTS_CONTEXT_DEFAULT);
 export const ModalContext = createContext(MODAL_CONTEXT_DEFAULT);
 export const NavBarContext = createContext(NAVBAR_CONTEXT_DEFAULT);
 export const ScreenContext = createContext(SCREEN_CONTEXT_DEFAULT);
@@ -48,6 +54,7 @@ interface ContextWrapperProps {
   stateIdentification: StateObject<IdentificationType>;
   stateModal: StateObject<ReactNode>;
   stateNavBar: StateObject<boolean>;
+  eventsProps: EventsContextPropsType;
   toastProps: ToastContextPropsType;
   notificationProps: NotificationContextPropsType;
   screen: ScreenSizeType;
@@ -58,23 +65,26 @@ export function ContextWrapper({
   stateIdentification,
   stateModal,
   stateNavBar,
+  eventsProps,
   toastProps,
   notificationProps,
   screen,
 }: ContextWrapperProps) {
   return (
-    <NotificationContext.Provider value={notificationProps}>
-      <IdentificationContext.Provider value={stateIdentification}>
-        <ModalContext.Provider value={stateModal}>
-          <ToastContext.Provider value={toastProps}>
-            <NavBarContext.Provider value={stateNavBar}>
-              <ScreenContext.Provider value={screen}>
-                {children}
-              </ScreenContext.Provider>
-            </NavBarContext.Provider>
-          </ToastContext.Provider>
-        </ModalContext.Provider>
-      </IdentificationContext.Provider>
-    </NotificationContext.Provider>
+    <EventsContext.Provider value={eventsProps}>
+      <NotificationContext.Provider value={notificationProps}>
+        <IdentificationContext.Provider value={stateIdentification}>
+          <ModalContext.Provider value={stateModal}>
+            <ToastContext.Provider value={toastProps}>
+              <NavBarContext.Provider value={stateNavBar}>
+                <ScreenContext.Provider value={screen}>
+                  {children}
+                </ScreenContext.Provider>
+              </NavBarContext.Provider>
+            </ToastContext.Provider>
+          </ModalContext.Provider>
+        </IdentificationContext.Provider>
+      </NotificationContext.Provider>
+    </EventsContext.Provider>
   );
 }

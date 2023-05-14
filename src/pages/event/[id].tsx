@@ -11,6 +11,7 @@ import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
 import { Button } from "semantic-ui-react";
 import { readData } from "@/firebase";
 import clsx from "clsx";
+import { useEventsObject } from "@/hooks/useEventsObject";
 
 export default function ViewEvent() {
   const router = useRouter();
@@ -18,10 +19,20 @@ export default function ViewEvent() {
   const stateMode = useState<EventModeType>("view");
   const setMode = stateMode[1];
   const { width, type } = useScreen();
-  const stateEvent = useState(EVENT_DUMMY_1);
-  const [event, setEvent] = stateEvent;
-  const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
   const [loading, setLoading] = useState(true);
+  const stateEvent = useState(EVENT_DUMMY_1);
+  const {
+    stateEventsObject,
+    eventsArray,
+    setEventSingle,
+    updateClientSideEvent,
+  } = useEventsObject();
+  const eventsObject = stateEventsObject[0];
+  const event = useMemo(
+    () => (loading ? undefined : eventsObject[id as string]),
+    [eventsObject, id, loading]
+  );
+  const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
   const [error, setError] = useState(false);
   const { stateIdentification, updateUserSubscribedEventClientSide } =
     useIdentification();
@@ -32,20 +43,21 @@ export default function ViewEvent() {
 
     await readData("events", id as string)
       .then((result) => {
-        setLoading(false);
         if (result) {
           setError(false);
-          setEvent(result);
+          setEventSingle(id as string, result);
           eventPreviousValues.current = result;
         } else {
           throw Error("Invalid event data.");
         }
       })
       .catch(() => {
-        setLoading(false);
         setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
       });
-  }, [id, setEvent]);
+  }, [id, setEventSingle]);
 
   const handleInstantEdit = useCallback(() => {
     if (
@@ -96,6 +108,7 @@ export default function ViewEvent() {
         updateUserSubscribedEventClientSide={
           updateUserSubscribedEventClientSide
         }
+        updateClientSideEvent={updateClientSideEvent}
         fancy
       />
     );
@@ -107,6 +120,7 @@ export default function ViewEvent() {
     stateIdentification,
     stateMode,
     type,
+    updateClientSideEvent,
     updateUserSubscribedEventClientSide,
     width,
   ]);

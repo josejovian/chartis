@@ -42,12 +42,15 @@ export default function App({ Component, pageProps }: AppProps) {
   const [navBar, setNavBar] = stateNavBar;
   const stateModal = useState<ReactNode>(null);
   const [modal, setModal] = stateModal;
+  const stateEventsObject = useState({});
   const stateIdentification = useState<IdentificationType>({
     authUser: null,
     user: null,
     users: {},
     initialized: false,
   });
+  const stateSubscribedIds = useState<Record<string, number>>({});
+  const setSubscribedIds = stateSubscribedIds[1];
   const [identification, setIdentification] = stateIdentification;
   const { user } = identification;
   const [screen, setScreen] = useState<ScreenSizeType>({
@@ -123,6 +126,8 @@ export default function App({ Component, pageProps }: AppProps) {
             },
           };
         }
+
+        setSubscribedIds(userData?.subscribedEvents ?? {});
       }
 
       setIdentification((prev) => ({
@@ -136,7 +141,7 @@ export default function App({ Component, pageProps }: AppProps) {
         initialized: true,
       }));
     });
-  }, [auth, setIdentification]);
+  }, [auth, setIdentification, setSubscribedIds]);
 
   const handleAdjustNavbar = useCallback(() => {
     setNavBar(!togglable);
@@ -259,8 +264,12 @@ export default function App({ Component, pageProps }: AppProps) {
           addToast: handleAddToast,
           addToastPreset: handleAddToastPreset,
         }}
+        eventsProps={{
+          stateEventsObject,
+        }}
         notificationProps={{
           stateNotification,
+          stateSubscribedIds,
         }}
       >
         <div id="App" className={clsx("flex flex-row w-full h-full")}>

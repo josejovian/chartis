@@ -55,10 +55,10 @@ export interface ModalViewEventProps {
   width: number;
   type: ScreenSizeCategoryType;
   updateUserSubscribedEventClientSide: (
-    userId: string,
     eventId: string,
     version?: number
   ) => void;
+  updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
   eventPreviousValues?: MutableRefObject<EventType>;
   fancy?: boolean;
 }
@@ -71,6 +71,7 @@ export function PageViewEventCard({
   width,
   type,
   updateUserSubscribedEventClientSide,
+  updateClientSideEvent,
   eventPreviousValues,
   fancy,
 }: ModalViewEventProps) {
@@ -321,6 +322,7 @@ export function PageViewEventCard({
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }
+          updateClientSideEvent={updateClientSideEvent}
           size={type === "mobile" ? "tiny" : undefined}
         />
         <EventButtonMore
@@ -332,6 +334,7 @@ export function PageViewEventCard({
           onEdit={handleEdit}
           onDelete={handleDeleteEvent}
           onReport={handleReport}
+          updateClientSideEvent={updateClientSideEvent}
         />
       </div>
     ),
@@ -345,6 +348,7 @@ export function PageViewEventCard({
       handleEdit,
       handleDeleteEvent,
       handleReport,
+      updateClientSideEvent,
     ]
   );
 

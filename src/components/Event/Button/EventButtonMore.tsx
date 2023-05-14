@@ -16,6 +16,7 @@ export interface EventButtonMoreProps {
   onDelete?: () => void;
   onEdit?: () => void;
   onReport?: () => void;
+  updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
 }
 
 export function EventButtonMore({
@@ -27,12 +28,12 @@ export function EventButtonMore({
   onDelete,
   onEdit,
   onReport,
+  updateClientSideEvent,
 }: EventButtonMoreProps) {
   const deleting = stateDeleting && stateDeleting[0];
   const [open, setOpen] = useState(false);
-  const { authorId, hide } = event;
+  const { id, authorId, hide } = event;
   const { user } = identification;
-  const [eventIsHidden, setEventIsHidden] = useState(hide);
   const { addToast } = useToast();
 
   const isAuthor = useMemo(
@@ -58,19 +59,22 @@ export function EventButtonMore({
   );
 
   const handleHideEvent = useCallback(async () => {
-    if (!event.id) return;
+    if (!id) return;
 
-    updateData(FIREBASE_COLLECTION_EVENTS, event.id, {
+    updateData(FIREBASE_COLLECTION_EVENTS, id, {
       hide: !hide,
     }).then(() => {
-      setEventIsHidden((prev) => !prev);
       addToast({
         title: `Success`,
-        description: `Event is now ${eventIsHidden ? "hidden" : "visible"}`,
+        description: `Event is now ${!hide ? "hidden" : "visible"}`,
         variant: "success",
       });
+
+      updateClientSideEvent(id, {
+        hide: !hide,
+      });
     });
-  }, [addToast, event.id, eventIsHidden, hide]);
+  }, [addToast, hide, id, updateClientSideEvent]);
 
   const renderDropdownItems = useMemo(() => {
     if (user?.role === "admin")
@@ -78,7 +82,7 @@ export function EventButtonMore({
         <>
           <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
           <Dropdown.Item onClick={handleHideEvent}>
-            {eventIsHidden ? "Unhide" : "Hide"}
+            {event.hide ? "Unhide" : "Hide"}
           </Dropdown.Item>
           {modalDelete}
         </>
@@ -96,13 +100,14 @@ export function EventButtonMore({
       </Dropdown.Item>
     );
   }, [
-    eventIsHidden,
+    event.hide,
     handleHideEvent,
     isAuthor,
     modalDelete,
     onEdit,
     onReport,
-    user,
+    user?.ban,
+    user?.role,
   ]);
 
   return (

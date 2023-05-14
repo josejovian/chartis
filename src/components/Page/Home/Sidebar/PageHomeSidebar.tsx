@@ -17,6 +17,7 @@ export interface PageHomeSideBarProps {
   events: EventType[];
   stateSideBar: StateObject<boolean>;
   extraDeleteHandler: (eventId: string) => void;
+  updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
 }
 
 export function PageHomeSideBar({
@@ -24,6 +25,7 @@ export function PageHomeSideBar({
   events,
   stateSideBar,
   extraDeleteHandler,
+  updateClientSideEvent,
 }: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
@@ -71,12 +73,18 @@ export function PageHomeSideBar({
             updateUserSubscribedEventClientSide={
               updateUserSubscribedEventClientSide
             }
+            updateClientSideEvent={updateClientSideEvent}
             extraDeleteHandler={extraDeleteHandler}
           />
         ))}
       </div>
     ),
-    [events, extraDeleteHandler, updateUserSubscribedEventClientSide]
+    [
+      events,
+      extraDeleteHandler,
+      updateClientSideEvent,
+      updateUserSubscribedEventClientSide,
+    ]
   );
 
   const renderEmpty = useMemo(

@@ -11,7 +11,7 @@ import {
   EventTags,
   User,
 } from "@/components";
-import { deleteEvent, strDateTime } from "@/utils";
+import { deleteEvent, getTimeDifference, strDateTime } from "@/utils";
 import {
   EventCardDisplayType,
   EventDetailCompactType,
@@ -24,10 +24,10 @@ export interface EventCardProps {
   event: EventType;
   type?: EventCardDisplayType;
   updateUserSubscribedEventClientSide: (
-    userId: string,
     eventId: string,
     version?: number
   ) => void;
+  updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
   extraDeleteHandler?: (eventId: string) => void;
 }
 
@@ -36,10 +36,20 @@ export function EventCard({
   event,
   type = "vertical",
   updateUserSubscribedEventClientSide,
+  updateClientSideEvent,
   extraDeleteHandler,
 }: EventCardProps) {
   const [wasDeleted, setWasDeleted] = useState(false);
-  const { id, name, description, authorId, thumbnailSrc, tags, hide } = event;
+  const {
+    id,
+    name,
+    description,
+    authorId,
+    thumbnailSrc,
+    tags,
+    hide,
+    postDate,
+  } = event;
   const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
@@ -141,14 +151,24 @@ export function EventCard({
     [details, id, type]
   );
 
-  const renderEventCreators = useMemo(
-    /** @todo Replace authorId with real username. */
+  const renderEventDate = useMemo(
     () => (
-      <div className="text-12px text-secondary-4 font-bold tracking-wide">
-        <User id={authorId} type="name" />
+      <span className="text-12px">
+        {" "}
+        <span style={{ fontSize: "8px" }}>•</span> {getTimeDifference(postDate)}
+      </span>
+    ),
+    [postDate]
+  );
+
+  const renderEventCreators = useMemo(
+    () => (
+      <div className="text-12px text-secondary-4">
+        <User id={authorId} type="name" className="font-bold tracking-wide" />
+        {type === "horizontal" && renderEventDate}
       </div>
     ),
-    [authorId]
+    [authorId, renderEventDate, type]
   );
 
   const renderEventTags = useMemo(
@@ -211,6 +231,7 @@ export function EventCard({
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }
+          updateClientSideEvent={updateClientSideEvent}
           size="tiny"
         />
         <EventButtonMore
@@ -228,6 +249,7 @@ export function EventCard({
               reportedBy: user ? user.id : "invalid",
             })
           }
+          updateClientSideEvent={updateClientSideEvent}
         />
       </div>
     ),
@@ -239,6 +261,7 @@ export function EventCard({
       stateModalDelete,
       handleDeleteEvent,
       handleEditEvent,
+      updateClientSideEvent,
       showReportModal,
       id,
       authorId,

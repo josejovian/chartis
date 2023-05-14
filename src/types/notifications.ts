@@ -10,5 +10,6 @@ export interface NotificationType {
 }
 
 export interface NotificationContextPropsType {
+  stateSubscribedIds: StateObject<Record<string, number>>;
   stateNotification: StateObject<NotificationData[]>;
 }

@@ -34,7 +34,6 @@ export interface PageViewEventHeadProps {
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
   updateUserSubscribedEventClientSide: (
-    userId: string,
     eventId: string,
     version?: number
   ) => void;
