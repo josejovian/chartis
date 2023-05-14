@@ -184,8 +184,6 @@ export function PageViewEventCardDiscussionTab({
                 {errors.comment !== "Required" ? errors.comment : ""}
               </span>
               <Button
-                className="ml-auto"
-                icon
                 type="submit"
                 onClick={submitForm}
                 color="yellow"
@@ -205,7 +203,7 @@ export function PageViewEventCardDiscussionTab({
 
   const renderEventComments = useMemo(
     () => (
-      <div className="flex flex-col gap-8 pt-6 w-full">
+      <div className="flex flex-col gap-8 w-full">
         {isLoggedIn && renderCommentInput}
         <div className="flex flex-col gap-4 w-full">
           {comments &&

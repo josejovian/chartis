@@ -54,9 +54,12 @@ export default function ViewEvent() {
       user &&
       user.id === event.authorId
     ) {
+      const { pathname, query } = router;
+      delete router.query.shouldRefetchUser;
+      router.replace({ pathname, query }, undefined, { shallow: true });
       setMode("edit");
     }
-  }, [event, router.query.mode, setMode, user]);
+  }, [event, router, setMode, user]);
 
   useEffect(() => {
     handleGetEvent();

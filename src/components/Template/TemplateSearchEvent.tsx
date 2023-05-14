@@ -25,14 +25,16 @@ export function TemplateSearchEvent({
     () => (
       <PageSearchEventCard
         className={clsx(
-          "PageSearchEventCard !bg-sky-50 p-4 !pb-0 !h-full",
+          "PageSearchEventCard !bg-sky-50 !pb-0 !h-full",
+          !noWrapper && "p-4",
           className
         )}
         viewType={viewType ?? "default"}
         type={type}
+        noWrapper
       />
     ),
-    [className, type, viewType]
+    [className, noWrapper, type, viewType]
   );
 
   return noWrapper ? (

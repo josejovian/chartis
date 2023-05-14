@@ -227,10 +227,11 @@ export function PageViewEventCard({
     await sleep(200);
 
     await deleteEvent(event.id).then(() => {
+      addToastPreset("feat-event-delete");
       setModalDelete(false);
       setDeleting(false);
     });
-  }, [deleteEvent, event.id, setDeleting, setModalDelete]);
+  }, [addToastPreset, deleteEvent, event.id, setDeleting, setModalDelete]);
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {

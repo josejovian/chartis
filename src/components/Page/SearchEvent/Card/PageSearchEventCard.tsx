@@ -27,6 +27,7 @@ import { where } from "firebase/firestore";
 import { useRouter } from "next/router";
 
 export interface PageSearchEventCardProps {
+  noWrapper?: boolean;
   viewType?: EventSearchType;
   className?: string;
   userId?: string;
@@ -34,6 +35,7 @@ export interface PageSearchEventCardProps {
 }
 
 export function PageSearchEventCard({
+  noWrapper,
   viewType,
   className,
   type,
@@ -254,7 +256,8 @@ export function PageSearchEventCard({
     <LayoutCard className={className}>
       <div
         className={clsx(
-          "flex gap-4 pl-4 pr-4",
+          "flex gap-4",
+          !noWrapper && "pl-4",
           type === "mobile" ? "flex-col" : "flex-row"
         )}
       >
@@ -283,7 +286,8 @@ export function PageSearchEventCard({
       <div
         className={clsx(
           "flex flex-col gap-4",
-          "px-4 mr-4 py-0.5 h-full overflow-y-auto"
+          "pr-4 py-0.5 h-full overflow-y-auto",
+          !noWrapper && "pl-4 mr-4"
         )}
       >
         {renderContents}

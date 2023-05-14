@@ -36,7 +36,7 @@ export function EventButtonMore({
   const { addToast } = useToast();
 
   const isAuthor = useMemo(
-    () => Boolean((user && user.id === authorId) || true),
+    () => Boolean(user && user.id === authorId),
     [authorId, user]
   );
 

@@ -64,7 +64,7 @@ export default function Profile() {
 
     let profileCardHeight = profileCardRef.current.offsetHeight;
 
-    if (type === "mobile") profileCardHeight += 196;
+    if (type === "mobile") profileCardHeight += 170;
     else profileCardHeight += 128;
 
     (eventSearcherEmbed as HTMLDivElement).style.display = "initial";

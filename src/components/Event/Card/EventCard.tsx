@@ -17,7 +17,7 @@ import {
   EventDetailCompactType,
   EventType,
 } from "@/types";
-import { useEvent, useIdentification, useReport } from "@/hooks";
+import { useEvent, useIdentification, useReport, useToast } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
@@ -45,6 +45,7 @@ export function EventCard({
   const { user } = identification;
   const { deleteEvent } = useEvent();
   const { showReportModal } = useReport();
+  const { addToastPreset } = useToast();
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
   const stateModalDelete = useState(false);
@@ -72,9 +73,11 @@ export function EventCard({
         setDeleting(false);
       })
       .finally(() => {
+        addToastPreset("feat-event-delete");
         setModalDelete(false);
       });
   }, [
+    addToastPreset,
     deleteEvent,
     event.id,
     extraDeleteHandler,
