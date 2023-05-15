@@ -37,6 +37,13 @@ export function LayoutCalendar({
         const temp = new Date();
         temp.setDate(1);
         temp.setMonth(prev.month + direction);
+        temp.setFullYear(prev.year);
+        if (
+          (prev.month === 0 && direction < 0) ||
+          (prev.month === 11 && direction > 0)
+        ) {
+          temp.setFullYear(prev.year + direction);
+        }
         return getDateMonthYear(temp);
       });
     },

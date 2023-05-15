@@ -1,10 +1,9 @@
 import { ModalAuthInput } from "@/components/Modal";
 import { UserProfile } from "@/components/User";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
-import { updateData } from "@/firebase";
 import { useIdentification } from "@/hooks";
 import { ScreenSizeCategoryType, UserType } from "@/types";
-import { FieldChangeName, FieldProfileEmail } from "@/utils";
+import { FieldChangeName, FieldProfileEmail, updateData } from "@/utils";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";

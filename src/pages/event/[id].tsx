@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIdentification, useScreen } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
 import { Button } from "semantic-ui-react";
-import { readData } from "@/firebase";
+import { readData } from "@/utils";
 import clsx from "clsx";
 
 export default function ViewEvent() {

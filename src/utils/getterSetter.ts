@@ -25,7 +25,7 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import { fs, storage } from "./config";
+import { fs, storage } from "../firebase/config";
 import {
   FIREBASE_COLLECTION_COMMENTS,
   FIREBASE_COLLECTION_EVENTS,

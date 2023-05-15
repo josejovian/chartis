@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { type UserCredential, updateProfile } from "firebase/auth";
-import { auth, createData, getErrorMessage, register } from "@/firebase";
+import { auth, getErrorMessage, register } from "@/firebase";
 import { ModalAuthLogin, ModalAuthTemplate } from "@/components";
 import { useModal, useToast } from "@/hooks";
-import { FormRegister, SchemaRegister } from "@/utils";
+import { FormRegister, SchemaRegister, createData } from "@/utils";
 import { FormRegisterProps } from "@/types";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
 
