@@ -1,4 +1,4 @@
-import { readData } from "@/firebase";
+import { readData } from "@/utils";
 import { UserType } from "@/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { UserPicture } from "./UserPicture";

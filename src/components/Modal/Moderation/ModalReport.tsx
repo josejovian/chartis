@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useMemo, useState } from "react";
-import { createData } from "@/firebase";
 import { FormErrorMessage, FormInputDropdown } from "@/components";
 import { useIdentification, useModal, useScreen, useToast } from "@/hooks";
-import { SchemaReport, sleep } from "@/utils";
+import { SchemaReport, sleep, createData } from "@/utils";
 import {
   CommentReportType,
   ReportCategoryType,

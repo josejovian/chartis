@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { BatchOperationType, updateData, writeDataBatch } from "@/firebase";
+import { BatchOperationType, updateData, writeDataBatch } from "@/utils";
 import clsx from "clsx";
 import { LayoutTemplateCard, PageNotificationsCard } from "@/components";
 import {

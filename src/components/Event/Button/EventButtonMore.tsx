@@ -3,9 +3,9 @@ import { Button, Dropdown, Icon, type SemanticSIZES } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventType, StateObject, IdentificationType } from "@/types";
 import { ModalConfirmation } from "@/components/Modal";
-import { updateData } from "@/firebase";
 import { FIREBASE_COLLECTION_EVENTS } from "@/consts";
 import { useToast } from "@/hooks";
+import { updateData } from "@/utils";
 
 export interface EventButtonMoreProps {
   event: EventType;

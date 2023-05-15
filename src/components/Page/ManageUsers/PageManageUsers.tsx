@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { fs, updateData } from "@/firebase";
+import { fs } from "@/firebase";
 import { Button, Icon } from "semantic-ui-react";
 import clsx from "clsx";
 import {
@@ -11,7 +11,7 @@ import {
   LayoutNotice,
 } from "@/components";
 import { useScreen, useToast } from "@/hooks";
-import { sleep, strDateTime, validateEventQuery } from "@/utils";
+import { sleep, strDateTime, validateEventQuery, updateData } from "@/utils";
 import {
   MODERATION_USER_SORT,
   MODERATION_USER_TYPE_FILTERS,

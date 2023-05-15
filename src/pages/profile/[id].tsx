@@ -2,7 +2,7 @@
 import { createRef, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { getAuth } from "firebase/auth";
-import { readData } from "@/firebase";
+import { readData } from "@/utils";
 import clsx from "clsx";
 import {
   UserPicture,

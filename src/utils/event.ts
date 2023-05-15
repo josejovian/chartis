@@ -21,7 +21,7 @@ import {
   updateData,
   uploadImage,
   writeDataBatch,
-} from "@/firebase";
+} from "@/utils";
 import {
   QueryConstraint,
   arrayRemove,
@@ -132,18 +132,18 @@ export async function getFollowedEvents(
 
 export async function createEvent(event: EventType): Promise<void> {
   const eventDefault = {
-    id: "",
-    authorId: "",
-    name: "",
+    id: null,
+    authorId: null,
+    name: null,
     tags: {},
-    organizer: "",
-    location: "",
-    startDate: new Date(-1).getTime(),
-
-    description: "",
+    organizer: null,
+    location: null,
+    startDate: null,
+    endDate: null,
+    description: null,
     postDate: new Date().getTime(),
     lastUpdatedAt: new Date().getTime(),
-    subscriberCount: 0,
+    guestSubscriberCount: 0,
     subscriberIds: [],
     isHidden: false,
   };
@@ -349,7 +349,6 @@ export async function toggleEventSubscription(
         subscriberIds: currentlySubscribed
           ? arrayRemove(userId)
           : arrayUnion(userId),
-        subscriberCount: currentlySubscribed ? increment(-1) : increment(1),
       },
     },
   ]);

@@ -9,7 +9,7 @@ import {
 } from "react";
 import { type Unsubscribe, doc, onSnapshot } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { fs, readData } from "@/firebase";
+import { fs } from "@/firebase";
 import "@/styles/globals.css";
 import "semantic-ui-css/semantic.min.css";
 import { Lato } from "@next/font/google";
@@ -34,6 +34,7 @@ import {
 } from "@/types";
 import { useNavBar, useNotification } from "@/hooks";
 import { useRouter } from "next/router";
+import { readData } from "@/utils";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
