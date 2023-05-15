@@ -16,6 +16,7 @@ import {
   EventCardDisplayType,
   EventDetailCompactType,
   EventType,
+  ScreenSizeCategoryType,
 } from "@/types";
 import { useIdentification, useReport, useToast } from "@/hooks";
 
@@ -23,6 +24,7 @@ export interface EventCardProps {
   className?: string;
   event: EventType;
   type?: EventCardDisplayType;
+  screenType?: ScreenSizeCategoryType;
   updateUserSubscribedEventClientSide: (
     eventId: string,
     version?: number
@@ -36,6 +38,7 @@ export function EventCard({
   className,
   event,
   type = "vertical",
+  screenType,
   updateUserSubscribedEventClientSide,
   subscribed,
   updateClientSideEvent,
@@ -167,10 +170,10 @@ export function EventCard({
     () => (
       <div className="text-12px text-secondary-4">
         <User id={authorId} type="name" className="font-bold tracking-wide" />
-        {type === "horizontal" && renderEventDate}
+        {renderEventDate}
       </div>
     ),
-    [authorId, renderEventDate, type]
+    [authorId, renderEventDate]
   );
 
   const renderEventTags = useMemo(
