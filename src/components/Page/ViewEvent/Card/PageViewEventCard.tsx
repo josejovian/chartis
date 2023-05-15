@@ -323,7 +323,13 @@ export function PageViewEventCard({
             updateUserSubscribedEventClientSide
           }
           subscribed={subscribed}
-          updateClientSideEvent={updateClientSideEvent}
+          updateClientSideEvent={(eventId, eventData) => {
+            updateClientSideEvent(eventId, eventData);
+            setEvent((prev) => ({
+              ...prev,
+              ...eventData,
+            }));
+          }}
           size={type === "mobile" ? "tiny" : undefined}
         />
         <EventButtonMore
@@ -344,13 +350,14 @@ export function PageViewEventCard({
       identification,
       updateUserSubscribedEventClientSide,
       subscribed,
-      updateClientSideEvent,
       type,
       stateDeleting,
       stateModalDelete,
       handleEdit,
       handleDeleteEvent,
       handleReport,
+      updateClientSideEvent,
+      setEvent,
     ]
   );
 

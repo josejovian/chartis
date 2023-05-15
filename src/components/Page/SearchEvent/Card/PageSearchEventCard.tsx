@@ -47,7 +47,9 @@ export function PageSearchEventCard({
     setEventsObjectFromArray,
     updateClientSideEvent,
     // deleteClientSideEvent,
+    stateSubscribedIds,
   } = useEventsObject();
+  const subscribedIds = stateSubscribedIds[0];
   const stateFilters = useState<EventTagNameType[]>([]);
   const [filters, setFilters] = stateFilters;
   const stateQuery = useState("");
@@ -63,6 +65,11 @@ export function PageSearchEventCard({
   const { user } = identification;
   const { id: authorId } = router.query;
   const queried = useRef(0);
+
+  const checkForSubscribed = useCallback(
+    (id: string) => Boolean(typeof subscribedIds[id] === "number"),
+    [subscribedIds]
+  );
 
   const sortEvents = useCallback(
     (eventsArray: EventType[]): EventType[] => {
@@ -237,9 +244,11 @@ export function PageSearchEventCard({
             updateUserSubscribedEventClientSide
           }
           updateClientSideEvent={updateClientSideEvent}
+          subscribed={checkForSubscribed(event.id)}
         />
       )),
     [
+      checkForSubscribed,
       displayedEvents,
       type,
       updateClientSideEvent,

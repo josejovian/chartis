@@ -20,8 +20,15 @@ export default function ViewEvent() {
   const setMode = stateMode[1];
   const { width, type } = useScreen();
   const [loading, setLoading] = useState(true);
-  const { stateEventsObject, setEventSingle, updateClientSideEvent } =
-    useEventsObject();
+  const {
+    stateEventsObject,
+    setEventSingle,
+    updateClientSideEvent,
+    stateSubscribedIds,
+    updateUserSubscribedEventClientSide,
+  } = useEventsObject();
+  const subscribedIds = stateSubscribedIds[0];
+
   const eventsObject = stateEventsObject[0];
   const event = useMemo(
     () => (loading ? undefined : eventsObject[id as string]),
@@ -32,10 +39,18 @@ export default function ViewEvent() {
 
   const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
   const [error, setError] = useState(false);
-  const { stateIdentification, updateUserSubscribedEventClientSide } =
-    useIdentification();
+
+  const { stateIdentification } = useIdentification();
   const { user } = stateIdentification[0];
-  // const initialized = useRef()
+
+  const checkForSubscribed = useCallback(
+    (id: string) => {
+      const value = Boolean(typeof subscribedIds[id] === "number");
+
+      return value;
+    },
+    [subscribedIds]
+  );
 
   const handleGetEvent = useCallback(async () => {
     if (!id) return;
@@ -103,6 +118,7 @@ export default function ViewEvent() {
         stateIdentification={stateIdentification}
         eventPreviousValues={eventPreviousValues}
         stateMode={stateMode}
+        subscribed={checkForSubscribed(id as string)}
         width={width}
         type={type}
         updateUserSubscribedEventClientSide={
@@ -112,7 +128,9 @@ export default function ViewEvent() {
       />
     );
   }, [
+    checkForSubscribed,
     error,
+    id,
     loading,
     router,
     stateEvent,
