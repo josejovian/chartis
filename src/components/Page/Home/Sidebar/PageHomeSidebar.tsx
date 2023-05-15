@@ -1,35 +1,48 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Icon } from "semantic-ui-react";
 import clsx from "clsx";
 import { EventCard, LayoutNotice } from "@/components";
 import {
   EventType,
   FocusDateType,
+  IdentificationType,
   ResponsiveInlineStyleType,
   StateObject,
 } from "@/types";
 import { parseFromDateMonthYear, strDate } from "@/utils";
-import { useIdentification, useScreen } from "@/hooks";
+import { useScreen } from "@/hooks";
 import { ASSET_NO_CONTENT } from "@/consts";
 
 export interface PageHomeSideBarProps {
   focusDate: FocusDateType;
   events: EventType[];
+  identification: IdentificationType;
   stateSideBar: StateObject<boolean>;
   extraDeleteHandler: (eventId: string) => void;
   updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
+  subscribedIds: Record<string, number>;
+  updateUserSubscribedEventClientSide: (
+    eventId: string,
+    version?: number
+  ) => void;
 }
 
 export function PageHomeSideBar({
   focusDate,
   events,
   stateSideBar,
+  subscribedIds,
   extraDeleteHandler,
   updateClientSideEvent,
+  updateUserSubscribedEventClientSide,
 }: PageHomeSideBarProps) {
   const [sideBar, setSideBar] = stateSideBar;
   const { type } = useScreen();
-  const { updateUserSubscribedEventClientSide } = useIdentification();
+
+  const checkForSubscribed = useCallback(
+    (id: string) => Boolean(typeof subscribedIds[id] === "number"),
+    [subscribedIds]
+  );
 
   const renderTitle = useMemo(
     () => (
@@ -70,6 +83,7 @@ export function PageHomeSideBar({
           <EventCard
             key={`EventCard_${event.id}`}
             event={event}
+            subscribed={checkForSubscribed(event.id)}
             updateUserSubscribedEventClientSide={
               updateUserSubscribedEventClientSide
             }
@@ -80,6 +94,7 @@ export function PageHomeSideBar({
       </div>
     ),
     [
+      checkForSubscribed,
       events,
       extraDeleteHandler,
       updateClientSideEvent,

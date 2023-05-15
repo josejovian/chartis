@@ -21,12 +21,8 @@ export default function ViewEvent() {
   const { width, type } = useScreen();
   const [loading, setLoading] = useState(true);
   const stateEvent = useState(EVENT_DUMMY_1);
-  const {
-    stateEventsObject,
-    eventsArray,
-    setEventSingle,
-    updateClientSideEvent,
-  } = useEventsObject();
+  const { stateEventsObject, setEventSingle, updateClientSideEvent } =
+    useEventsObject();
   const eventsObject = stateEventsObject[0];
   const event = useMemo(
     () => (loading ? undefined : eventsObject[id as string]),
@@ -109,7 +105,6 @@ export default function ViewEvent() {
           updateUserSubscribedEventClientSide
         }
         updateClientSideEvent={updateClientSideEvent}
-        fancy
       />
     );
   }, [

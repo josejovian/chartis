@@ -122,4 +122,5 @@ export type EventCardTabNameType =
 
 export type EventsContextPropsType = {
   stateEventsObject: StateObject<Record<string, EventType>>;
+  stateSubscribedIds: StateObject<Record<string, number>>;
 };

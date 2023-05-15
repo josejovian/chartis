@@ -58,9 +58,9 @@ export interface ModalViewEventProps {
     eventId: string,
     version?: number
   ) => void;
+  subscribed?: boolean;
   updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
   eventPreviousValues?: MutableRefObject<EventType>;
-  fancy?: boolean;
 }
 
 export function PageViewEventCard({
@@ -73,7 +73,7 @@ export function PageViewEventCard({
   updateUserSubscribedEventClientSide,
   updateClientSideEvent,
   eventPreviousValues,
-  fancy,
+  subscribed,
 }: ModalViewEventProps) {
   const router = useRouter();
   const stateFocusThumbnail = useState(true);
@@ -179,7 +179,7 @@ export function PageViewEventCard({
               router.replace(`/event/${eventId}`);
             });
           })
-          .catch((e) => {
+          .catch(() => {
             addToastPreset("fail-post");
             setSubmitting(false);
           });
@@ -322,6 +322,7 @@ export function PageViewEventCard({
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }
+          subscribed={subscribed}
           updateClientSideEvent={updateClientSideEvent}
           size={type === "mobile" ? "tiny" : undefined}
         />
@@ -342,13 +343,14 @@ export function PageViewEventCard({
       event,
       identification,
       updateUserSubscribedEventClientSide,
+      subscribed,
+      updateClientSideEvent,
       type,
       stateDeleting,
       stateModalDelete,
       handleEdit,
       handleDeleteEvent,
       handleReport,
-      updateClientSideEvent,
     ]
   );
 

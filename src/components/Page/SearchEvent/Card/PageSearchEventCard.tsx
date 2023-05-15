@@ -46,7 +46,7 @@ export function PageSearchEventCard({
     eventsArray,
     setEventsObjectFromArray,
     updateClientSideEvent,
-    deleteClientSideEvent,
+    // deleteClientSideEvent,
   } = useEventsObject();
   const stateFilters = useState<EventTagNameType[]>([]);
   const [filters, setFilters] = stateFilters;

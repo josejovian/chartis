@@ -125,9 +125,12 @@ export default function App({ Component, pageProps }: AppProps) {
               id: user.uid,
             },
           };
+          setSubscribedIds(userData.subscribedEvents ?? {});
         }
+      } else {
+        const localSubscribed = localStorage.getItem("subscribe") ?? "{}";
 
-        setSubscribedIds(userData?.subscribedEvents ?? {});
+        setSubscribedIds(JSON.parse(localSubscribed));
       }
 
       setIdentification((prev) => ({
@@ -266,10 +269,10 @@ export default function App({ Component, pageProps }: AppProps) {
         }}
         eventsProps={{
           stateEventsObject,
+          stateSubscribedIds,
         }}
         notificationProps={{
           stateNotification,
-          stateSubscribedIds,
         }}
       >
         <div id="App" className={clsx("flex flex-row w-full h-full")}>

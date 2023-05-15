@@ -33,10 +33,10 @@ const TOAST_CONTEXT_DEFAULT: ToastContextPropsType = {
 
 const NOTIFICATION_CONTEXT_DEFAULT: NotificationContextPropsType = {
   stateNotification: [[], (newNotifications) => {}],
-  stateSubscribedIds: [{}, () => {}],
 };
 const EVENTS_CONTEXT_DEFAULT: EventsContextPropsType = {
   stateEventsObject: [{}, (newEventsObject) => {}],
+  stateSubscribedIds: [{}, () => {}],
 };
 
 export const IdentificationContext = createContext(

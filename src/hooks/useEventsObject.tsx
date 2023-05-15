@@ -1,9 +1,12 @@
+import { EventsContext } from "@/contexts";
 import { EventType } from "@/types";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useContext, useMemo } from "react";
 
 export function useEventsObject() {
-  const stateEventsObject = useState<Record<string, EventType>>({});
+  const { stateEventsObject, stateSubscribedIds } = useContext(EventsContext);
   const [eventsObject, setEventsObject] = stateEventsObject;
+  const [subscribedIds, setSubscribedIds] = stateSubscribedIds;
+
   const eventsArray = useMemo(
     () => Object.values(eventsObject),
     [eventsObject]
@@ -58,22 +61,44 @@ export function useEventsObject() {
     [setEventsObject]
   );
 
+  const updateUserSubscribedEventClientSide = useCallback(
+    (eventId: string, version?: number) => {
+      setSubscribedIds((prev) => ({
+        ...prev,
+        ...(typeof version === "number"
+          ? {
+              [eventId]: version,
+            }
+          : (() => {
+              const temp = subscribedIds;
+              delete (temp ?? {})[eventId];
+              return temp;
+            })()),
+      }));
+    },
+    [setSubscribedIds, subscribedIds]
+  );
+
   return useMemo(
     () => ({
       stateEventsObject,
       eventsArray,
       setEventSingle,
       setEventsObjectFromArray,
+      stateSubscribedIds,
       updateClientSideEvent,
       deleteClientSideEvent,
+      updateUserSubscribedEventClientSide,
     }),
     [
       deleteClientSideEvent,
       eventsArray,
       setEventSingle,
       setEventsObjectFromArray,
+      stateSubscribedIds,
       stateEventsObject,
       updateClientSideEvent,
+      updateUserSubscribedEventClientSide,
     ]
   );
 }

@@ -27,6 +27,7 @@ export interface EventCardProps {
     eventId: string,
     version?: number
   ) => void;
+  subscribed?: boolean;
   updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
   extraDeleteHandler?: (eventId: string) => void;
 }
@@ -36,6 +37,7 @@ export function EventCard({
   event,
   type = "vertical",
   updateUserSubscribedEventClientSide,
+  subscribed,
   updateClientSideEvent,
   extraDeleteHandler,
 }: EventCardProps) {
@@ -228,6 +230,7 @@ export function EventCard({
         <EventButtonFollow
           event={event}
           identification={identification}
+          subscribed={subscribed}
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }
@@ -257,11 +260,12 @@ export function EventCard({
       type,
       event,
       identification,
+      subscribed,
       updateUserSubscribedEventClientSide,
+      updateClientSideEvent,
       stateModalDelete,
       handleDeleteEvent,
       handleEditEvent,
-      updateClientSideEvent,
       showReportModal,
       id,
       authorId,

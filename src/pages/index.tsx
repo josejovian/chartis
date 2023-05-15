@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHomeSideBar, LayoutCalendar, LayoutTemplate } from "@/components";
-import { useToast } from "@/hooks";
+import { useIdentification, useToast } from "@/hooks";
 import { getDateMonthYear, getEventsMonthly } from "@/utils";
 import { EventTagNameType, EventType } from "@/types";
 import { useEventsObject } from "@/hooks/useEventsObject";
@@ -14,13 +14,18 @@ export default function Home() {
   const [hiddenCount, setHiddenCount] = useState(0);
   const {
     eventsArray,
+    stateSubscribedIds,
     updateClientSideEvent,
     setEventsObjectFromArray,
     deleteClientSideEvent,
+    updateUserSubscribedEventClientSide,
   } = useEventsObject();
+  const subscribedIds = stateSubscribedIds[0];
   const stateFilters = useState<EventTagNameType[]>([]);
   const [filters] = stateFilters;
   const { addToastPreset } = useToast();
+  const { stateIdentification } = useIdentification();
+  const identification = stateIdentification[0];
 
   const displayedCalendarEvents = useMemo((): Record<number, EventType[]> => {
     const calendarEvents: Record<number, EventType[]> = {};
@@ -62,8 +67,13 @@ export default function Home() {
     () => (
       <PageHomeSideBar
         focusDate={focusDate}
+        identification={identification}
         events={displayedCalendarEvents[focusDate.day]}
+        subscribedIds={subscribedIds}
         updateClientSideEvent={updateClientSideEvent}
+        updateUserSubscribedEventClientSide={
+          updateUserSubscribedEventClientSide
+        }
         stateSideBar={stateSideBar}
         extraDeleteHandler={deleteClientSideEvent}
       />
@@ -72,8 +82,11 @@ export default function Home() {
       deleteClientSideEvent,
       displayedCalendarEvents,
       focusDate,
+      identification,
       stateSideBar,
+      subscribedIds,
       updateClientSideEvent,
+      updateUserSubscribedEventClientSide,
     ]
   );
 

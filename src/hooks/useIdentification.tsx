@@ -1,13 +1,9 @@
 import { IdentificationContext } from "@/contexts";
-import { UserType } from "@/types";
-import { useCallback, useContext, useEffect, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
 
 export function useIdentification() {
   const stateIdentification = useContext(IdentificationContext);
-  const { user, users } = useMemo(
-    () => stateIdentification[0],
-    [stateIdentification]
-  );
+  const { user } = useMemo(() => stateIdentification[0], [stateIdentification]);
   const setIdentification = useMemo(
     () => stateIdentification[1],
     [stateIdentification]
@@ -16,9 +12,6 @@ export function useIdentification() {
   const updateUserSubscribedEventClientSide = useCallback(
     (eventId: string, version?: number) => {
       if (!user) return;
-
-      console.log(version);
-      console.log(user);
 
       if (version) {
         setIdentification((prev) => ({

@@ -139,7 +139,7 @@ export async function createEvent(event: EventType): Promise<void> {
     organizer: "",
     location: "",
     startDate: new Date(-1).getTime(),
-    endDate: undefined,
+
     description: "",
     postDate: new Date().getTime(),
     lastUpdatedAt: new Date().getTime(),

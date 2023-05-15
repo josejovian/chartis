@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
 import { useToast } from "@/hooks";
@@ -8,6 +8,7 @@ export interface EventButtonFollowProps {
   event: EventType;
   identification: IdentificationType;
   size?: SemanticSIZES;
+  subscribed?: boolean;
   updateUserSubscribedEventClientSide: (
     eventId: string,
     version?: number
@@ -19,15 +20,14 @@ export function EventButtonFollow({
   event,
   identification,
   size,
+  subscribed,
   updateUserSubscribedEventClientSide,
   updateClientSideEvent,
 }: EventButtonFollowProps) {
   const { addToastPreset } = useToast();
 
   const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
-
-  const { user, users, initialized } = identification;
-  const test = useMemo(() => (user ? users[user.id] : null), [user, users]);
+  const { user } = identification;
 
   const isAuthor = useMemo(
     () => Boolean(user && user.id === authorId),
@@ -35,96 +35,72 @@ export function EventButtonFollow({
   );
 
   const [subscriberCount, setSubscriberCount] = useState(
-    subscriberIds.length + (guestSubscriberCount ?? 0)
+    (() =>
+      user
+        ? subscriberIds.filter((sid) => sid !== user.id).length +
+          (guestSubscriberCount ?? 0) +
+          (subscribed ? 1 : 0)
+        : subscriberIds.length + (guestSubscriberCount ?? 0))()
   );
-  const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const initializedSubscription = useRef(false);
 
   const handleFollowEvent = useCallback(async () => {
     if (loading) return;
 
+    const currentSubscribe = subscribed;
     const currentCount = subscriberCount;
-    const currentSubscribed = subscribed;
-    const nextCount = currentCount + (currentSubscribed ? -1 : 1);
+    const nextCount = currentCount + (currentSubscribe ? -1 : 1);
+
     setSubscriberCount(nextCount);
     setLoading(true);
 
-    if (user) {
-      const newSubscriberIds = subscribed
-        ? subscriberIds.filter((sid) => sid !== user.id)
-        : [...subscriberIds, user.id];
+    // Client side update
+    updateClientSideEvent(id, {
+      guestSubscriberCount: user
+        ? guestSubscriberCount
+        : (guestSubscriberCount ?? 0) + (currentSubscribe ? -1 : 1),
+      subscriberCount: nextCount,
+    });
+    updateUserSubscribedEventClientSide(
+      event.id,
+      currentSubscribe ? undefined : event.version
+    );
 
-      // updateClientSideEvent(id, {
-      //   subscriberIds: newSubscriberIds,
-      //   subscriberCount: newSubscriberIds.length + (guestSubscriberCount ?? 0),
-      // });
-    }
-
-    toggleEventSubscription(id, event.version ?? 0, subscribed, user?.id)
+    // Server side update
+    toggleEventSubscription(
+      id,
+      event.version ?? 0,
+      Boolean(currentSubscribe),
+      user?.id
+    )
       .then(() => {
-        if (user) {
-          updateUserSubscribedEventClientSide(
-            event.id,
-            currentSubscribed ? undefined : event.version
-          );
-          console.log(currentSubscribed ? undefined : event.version);
-        }
-        setSubscribed((prev) => !prev);
-
         setLoading(false);
       })
-      .catch((e) => {
-        if (user) {
-          // updateClientSideEvent(id, {
-          //   subscriberIds,
-          //   subscriberCount,
-          // });
-        }
+      .catch(() => {
+        updateClientSideEvent(id, {
+          guestSubscriberCount: guestSubscriberCount,
+          subscriberCount: currentCount,
+        });
+        updateUserSubscribedEventClientSide(
+          event.id,
+          !currentSubscribe ? undefined : event.version
+        );
         addToastPreset("fail-post");
         setLoading(false);
-        setSubscribed((prev) => !prev);
-        setSubscriberCount(currentCount);
       });
   }, [
     addToastPreset,
     event.id,
     event.version,
+    guestSubscriberCount,
     id,
     loading,
     subscribed,
     subscriberCount,
-    subscriberIds,
+    updateClientSideEvent,
     updateUserSubscribedEventClientSide,
     user,
   ]);
-
-  const handleInitializeSubscribeState = useCallback(() => {
-    if (
-      !initialized ||
-      initializedSubscription.current ||
-      typeof window === "undefined"
-    )
-      return;
-
-    let status = false;
-    if (!user) {
-      const subscribe = JSON.parse(
-        localStorage.getItem("subscribe") ?? "{}"
-      ) as Record<string, boolean>;
-      status = subscribe[id];
-    } else if (users && user) {
-      status =
-        subscriberIds.includes(user.id) ||
-        Object.keys(users[user.id].subscribedEvents ?? {}).includes(event.id);
-    }
-    setSubscribed(status);
-    initializedSubscription.current = true;
-  }, [event.id, id, initialized, subscriberIds, user, users]);
-
-  useEffect(() => {
-    handleInitializeSubscribeState();
-  }, [handleInitializeSubscribeState]);
 
   return (
     <Button

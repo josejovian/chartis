@@ -9,10 +9,8 @@ import {
 } from "@/types";
 
 export function useNotification() {
-  const { stateNotification, stateSubscribedIds } =
-    useContext(NotificationContext);
+  const { stateNotification } = useContext(NotificationContext);
   const [notification, setNotification] = stateNotification;
-  const [subscribedIds, setSubscribedIds] = stateSubscribedIds;
 
   const handleUpdateNotifications = useCallback(async (user?: UserType) => {
     if (!user) return null;
@@ -93,40 +91,12 @@ export function useNotification() {
     return notificationUpdates;
   }, []);
 
-  const updateUserSubscribedEventClientSide = useCallback(
-    (eventId: string, version?: number) => {
-      setSubscribedIds((prev) => ({
-        ...prev,
-        ...(version
-          ? {
-              [eventId]: version,
-            }
-          : (() => {
-              const temp = subscribedIds;
-              delete (temp ?? {})[eventId];
-              return temp;
-            })()),
-      }));
-    },
-    [setSubscribedIds, subscribedIds]
-  );
-
   return useMemo(
     () => ({
       notification,
       setNotification,
-      subscribedIds,
-      setSubscribedIds,
       handleUpdateNotifications,
-      updateUserSubscribedEventClientSide,
     }),
-    [
-      notification,
-      setNotification,
-      subscribedIds,
-      setSubscribedIds,
-      handleUpdateNotifications,
-      updateUserSubscribedEventClientSide,
-    ]
+    [notification, setNotification, handleUpdateNotifications]
   );
 }
