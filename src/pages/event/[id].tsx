@@ -6,12 +6,11 @@ import {
 } from "@/components";
 import { ASSET_NO_CONTENT, EVENT_DUMMY_1 } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useIdentification, useScreen } from "@/hooks";
+import { useIdentification, useScreen, useEventsObject } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
 import { Button } from "semantic-ui-react";
 import { readData } from "@/firebase";
 import clsx from "clsx";
-import { useEventsObject } from "@/hooks/useEventsObject";
 
 export default function ViewEvent() {
   const router = useRouter();

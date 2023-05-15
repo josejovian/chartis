@@ -6,10 +6,14 @@ import {
   PageViewEventCard,
   TemplatePageGuestNotAllowed,
 } from "@/components";
-import { useScreen, useIdentification, useAuthorization } from "@/hooks";
+import {
+  useScreen,
+  useIdentification,
+  useAuthorization,
+  useEventsObject,
+} from "@/hooks";
 import { EVENT_EMPTY } from "@/consts";
 import { EventModeType, ResponsiveStyleType } from "@/types";
-import { useEventsObject } from "@/hooks/useEventsObject";
 
 export default function CreateEvent() {
   const auth = getAuth();

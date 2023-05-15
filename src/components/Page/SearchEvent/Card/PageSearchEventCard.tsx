@@ -14,7 +14,7 @@ import {
 } from "@/types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { useIdentification, useToast } from "@/hooks";
+import { useIdentification, useToast, useEventsObject } from "@/hooks";
 import { getEvents, getFollowedEvents, validateEventQuery } from "@/utils";
 import {
   ASSET_CALENDAR,
@@ -25,7 +25,6 @@ import {
 } from "@/consts";
 import { where } from "firebase/firestore";
 import { useRouter } from "next/router";
-import { useEventsObject } from "@/hooks/useEventsObject";
 
 export interface PageSearchEventCardProps {
   noWrapper?: boolean;
@@ -48,6 +47,7 @@ export function PageSearchEventCard({
     updateClientSideEvent,
     // deleteClientSideEvent,
     stateSubscribedIds,
+    updateUserSubscribedEventClientSide,
   } = useEventsObject();
   const subscribedIds = stateSubscribedIds[0];
   const stateFilters = useState<EventTagNameType[]>([]);
@@ -58,7 +58,6 @@ export function PageSearchEventCard({
   const [sort, setSort] = stateSort;
   const { addToastPreset } = useToast();
   const sortBy = useMemo(() => EVENT_SORT_CRITERIA[sort], [sort]);
-  const { updateUserSubscribedEventClientSide } = useIdentification();
   const router = useRouter();
   const { stateIdentification } = useIdentification();
   const [identification] = stateIdentification;
@@ -98,7 +97,7 @@ export function PageSearchEventCard({
   );
 
   const displayedEvents = useMemo(() => {
-    const queriedEvents: EventType[] = [];
+    let queriedEvents: EventType[] = [];
 
     if (queried && query.length > 3) {
       queriedEvents.push(
@@ -110,6 +109,11 @@ export function PageSearchEventCard({
       queriedEvents.push(...eventsArray);
     }
 
+    if (viewType === "userFollowedEvents")
+      queriedEvents = queriedEvents.filter((event) =>
+        Object.keys(subscribedIds).includes(event.id)
+      );
+
     const filteredEvents = queriedEvents.filter((event) => {
       const eventTags = Object.keys(event.tags);
       return filters.every((filter) => eventTags.includes(filter));
@@ -118,7 +122,7 @@ export function PageSearchEventCard({
     const sortedEvents = sortEvents(filteredEvents);
 
     return sortedEvents;
-  }, [eventsArray, filters, query, sortEvents, viewType]);
+  }, [eventsArray, filters, query, sortEvents, subscribedIds, viewType]);
 
   const handleUpdatePathQueries = useCallback(() => {
     if (queried.current <= 1) return;
@@ -168,17 +172,25 @@ export function PageSearchEventCard({
             });
         break;
       case "userFollowedEvents":
-        user &&
-          user.id &&
-          getFollowedEvents(user.id)
-            .then((events) => {
+        user
+          ? user.id &&
+            getFollowedEvents(user.id)
+              .then((events) => {
+                setEventsObjectFromArray(
+                  events.filter((event) => event !== undefined) as EventType[]
+                );
+              })
+              .catch(() => {
+                addToastPreset("fail-get");
+              })
+          : Object.keys(subscribedIds).length > 0 &&
+            getEvents([]).then((eventsArray) =>
               setEventsObjectFromArray(
-                events.filter((event) => event !== undefined) as EventType[]
-              );
-            })
-            .catch(() => {
-              addToastPreset("fail-get");
-            });
+                eventsArray.filter(
+                  (event) => typeof subscribedIds[event.id] !== "undefined"
+                )
+              )
+            );
         break;
       case "default":
         getEvents([]).then((eventsArray) =>
@@ -190,6 +202,7 @@ export function PageSearchEventCard({
     addToastPreset,
     authorId,
     setEventsObjectFromArray,
+    subscribedIds,
     user,
     userId,
     viewType,

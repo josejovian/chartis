@@ -5,4 +5,5 @@ export * from "./useScreen";
 export * from "./useToast";
 export * from "./useReport";
 export * from "./useIdentification";
+export * from "./useEventsObject";
 export * from "./useNotification";
