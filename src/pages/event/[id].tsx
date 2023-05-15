@@ -20,7 +20,6 @@ export default function ViewEvent() {
   const setMode = stateMode[1];
   const { width, type } = useScreen();
   const [loading, setLoading] = useState(true);
-  const stateEvent = useState(EVENT_DUMMY_1);
   const { stateEventsObject, setEventSingle, updateClientSideEvent } =
     useEventsObject();
   const eventsObject = stateEventsObject[0];
@@ -28,11 +27,15 @@ export default function ViewEvent() {
     () => (loading ? undefined : eventsObject[id as string]),
     [eventsObject, id, loading]
   );
+  const stateEvent = useState(EVENT_DUMMY_1);
+  const setEvent = stateEvent[1];
+
   const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
   const [error, setError] = useState(false);
   const { stateIdentification, updateUserSubscribedEventClientSide } =
     useIdentification();
   const { user } = stateIdentification[0];
+  // const initialized = useRef()
 
   const handleGetEvent = useCallback(async () => {
     if (!id) return;
@@ -41,6 +44,7 @@ export default function ViewEvent() {
       .then((result) => {
         if (result) {
           setError(false);
+          setEvent(result);
           setEventSingle(id as string, result);
           eventPreviousValues.current = result;
         } else {
@@ -53,7 +57,7 @@ export default function ViewEvent() {
       .finally(() => {
         setLoading(false);
       });
-  }, [id, setEventSingle]);
+  }, [id, setEvent, setEventSingle]);
 
   const handleInstantEdit = useCallback(() => {
     if (

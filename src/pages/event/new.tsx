@@ -9,13 +9,15 @@ import {
 import { useScreen, useIdentification, useAuthorization } from "@/hooks";
 import { EVENT_EMPTY } from "@/consts";
 import { EventModeType, ResponsiveStyleType } from "@/types";
+import { useEventsObject } from "@/hooks/useEventsObject";
 
 export default function CreateEvent() {
   const auth = getAuth();
   const router = useRouter();
 
   const { width, type } = useScreen();
-  const { updateUserSubscribedEventClientSide } = useIdentification();
+  const { updateClientSideEvent, updateUserSubscribedEventClientSide } =
+    useEventsObject();
   const { stateIdentification } = useIdentification();
   const isAuthorized = useAuthorization({
     auth,
@@ -47,6 +49,7 @@ export default function CreateEvent() {
         stateIdentification={stateIdentification}
         width={width}
         type={type}
+        updateClientSideEvent={updateClientSideEvent}
         updateUserSubscribedEventClientSide={
           updateUserSubscribedEventClientSide
         }
