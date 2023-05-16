@@ -2,20 +2,44 @@ import { useRouter } from "next/router";
 import { LayoutTemplateCard, PageSearchEventCard } from "@/components";
 import { EventSearchType, ResponsiveStyleType } from "@/types";
 import { useScreen } from "@/hooks";
+import clsx from "clsx";
+import { useMemo } from "react";
 
 export interface TemplateSearchEventProps {
+  noWrapper?: boolean;
+  className?: string;
   viewType?: EventSearchType;
   title: string;
 }
 
 export function TemplateSearchEvent({
+  noWrapper,
+  className,
   viewType,
   title,
 }: TemplateSearchEventProps) {
   const router = useRouter();
   const { type } = useScreen();
 
-  return (
+  const renderSearcher = useMemo(
+    () => (
+      <PageSearchEventCard
+        className={clsx(
+          "PageSearchEventCard !bg-sky-50 !pb-0 !h-full",
+          !noWrapper && "p-4",
+          className
+        )}
+        viewType={viewType ?? "default"}
+        type={type}
+        noWrapper
+      />
+    ),
+    [className, noWrapper, type, viewType]
+  );
+
+  return noWrapper ? (
+    renderSearcher
+  ) : (
     <LayoutTemplateCard
       title={title}
       leftButton={{
@@ -26,11 +50,7 @@ export function TemplateSearchEvent({
       }}
       classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
     >
-      <PageSearchEventCard
-        className="PageSearchEventCard !bg-sky-50 p-4 !pb-0 !h-full"
-        viewType={viewType ?? "default"}
-        type={type}
-      />
+      {renderSearcher}
     </LayoutTemplateCard>
   );
 }

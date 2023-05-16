@@ -8,12 +8,7 @@ import {
 } from "react";
 import { Button, Icon, Label } from "semantic-ui-react";
 import clsx from "clsx";
-import {
-  EventThumbnail,
-  EventButtonFollow,
-  EventButtonMore,
-  FormErrorMessage,
-} from "@/components";
+import { EventThumbnail, FormErrorMessage } from "@/components";
 import {
   EventModeType,
   EventType,
@@ -25,7 +20,7 @@ import {
   EventCardTabNameType,
 } from "@/types";
 import { EVENT_TAGS } from "@/consts";
-import { useAuthorization, useReport } from "@/hooks";
+import { useAuthorization } from "@/hooks";
 import { getAuth } from "firebase/auth";
 import { Field } from "formik";
 
@@ -39,7 +34,6 @@ export interface PageViewEventHeadProps {
   stateMode: StateObject<EventModeType>;
   type: ScreenSizeCategoryType;
   updateUserSubscribedEventClientSide: (
-    userId: string,
     eventId: string,
     version?: number
   ) => void;
@@ -58,12 +52,8 @@ export function PageViewEventHead({
   stateActiveTab,
   event,
   stateIdentification,
-  onDelete,
-  stateDeleting,
-  stateModalDelete,
   stateMode,
   type,
-  updateUserSubscribedEventClientSide,
   cardHeight,
   stateFocused,
   stateLoading,
@@ -71,14 +61,11 @@ export function PageViewEventHead({
 }: PageViewEventHeadProps) {
   const imageRef = createRef<HTMLImageElement>();
   const [focused, setFocused] = stateFocused;
-  const [loading, setLoading] = stateLoading;
+  const setLoading = stateLoading[1];
   const [activeTab, setActiveTab] = stateActiveTab;
-  const [mode, setMode] = stateMode;
+  const [mode] = stateMode;
   const thumbnailURLState = useState(event.thumbnailSrc);
   const [thumbnailURL, setThumbnailURL] = thumbnailURLState;
-  const identification = stateIdentification[0];
-  const { user } = identification;
-  const { showReportModal } = useReport();
   const auth = getAuth();
   const isAuthorized = useAuthorization({
     auth,
@@ -130,14 +117,11 @@ export function PageViewEventHead({
     [event, setActiveTab]
   );
 
-  const handleEdit = useCallback(() => {
-    setActiveTab("detail");
-    setMode("edit");
-  }, [setActiveTab, setMode]);
-
   const renderDetailTabs = useMemo(
     () => (
-      <div className={clsx("flex gap-4 px-4")}>
+      <div
+        className={clsx("flex flex-wrap gap-4", type !== "mobile" && "px-4")}
+      >
         {tabs
           .filter(({ permission }) => !permission || isAuthorized)
           .map(({ id, name, onClick, count }) => (
@@ -158,6 +142,7 @@ export function PageViewEventHead({
                     "!py-1.5",
                     type === "mobile" ? "!ml-4" : "!ml-2"
                   )}
+                  floating={type === "mobile"}
                   color="grey"
                 >
                   {count}
@@ -170,58 +155,9 @@ export function PageViewEventHead({
     [activeTab, isAuthorized, tabs, type]
   );
 
-  const renderActionTabs = useMemo(
-    () => (
-      <div className="flex items-between p-4 gap-4">
-        <EventButtonFollow
-          event={event}
-          identification={identification}
-          updateUserSubscribedEventClientSide={
-            updateUserSubscribedEventClientSide
-          }
-          size={type === "mobile" ? "tiny" : undefined}
-        />
-        <EventButtonMore
-          event={event}
-          identification={identification}
-          size={type === "mobile" ? "tiny" : undefined}
-          stateDeleting={stateDeleting}
-          stateModalDelete={stateModalDelete}
-          onEdit={handleEdit}
-          onDelete={onDelete}
-          onReport={() =>
-            showReportModal({
-              eventId: event.id,
-              authorId: event.authorId,
-              contentType: "event",
-              reportedBy: user ? user.id : "",
-            })
-          }
-        />
-      </div>
-    ),
-    [
-      event,
-      identification,
-      updateUserSubscribedEventClientSide,
-      type,
-      stateDeleting,
-      stateModalDelete,
-      handleEdit,
-      onDelete,
-      showReportModal,
-      user,
-    ]
-  );
-
   const renderViewTabs = useMemo(
-    () => (
-      <>
-        {renderDetailTabs}
-        {renderActionTabs}
-      </>
-    ),
-    [renderActionTabs, renderDetailTabs]
+    () => <>{renderDetailTabs}</>,
+    [renderDetailTabs]
   );
 
   const renderEditTabs = useMemo(
@@ -286,11 +222,13 @@ export function PageViewEventHead({
 
       if (imgWidth > 0 && imgHeight > 0) {
         setImageSize([cardHeight * ratio, cardHeight]);
-        if (loading && type !== "mobile") setFocused(true);
+        setFocused(type !== "mobile");
         setLoading(false);
       }
     }
-  }, [cardHeight, event.thumbnailSrc, loading, setFocused, setLoading, type]);
+
+    if (type === "mobile") setFocused(false);
+  }, [cardHeight, event.thumbnailSrc, setFocused, setLoading, type]);
 
   useEffect(() => {
     handleAdjustImageSize();

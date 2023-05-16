@@ -8,13 +8,18 @@ export const RuleName = Yup.string()
 
 export const RuleDescription = Yup.string()
   .min(8, "Description is too short! (min. 8 chars)")
-  .max(5000, "Description is too long! (max. 100 chars)")
+  .max(5000, "Description is too long! (max. 5000 chars)")
   .required("Description is required.");
 
 export const RuleReason = Yup.string()
   .min(8, "Reason is too short! (min. 8 chars)")
   .max(100, "Reason is too long! (max. 100 chars)")
   .required("Reason is required.");
+
+export const RuleComment = Yup.string()
+  .min(15, "Comment is too short! (min. 15 chars)")
+  .max(100, "Comment is too long! (max. 100 chars)")
+  .required("Comment is required.");
 
 export function validateStartDate(start?: number) {
   if (!start) return "Start date is required.";
@@ -37,9 +42,10 @@ export function validateTags(tags: EventTagObjectType) {
 }
 
 export function validateImage(image: File) {
-  if(image) {
-    if(image.size > 2000000 ) return "Thumbnail cannot be larger than 2MB.";
-    if(!["image/jpeg", "image/jpg", "image/png"].includes(image.type)) return "Image format must be .jpeg, .jpg, or .png";
+  if (image) {
+    if (image.size > 2000000) return "Thumbnail cannot be larger than 2MB.";
+    if (!["image/jpeg", "image/jpg", "image/png"].includes(image.type))
+      return "Image format must be .jpeg, .jpg, or .png";
   }
   return undefined;
 }

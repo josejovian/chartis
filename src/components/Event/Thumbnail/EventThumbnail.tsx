@@ -19,6 +19,7 @@ export interface EventThumbnailProps {
   size?: [number, number];
   footer?: ReactNode;
   onWheel?: UIEventHandler<HTMLDivElement>;
+  alwaysShow?: boolean;
 }
 
 export function EventThumbnail({
@@ -30,6 +31,7 @@ export function EventThumbnail({
   size,
   footer,
   onWheel,
+  alwaysShow,
 }: EventThumbnailProps) {
   const placeholderURL = "/placeholder.png";
   const [imageURL, setImageURL] = useState(
@@ -76,7 +78,7 @@ export function EventThumbnail({
     [imageURL, size]
   );
 
-  return src || type === "banner" ? (
+  return alwaysShow || src || type === "banner" ? (
     <div
       ref={imageRef}
       className={clsx(

@@ -16,6 +16,7 @@ export interface EventButtonMoreProps {
   onDelete?: () => void;
   onEdit?: () => void;
   onReport?: () => void;
+  updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
 }
 
 export function EventButtonMore({
@@ -27,16 +28,16 @@ export function EventButtonMore({
   onDelete,
   onEdit,
   onReport,
+  updateClientSideEvent,
 }: EventButtonMoreProps) {
   const deleting = stateDeleting && stateDeleting[0];
   const [open, setOpen] = useState(false);
-  const { authorId, hide } = event;
+  const { id, authorId, hide } = event;
   const { user } = identification;
-  const [eventIsHidden, setEventIsHidden] = useState(hide);
   const { addToast } = useToast();
 
   const isAuthor = useMemo(
-    () => Boolean((user && user.id === authorId) || true),
+    () => Boolean(user && user.id === authorId),
     [authorId, user]
   );
 
@@ -58,29 +59,33 @@ export function EventButtonMore({
   );
 
   const handleHideEvent = useCallback(async () => {
-    if (!event.id) return;
+    if (!id) return;
 
-    updateData(FIREBASE_COLLECTION_EVENTS, event.id, {
+    updateData(FIREBASE_COLLECTION_EVENTS, id, {
       hide: !hide,
     }).then(() => {
-      setEventIsHidden((prev) => !prev);
       addToast({
         title: `Success`,
-        description: `Event is now ${eventIsHidden ? "hidden" : "visible"}`,
+        description: `Event is now ${!hide ? "hidden" : "visible"}`,
         variant: "success",
       });
+
+      updateClientSideEvent(id, {
+        hide: !hide,
+      });
     });
-  }, [addToast, event.id, eventIsHidden, hide]);
+  }, [addToast, hide, id, updateClientSideEvent]);
 
   const renderDropdownItems = useMemo(() => {
     if (user?.role === "admin")
       return (
         <>
-          <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
           <Dropdown.Item onClick={handleHideEvent}>
-            {eventIsHidden ? "Unhide" : "Hide"}
+            {event.hide ? "Unhide" : "Hide"}
           </Dropdown.Item>
-          {modalDelete}
+          <Dropdown.Item onClick={onReport} disabled={user?.ban}>
+            Report
+          </Dropdown.Item>
         </>
       );
     if (isAuthor)
@@ -96,18 +101,19 @@ export function EventButtonMore({
       </Dropdown.Item>
     );
   }, [
-    eventIsHidden,
+    event.hide,
     handleHideEvent,
     isAuthor,
     modalDelete,
     onEdit,
     onReport,
-    user,
+    user?.ban,
+    user?.role,
   ]);
 
   return (
     <div className={clsx("!relative")} style={{}}>
-      {(true || user) && (
+      {user && (
         <Dropdown
           icon={<></>}
           className={clsx("icon", open && "z-16 relative")}

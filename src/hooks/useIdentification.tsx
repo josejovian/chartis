@@ -3,33 +3,41 @@ import { useCallback, useContext, useMemo } from "react";
 
 export function useIdentification() {
   const stateIdentification = useContext(IdentificationContext);
-  const setIdentification = stateIdentification[1];
+  const { user } = useMemo(() => stateIdentification[0], [stateIdentification]);
+  const setIdentification = useMemo(
+    () => stateIdentification[1],
+    [stateIdentification]
+  );
 
   const updateUserSubscribedEventClientSide = useCallback(
-    (userId: string, eventId: string, version?: number) => {
-      setIdentification((prev) => ({
-        ...prev,
-        users: {
-          ...prev.users,
-          [userId]: {
-            ...prev.users[userId],
-            subscribedEvents: {
-              ...prev.users[userId].subscribedEvents,
-              ...(version === undefined
-                ? (() => {
-                    const temp = prev.users[userId].subscribedEvents ?? {};
-                    delete temp[eventId];
-                    return temp;
-                  })()
-                : {
-                    [eventId]: version,
-                  }),
+    (eventId: string, version?: number) => {
+      if (!user) return;
+
+      if (version) {
+        setIdentification((prev) => ({
+          ...prev,
+          user: {
+            ...(prev.user ?? user),
+            ...{
+              [eventId]: version,
             },
           },
-        },
-      }));
+        }));
+      } else {
+        setIdentification((prev) => ({
+          ...prev,
+          user: {
+            ...(prev.user ?? user),
+            ...(() => {
+              const temp = prev.user ? prev.user.subscribedEvents : {};
+              delete (temp ?? {})[eventId];
+              return temp;
+            })(),
+          },
+        }));
+      }
     },
-    [setIdentification]
+    [setIdentification, user]
   );
 
   const updateUserSubscribedEventsClientSide = useCallback(

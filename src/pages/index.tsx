@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHomeSideBar, LayoutCalendar, LayoutTemplate } from "@/components";
-import { useToast } from "@/hooks";
+import { useIdentification, useToast } from "@/hooks";
 import { getDateMonthYear, getEventsMonthly } from "@/utils";
 import { EventTagNameType, EventType } from "@/types";
+import { useEventsObject } from "@/hooks/useEventsObject";
 
 export default function Home() {
   const stateFocusDate = useState(getDateMonthYear(new Date()));
@@ -10,27 +11,36 @@ export default function Home() {
   const focusDate = stateFocusDate[0];
   const stateShowHidden = useState(false);
   const showHidden = stateShowHidden[0];
-  const [events, setEvents] = useState<EventType[]>([]);
+  const [hiddenCount, setHiddenCount] = useState(0);
+  const {
+    eventsArray,
+    stateSubscribedIds,
+    updateClientSideEvent,
+    setEventsObjectFromArray,
+    deleteClientSideEvent,
+    updateUserSubscribedEventClientSide,
+  } = useEventsObject();
+  const subscribedIds = stateSubscribedIds[0];
   const stateFilters = useState<EventTagNameType[]>([]);
   const [filters] = stateFilters;
   const { addToastPreset } = useToast();
-
-  const eventCardExtraDeleteHandler = useCallback((eventId: string) => {
-    setEvents((prev) => prev.filter((event) => event.id !== eventId));
-  }, []);
+  const { stateIdentification } = useIdentification();
+  const identification = stateIdentification[0];
 
   const displayedCalendarEvents = useMemo((): Record<number, EventType[]> => {
     const calendarEvents: Record<number, EventType[]> = {};
 
-    const filteredEvents = events.filter((event) =>
+    const filteredEvents = eventsArray.filter((event) =>
       Object.keys(event.tags).some(
         (tag) => filters.length < 1 || filters.some((filter) => filter === tag)
       )
     );
 
-    const visibleEvents = filteredEvents.filter((event) =>
-      event.hide && !showHidden ? false : true
+    const visibleEvents = filteredEvents.filter(
+      (event) => !event.hide || showHidden
     );
+
+    setHiddenCount(filteredEvents.filter((event) => event.hide).length);
 
     // build default values {1:[], 2:[], ..., 31:[]}
     for (
@@ -51,34 +61,53 @@ export default function Home() {
     });
 
     return calendarEvents;
-  }, [events, filters, showHidden, focusDate.year, focusDate.month]);
+  }, [eventsArray, filters, showHidden, focusDate.year, focusDate.month]);
 
   const renderSidebar = useMemo(
     () => (
       <PageHomeSideBar
         focusDate={focusDate}
+        identification={identification}
         events={displayedCalendarEvents[focusDate.day]}
+        subscribedIds={subscribedIds}
+        updateClientSideEvent={updateClientSideEvent}
+        updateUserSubscribedEventClientSide={
+          updateUserSubscribedEventClientSide
+        }
         stateSideBar={stateSideBar}
-        extraDeleteHandler={eventCardExtraDeleteHandler}
+        extraDeleteHandler={deleteClientSideEvent}
       />
     ),
     [
+      deleteClientSideEvent,
       displayedCalendarEvents,
-      eventCardExtraDeleteHandler,
       focusDate,
+      identification,
       stateSideBar,
+      subscribedIds,
+      updateClientSideEvent,
+      updateUserSubscribedEventClientSide,
     ]
   );
 
-  useEffect(() => {
+  const handlePopulateCalendar = useCallback(() => {
     getEventsMonthly(focusDate.month, focusDate.year)
       .then((events) => {
-        setEvents(events);
+        setEventsObjectFromArray(events);
       })
       .catch(() => {
         addToastPreset("fail-get");
       });
-  }, [addToastPreset, focusDate.month, focusDate.year]);
+  }, [
+    addToastPreset,
+    focusDate.month,
+    focusDate.year,
+    setEventsObjectFromArray,
+  ]);
+
+  useEffect(() => {
+    handlePopulateCalendar();
+  }, [handlePopulateCalendar]);
 
   return (
     <LayoutTemplate title="Home" classNameMain="!bg-white" side={renderSidebar}>
@@ -87,6 +116,7 @@ export default function Home() {
         stateFocusDate={stateFocusDate}
         stateFilters={stateFilters}
         events={displayedCalendarEvents}
+        hiddenCount={hiddenCount}
       />
     </LayoutTemplate>
   );

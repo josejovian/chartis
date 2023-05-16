@@ -35,8 +35,11 @@ export function LayoutTemplate({
   authorized,
   unauthorizedElement,
 }: LayoutTemplateProps) {
-  const stateNavBar = useNavBar();
-  const { type } = useScreen();
+  const screen = useScreen();
+  const { type } = screen;
+  const { stateNavBar } = useNavBar({
+    screen,
+  });
 
   const showContent = useMemo(() => {
     return !minPermission || authorized;

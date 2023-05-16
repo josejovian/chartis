@@ -17,6 +17,7 @@ export interface LayoutCalendarProps {
   stateFocusDate: StateObject<FocusDateType>;
   stateFilters: StateObject<EventTagNameType[]>;
   events: Record<number, EventType[]>;
+  hiddenCount?: number;
 }
 
 export function LayoutCalendar({
@@ -24,6 +25,7 @@ export function LayoutCalendar({
   stateFocusDate,
   stateShowHidden,
   stateFilters,
+  hiddenCount,
 }: LayoutCalendarProps) {
   const [focusDate, setFocusDate] = stateFocusDate;
   const { stateIdentification } = useIdentification();
@@ -161,14 +163,14 @@ export function LayoutCalendar({
           <div className="flex items-center">
             <Checkbox
               onChange={(_, data) => setShowHidden(data.checked ?? false)}
-              label={<label>Show hidden events ()</label>}
+              label={<label>Show hidden events ({hiddenCount})</label>}
             />
           </div>
         )}
         {renderLegend}
       </div>
     ),
-    [renderLegend, setShowHidden, user]
+    [hiddenCount, renderLegend, setShowHidden, user]
   );
 
   const renderCalendar = useMemo(() => {

@@ -32,7 +32,8 @@ import {
   UserType,
   NotificationData,
 } from "@/types";
-import { useNotification } from "@/hooks";
+import { useNavBar, useNotification } from "@/hooks";
+import { useRouter } from "next/router";
 import { readData } from "@/utils";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
@@ -42,12 +43,15 @@ export default function App({ Component, pageProps }: AppProps) {
   const [navBar, setNavBar] = stateNavBar;
   const stateModal = useState<ReactNode>(null);
   const [modal, setModal] = stateModal;
+  const stateEventsObject = useState({});
   const stateIdentification = useState<IdentificationType>({
     authUser: null,
     user: null,
     users: {},
     initialized: false,
   });
+  const stateSubscribedIds = useState<Record<string, number>>({});
+  const setSubscribedIds = stateSubscribedIds[1];
   const [identification, setIdentification] = stateIdentification;
   const { user } = identification;
   const [screen, setScreen] = useState<ScreenSizeType>({
@@ -63,6 +67,10 @@ export default function App({ Component, pageProps }: AppProps) {
   const auth = getAuth();
   const listenerRef = useRef<Unsubscribe>();
   const { handleUpdateNotifications } = useNotification();
+  const { togglable } = useNavBar({
+    screen,
+  });
+  const router = useRouter();
 
   const handleAddToast = useCallback((toast: ToastType) => {
     toastCount.current++;
@@ -118,7 +126,12 @@ export default function App({ Component, pageProps }: AppProps) {
               id: user.uid,
             },
           };
+          setSubscribedIds(userData.subscribedEvents ?? {});
         }
+      } else {
+        const localSubscribed = localStorage.getItem("subscribe") ?? "{}";
+
+        setSubscribedIds(JSON.parse(localSubscribed));
       }
 
       setIdentification((prev) => ({
@@ -132,20 +145,16 @@ export default function App({ Component, pageProps }: AppProps) {
         initialized: true,
       }));
     });
-  }, [auth, setIdentification]);
+  }, [auth, setIdentification, setSubscribedIds]);
 
   const handleAdjustNavbar = useCallback(() => {
-    if (screen.type === "desktop_lg") {
-      setNavBar(true);
-    } else {
-      setNavBar(false);
-    }
-  }, [screen, setNavBar]);
+    setNavBar(!togglable);
+  }, [setNavBar, togglable]);
 
   const renderShadeNavBar = useMemo(
     () => (
       <>
-        {screen.type !== "desktop_lg" && navBar && (
+        {togglable && navBar && (
           <div
             className="fixed left-0 top-0 w-screen h-screen z-20 bg-slate-900 opacity-50"
             onClick={() => {
@@ -155,7 +164,7 @@ export default function App({ Component, pageProps }: AppProps) {
         )}
       </>
     ),
-    [navBar, screen.type, setNavBar]
+    [navBar, setNavBar, togglable]
   );
 
   const renderShadeModal = useMemo(
@@ -223,7 +232,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     handleAdjustNavbar();
-  }, [handleAdjustNavbar, screen]);
+  }, [handleAdjustNavbar, screen, router]);
 
   const handleInitialize = useCallback(() => {
     if (initialize.current) return;
@@ -258,6 +267,10 @@ export default function App({ Component, pageProps }: AppProps) {
           setToasts,
           addToast: handleAddToast,
           addToastPreset: handleAddToastPreset,
+        }}
+        eventsProps={{
+          stateEventsObject,
+          stateSubscribedIds,
         }}
         notificationProps={{
           stateNotification,

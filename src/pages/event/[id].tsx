@@ -6,7 +6,7 @@ import {
 } from "@/components";
 import { ASSET_NO_CONTENT, EVENT_DUMMY_1 } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useIdentification, useScreen } from "@/hooks";
+import { useIdentification, useScreen, useEventsObject } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
 import { Button } from "semantic-ui-react";
 import { readData } from "@/utils";
@@ -18,34 +18,60 @@ export default function ViewEvent() {
   const stateMode = useState<EventModeType>("view");
   const setMode = stateMode[1];
   const { width, type } = useScreen();
-  const stateEvent = useState(EVENT_DUMMY_1);
-  const [event, setEvent] = stateEvent;
-  const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
   const [loading, setLoading] = useState(true);
+  const {
+    stateEventsObject,
+    setEventSingle,
+    updateClientSideEvent,
+    stateSubscribedIds,
+    updateUserSubscribedEventClientSide,
+  } = useEventsObject();
+  const subscribedIds = stateSubscribedIds[0];
+
+  const eventsObject = stateEventsObject[0];
+  const event = useMemo(
+    () => (loading ? undefined : eventsObject[id as string]),
+    [eventsObject, id, loading]
+  );
+  const stateEvent = useState(EVENT_DUMMY_1);
+  const setEvent = stateEvent[1];
+
+  const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
   const [error, setError] = useState(false);
-  const { stateIdentification, updateUserSubscribedEventClientSide } =
-    useIdentification();
+
+  const { stateIdentification } = useIdentification();
   const { user } = stateIdentification[0];
+
+  const checkForSubscribed = useCallback(
+    (id: string) => {
+      const value = Boolean(typeof subscribedIds[id] === "number");
+
+      return value;
+    },
+    [subscribedIds]
+  );
 
   const handleGetEvent = useCallback(async () => {
     if (!id) return;
 
     await readData("events", id as string)
       .then((result) => {
-        setLoading(false);
         if (result) {
           setError(false);
           setEvent(result);
+          setEventSingle(id as string, result);
           eventPreviousValues.current = result;
         } else {
           throw Error("Invalid event data.");
         }
       })
       .catch(() => {
-        setLoading(false);
         setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
       });
-  }, [id, setEvent]);
+  }, [id, setEvent, setEventSingle]);
 
   const handleInstantEdit = useCallback(() => {
     if (
@@ -54,9 +80,12 @@ export default function ViewEvent() {
       user &&
       user.id === event.authorId
     ) {
+      const { pathname, query } = router;
+      delete router.query.shouldRefetchUser;
+      router.replace({ pathname, query }, undefined, { shallow: true });
       setMode("edit");
     }
-  }, [event, router.query.mode, setMode, user]);
+  }, [event, router, setMode, user]);
 
   useEffect(() => {
     handleGetEvent();
@@ -88,22 +117,26 @@ export default function ViewEvent() {
         stateIdentification={stateIdentification}
         eventPreviousValues={eventPreviousValues}
         stateMode={stateMode}
+        subscribed={checkForSubscribed(id as string)}
         width={width}
         type={type}
         updateUserSubscribedEventClientSide={
           updateUserSubscribedEventClientSide
         }
-        fancy
+        updateClientSideEvent={updateClientSideEvent}
       />
     );
   }, [
+    checkForSubscribed,
     error,
+    id,
     loading,
     router,
     stateEvent,
     stateIdentification,
     stateMode,
     type,
+    updateClientSideEvent,
     updateUserSubscribedEventClientSide,
     width,
   ]);

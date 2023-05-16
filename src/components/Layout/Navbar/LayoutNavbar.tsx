@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from "react";
 import clsx from "clsx";
-import { useModal, useNotification, useScreen, useToast } from "@/hooks";
+import {
+  useModal,
+  useNavBar,
+  useNotification,
+  useScreen,
+  useToast,
+} from "@/hooks";
 import {
   ResponsiveInlineStyleType,
   StateObject,
@@ -33,6 +39,10 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const [isNavBarVisible, setIsNavBarVisible] = stateNavBar;
   const { type } = useScreen();
   const { stateIdentification } = useIdentification();
+  const screen = useScreen();
+  const { togglable } = useNavBar({
+    screen,
+  });
   const { user } = stateIdentification[0];
   const { notification } = useNotification();
   const router = useRouter();
@@ -129,12 +139,12 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   }, [isNotificationAlertVisible, permission, user]);
 
   const handleShowLoginModal = useCallback(() => {
-    setModal(<ModalAuthLogin />);
-  }, [setModal]);
+    if (!user) setModal(<ModalAuthLogin />);
+  }, [setModal, user]);
 
   const handleShowRegisterModal = useCallback(() => {
-    setModal(<ModalAuthRegister />);
-  }, [setModal]);
+    if (!user) setModal(<ModalAuthRegister />);
+  }, [setModal, user]);
 
   const handleLogout = useCallback(async () => {
     await logout()
@@ -170,10 +180,10 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         <Link href="/" className={"mr-auto"}>
           <Image src="Logo.svg" alt="Chartis Logo" width={110} height={32} />
         </Link>
-        {type !== "desktop_lg" && renderToggleButton}
+        {togglable && renderToggleButton}
       </div>
     ),
-    [renderToggleButton, type]
+    [renderToggleButton, togglable]
   );
 
   const renderSearch = useMemo(
@@ -196,45 +206,44 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 
   const renderNavBarLink = useCallback(
     (link: LayoutNavbarItemProps) => (
-      <div
-        className={clsx(
-          "relative flex items-center h-8 border-l-4 text-sm pl-4",
-          router.asPath === link.href
-            ? [
-                "text-primary-3 bg-slate-800 hover:bg-slate-700",
-                "border-l-4 border-primary-3",
-              ]
-            : [
-                "!text-gray-50 hover:bg-slate-700 border-transparent",
-                "cursor-pointer",
-              ]
-        )}
+      <Link
+        href={link.href}
+        onClick={() => {
+          if (togglable) setIsNavBarVisible(false);
+        }}
       >
         <span
-          className="flex items-center justify-center"
-          style={{
-            maxWidth: "1rem",
-          }}
+          className={clsx(
+            "relative flex items-center h-8 border-l-4 text-sm pl-4",
+            router.asPath === link.href
+              ? [
+                  "text-primary-3 bg-slate-800 hover:bg-slate-700",
+                  "border-l-4 border-primary-3",
+                ]
+              : [
+                  "!text-gray-50 hover:bg-slate-700 border-transparent",
+                  "cursor-pointer",
+                ]
+          )}
         >
-          <Icon.Group>
-            <Icon name={link.icon} />
-            {link.alert && (
-              <Icon name="circle" color="red" corner="top right" />
-            )}
-          </Icon.Group>
+          <span
+            className="flex items-center justify-center"
+            style={{
+              width: "2rem",
+            }}
+          >
+            <Icon.Group>
+              <Icon name={link.icon} />
+              {link.alert && (
+                <Icon name="circle" color="red" corner="top right" />
+              )}
+            </Icon.Group>
+          </span>
+          <span>{link.name}</span>
         </span>
-        <Link
-          className="ml-2"
-          href={link.href}
-          onClick={() => {
-            if (type !== "desktop_lg") setIsNavBarVisible(false);
-          }}
-        >
-          {link.name}
-        </Link>
-      </div>
+      </Link>
     ),
-    [router, setIsNavBarVisible, type]
+    [router.asPath, setIsNavBarVisible, togglable]
   );
 
   const renderLinks = useMemo(
@@ -274,8 +283,14 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
       >
         {user ? (
           <>
-            <User id={user.id} type="all" />
-            <Button basic size="tiny" onClick={handleLogout} color="red">
+            <User
+              className="font-medium"
+              id={user.id}
+              type="all"
+              truncate
+              dark
+            />
+            <Button size="tiny" onClick={handleLogout} color="red">
               Logout
             </Button>
           </>
@@ -323,9 +338,18 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     return NAVBAR_WRAPPER_RESPONSIVE_STYLE[type];
   }, [isNavBarVisible, type]);
 
+  const navBarFillerStyle = useMemo(() => {
+    if (togglable) {
+      return NAVBAR_WRAPPER_RESPONSIVE_STYLE[type];
+    } else {
+      setIsNavBarVisible(true);
+      return NAVBAR_WRAPPER_RESPONSIVE_STYLE["desktop_lg"];
+    }
+  }, [setIsNavBarVisible, togglable, type]);
+
   return (
     <>
-      <div style={NAVBAR_WRAPPER_RESPONSIVE_STYLE[type]} />
+      <div style={navBarFillerStyle} />
       <div
         style={navBarStyle}
         className={clsx(
@@ -339,7 +363,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 }
 
 const NAVBAR_WRAPPER_RESPONSIVE_STYLE: ResponsiveInlineStyleType = {
-  desktop_lg: { width: "300px" },
-  desktop_sm: { width: "64px" },
+  desktop_lg: { minWidth: "300px" },
+  desktop_sm: { minWidth: "64px" },
   mobile: { display: "none" },
 };

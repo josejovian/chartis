@@ -11,23 +11,26 @@ import {
   EventTags,
   User,
 } from "@/components";
-import { deleteEvent, strDateTime } from "@/utils";
+import { deleteEvent, getTimeDifference, strDateTime } from "@/utils";
 import {
   EventCardDisplayType,
   EventDetailCompactType,
   EventType,
+  ScreenSizeCategoryType,
 } from "@/types";
-import { useIdentification, useReport } from "@/hooks";
+import { useIdentification, useReport, useToast } from "@/hooks";
 
 export interface EventCardProps {
   className?: string;
   event: EventType;
   type?: EventCardDisplayType;
+  screenType?: ScreenSizeCategoryType;
   updateUserSubscribedEventClientSide: (
-    userId: string,
     eventId: string,
     version?: number
   ) => void;
+  subscribed?: boolean;
+  updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
   extraDeleteHandler?: (eventId: string) => void;
 }
 
@@ -35,15 +38,28 @@ export function EventCard({
   className,
   event,
   type = "vertical",
+  screenType,
   updateUserSubscribedEventClientSide,
+  subscribed,
+  updateClientSideEvent,
   extraDeleteHandler,
 }: EventCardProps) {
   const [wasDeleted, setWasDeleted] = useState(false);
-  const { id, name, description, authorId, thumbnailSrc, tags, hide } = event;
+  const {
+    id,
+    name,
+    description,
+    authorId,
+    thumbnailSrc,
+    tags,
+    hide,
+    postDate,
+  } = event;
   const { stateIdentification } = useIdentification();
   const identification = stateIdentification[0];
   const { user } = identification;
   const { showReportModal } = useReport();
+  const { addToastPreset } = useToast();
   const stateDeleting = useState(false);
   const setDeleting = stateDeleting[1];
   const stateModalDelete = useState(false);
@@ -71,9 +87,17 @@ export function EventCard({
         setDeleting(false);
       })
       .finally(() => {
+        addToastPreset("feat-event-delete");
         setModalDelete(false);
       });
-  }, [event.id, extraDeleteHandler, id, setDeleting, setModalDelete]);
+  }, [
+    addToastPreset,
+    event.id,
+    extraDeleteHandler,
+    id,
+    setDeleting,
+    setModalDelete,
+  ]);
 
   const handleEditEvent = useCallback(() => {
     if (!event.id) return;
@@ -132,15 +156,24 @@ export function EventCard({
     [details, id, type]
   );
 
-  const renderEventCreators = useMemo(
-    /** @todo Replace authorId with real username. */
+  const renderEventDate = useMemo(
     () => (
-      <span className="text-12px text-secondary-4 tracking-wide">
-        <User id={authorId} type="name" />
-        <User id={authorId} type="name" />
+      <span className="text-12px">
+        {" "}
+        <span style={{ fontSize: "8px" }}>•</span> {getTimeDifference(postDate)}
       </span>
     ),
-    [authorId]
+    [postDate]
+  );
+
+  const renderEventCreators = useMemo(
+    () => (
+      <div className="text-14px text-secondary-4">
+        <User id={authorId} type="name" className="font-bold tracking-wide" />
+        {renderEventDate}
+      </div>
+    ),
+    [authorId, renderEventDate]
   );
 
   const renderEventTags = useMemo(
@@ -190,9 +223,8 @@ export function EventCard({
     () => (
       <div
         className={clsx(
-          "flex flex-auto gap-4  w-48 !relative",
-          type === "vertical" && "mt-2",
-          type === "horizontal" && "justify-end"
+          "flex flex-auto gap-4 w-fit !relative",
+          type === "vertical" && "mt-2"
         )}
         style={{
           maxWidth: "192px",
@@ -201,9 +233,11 @@ export function EventCard({
         <EventButtonFollow
           event={event}
           identification={identification}
+          subscribed={subscribed}
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }
+          updateClientSideEvent={updateClientSideEvent}
           size="tiny"
         />
         <EventButtonMore
@@ -221,6 +255,7 @@ export function EventCard({
               reportedBy: user ? user.id : "invalid",
             })
           }
+          updateClientSideEvent={updateClientSideEvent}
         />
       </div>
     ),
@@ -228,7 +263,9 @@ export function EventCard({
       type,
       event,
       identification,
+      subscribed,
       updateUserSubscribedEventClientSide,
+      updateClientSideEvent,
       stateModalDelete,
       handleDeleteEvent,
       handleEditEvent,
@@ -256,13 +293,17 @@ export function EventCard({
         </Card>
       ) : (
         <Card fluid className="EventCard flex !flex-row h-full">
-          <EventThumbnail src={thumbnailSrc} type="thumbnail-fixed-height" />
+          <EventThumbnail
+            src={thumbnailSrc}
+            type="thumbnail-fixed-height"
+            alwaysShow
+          />
           <div className="flex flex-col py-2 pb-3 px-10 w-full h-full justify-between">
             <div className="flex flex-col">
               {renderEventCreators}
               {renderEventTitle}
             </div>
-            <div className="flex justify-between place-items-end !w-full">
+            <div className="flex flex-wrap justify-between place-items-end !w-full gap-2">
               {renderEventExtraDetails}
               {renderEventActions}
             </div>

@@ -1,6 +1,7 @@
 import { HTMLInputTypeAttribute, ReactNode } from "react";
 import type { SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
 import { UserPermissionType } from "./auth";
+import { StateObject } from "./misc";
 
 export interface EventType {
   id: string;
@@ -118,3 +119,8 @@ export type EventCardTabNameType =
   | "updates"
   | "discussion"
   | "reports";
+
+export type EventsContextPropsType = {
+  stateEventsObject: StateObject<Record<string, EventType>>;
+  stateSubscribedIds: StateObject<Record<string, number>>;
+};

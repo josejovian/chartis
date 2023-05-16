@@ -6,11 +6,11 @@ import { readData } from "@/utils";
 import clsx from "clsx";
 import {
   UserPicture,
-  PageSearchEventCard,
   LayoutTemplateCard,
   PageProfileChangePasswordTab,
   PageProfileDetailTab,
   PageProfileEdit,
+  TemplateSearchEvent,
 } from "@/components";
 import { useScreen } from "@/hooks";
 import { UserType, UserProfileTabNameType, ResponsiveStyleType } from "@/types";
@@ -62,8 +62,10 @@ export default function Profile() {
     )[0];
     if (!profileCardRef.current || !eventSearcherEmbed) return;
 
-    const profileCardHeight =
-      profileCardRef.current.offsetHeight + type === "mobile" ? 16 : 272;
+    let profileCardHeight = profileCardRef.current.offsetHeight;
+
+    if (type === "mobile") profileCardHeight += 170;
+    else profileCardHeight += 128;
 
     (eventSearcherEmbed as HTMLDivElement).style.display = "initial";
     (
@@ -136,13 +138,13 @@ export default function Profile() {
 
   const renderEventSearcher = useMemo(
     () =>
+      /** @todos this won't show the currently viewed events */
       (type !== "mobile" || activeCard === "detail") && (
-        <PageSearchEventCard
-          className={clsx(
-            "PageSearchEventCard PageSearchEventCardEmbed !bg-sky-50 !pb-0 !mx-0 !overflow-visible"
-          )}
-          type={type}
+        <TemplateSearchEvent
+          className="PageSearchEventCard PageSearchEventCardEmbed !bg-sky-50 !pb-0 !mx-0 !overflow-visible"
+          title="Created Events"
           viewType="userCreatedEvents"
+          noWrapper
         />
       ),
     [activeCard, type]

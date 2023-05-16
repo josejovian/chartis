@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
 import { useToast } from "@/hooks";
@@ -8,24 +8,26 @@ export interface EventButtonFollowProps {
   event: EventType;
   identification: IdentificationType;
   size?: SemanticSIZES;
+  subscribed?: boolean;
   updateUserSubscribedEventClientSide: (
-    userId: string,
     eventId: string,
     version?: number
   ) => void;
+  updateClientSideEvent: (eventId: string, event: Partial<EventType>) => void;
 }
 
 export function EventButtonFollow({
   event,
   identification,
   size,
+  subscribed,
   updateUserSubscribedEventClientSide,
+  updateClientSideEvent,
 }: EventButtonFollowProps) {
   const { addToastPreset } = useToast();
 
   const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
-
-  const { user, users } = identification;
+  const { user } = identification;
 
   const isAuthor = useMemo(
     () => Boolean(user && user.id === authorId),
@@ -33,52 +35,72 @@ export function EventButtonFollow({
   );
 
   const [subscriberCount, setSubscriberCount] = useState(
-    subscriberIds.length + (guestSubscriberCount ?? 0)
+    (() =>
+      user
+        ? subscriberIds.filter((sid) => sid !== user.id).length +
+          (guestSubscriberCount ?? 0) +
+          (subscribed ? 1 : 0)
+        : subscriberIds.length + (guestSubscriberCount ?? 0))()
   );
-  const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const initialized = useRef(false);
 
   const handleFollowEvent = useCallback(async () => {
     if (loading) return;
 
-    setSubscriberCount((prev) => prev + (subscribed ? -1 : 1));
+    const currentSubscribe = subscribed;
+    const currentCount = subscriberCount;
+    const nextCount = currentCount + (currentSubscribe ? -1 : 1);
+
+    setSubscriberCount(nextCount);
     setLoading(true);
 
-    toggleEventSubscription(id, event.version ?? 0, subscribed, user?.id)
+    // Client side update
+    updateClientSideEvent(id, {
+      guestSubscriberCount: user
+        ? guestSubscriberCount
+        : (guestSubscriberCount ?? 0) + (currentSubscribe ? -1 : 1),
+      subscriberCount: nextCount,
+    });
+    updateUserSubscribedEventClientSide(
+      event.id,
+      currentSubscribe ? undefined : event.version
+    );
+
+    // Server side update
+    toggleEventSubscription(
+      id,
+      event.version ?? 0,
+      Boolean(currentSubscribe),
+      user?.id
+    )
       .then(() => {
-        setSubscribed((prev) => !prev);
+        setLoading(false);
       })
-      .catch((e) => {
+      .catch(() => {
+        updateClientSideEvent(id, {
+          guestSubscriberCount: guestSubscriberCount,
+          subscriberCount: currentCount,
+        });
+        updateUserSubscribedEventClientSide(
+          event.id,
+          !currentSubscribe ? undefined : event.version
+        );
         addToastPreset("fail-post");
         setLoading(false);
-        setSubscribed((prev) => !prev);
-        setSubscriberCount((prev) => prev + (subscribed ? -1 : 1));
-      })
-      .finally(async () => {
-        setLoading(false);
       });
-  }, [addToastPreset, event.version, id, loading, subscribed, user?.id]);
-
-  const handleInitializeSubscribeState = useCallback(() => {
-    if (initialized.current || typeof window === "undefined") return;
-
-    let status = false;
-    if (!user) {
-      const subscribe = JSON.parse(
-        localStorage.getItem("subscribe") ?? "{}"
-      ) as Record<string, boolean>;
-      status = subscribe[id];
-    } else if (user && user.id && users[user.id]) {
-      status = subscriberIds.includes(user.id);
-    }
-    setSubscribed(status);
-    initialized.current = true;
-  }, [id, subscriberIds, user, users]);
-
-  useEffect(() => {
-    handleInitializeSubscribeState();
-  }, [handleInitializeSubscribeState]);
+  }, [
+    addToastPreset,
+    event.id,
+    event.version,
+    guestSubscriberCount,
+    id,
+    loading,
+    subscribed,
+    subscriberCount,
+    updateClientSideEvent,
+    updateUserSubscribedEventClientSide,
+    user,
+  ]);
 
   return (
     <Button
