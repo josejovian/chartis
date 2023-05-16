@@ -168,7 +168,7 @@ export function EventCard({
 
   const renderEventCreators = useMemo(
     () => (
-      <div className="text-12px text-secondary-4">
+      <div className="text-14px text-secondary-4">
         <User id={authorId} type="name" className="font-bold tracking-wide" />
         {renderEventDate}
       </div>

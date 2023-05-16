@@ -4,24 +4,51 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { UserPicture } from "./UserPicture";
 import { useIdentification } from "@/hooks";
 import Link from "next/link";
+import clsx from "clsx";
+import { Icon } from "semantic-ui-react";
 
 export interface UserProps {
   className?: string;
   id?: string;
+  defaultUser?: UserType;
   type: "all" | "picture" | "name";
   truncate?: boolean;
+  showRole?: boolean;
+  dark?: boolean;
 }
 
-export function User({ className, id, type, truncate }: UserProps) {
-  const [user, setUser] = useState<UserType>();
+export function User({
+  className,
+  id,
+  type,
+  truncate,
+  showRole,
+  defaultUser,
+  dark,
+}: UserProps) {
+  const [user, setUser] = useState<UserType | undefined>();
+
+  const newUser = useMemo<UserType>(
+    () =>
+      user ??
+      defaultUser ?? {
+        id: "?",
+        joinDate: 0,
+        name: "Unknown User",
+      },
+    [defaultUser, user]
+  );
+
+  const { name, role, ban } = newUser;
+
   const displayedName = useMemo(
     () =>
-      user
-        ? !truncate || user.name.length < 12
-          ? user.name
-          : `${user.name.slice(0, 12)}...`
+      name
+        ? !truncate || name.length < 12
+          ? name
+          : `${name.slice(0, 12)}...`
         : "Unknown User",
-    [truncate, user]
+    [name, truncate]
   );
 
   const [loading, setLoading] = useState(true);
@@ -32,6 +59,11 @@ export function User({ className, id, type, truncate }: UserProps) {
 
   const handleFetchUserData = useCallback(async () => {
     if (!initialized) return;
+
+    if (defaultUser) {
+      setLoading(false);
+      return;
+    }
 
     const existing = id ? users[id] : null;
 
@@ -60,15 +92,15 @@ export function User({ className, id, type, truncate }: UserProps) {
     }
 
     setLoading(false);
-  }, [id, initialized, setIdentification, users]);
+  }, [defaultUser, id, initialized, setIdentification, users]);
 
   useEffect(() => {
     handleFetchUserData();
   }, [handleFetchUserData]);
 
   const renderPicture = useMemo(
-    () => <UserPicture fullName={user?.name ?? "?"} loading={loading} />,
-    [loading, user?.name]
+    () => <UserPicture fullName={name} loading={loading} />,
+    [loading, name]
   );
 
   const renderName = useMemo(() => {
@@ -76,11 +108,37 @@ export function User({ className, id, type, truncate }: UserProps) {
       return <span className="skeleton !w-24 h-4 !rounded-sm"></span>;
     else
       return (
-        <Link className={className} href={user ? `/profile/${user.id}` : "#"}>
+        <Link
+          className={clsx(
+            "User",
+            dark
+              ? "text-secondary-1 hover:text-secondary-2"
+              : "text-secondary-5 hover:text-secondary-6",
+            showRole &&
+              newUser &&
+              type === "name" && [
+                role === "admin" && "font-bold !text-blue-600",
+                ban && "font-bold !text-red-600",
+              ],
+            className
+          )}
+          href={newUser ? `/profile/${newUser.id}` : "#"}
+        >
+          {role === "admin" && showRole && <Icon name="shield" />}
           {displayedName}
         </Link>
       );
-  }, [className, displayedName, loading, user]);
+  }, [
+    ban,
+    className,
+    dark,
+    displayedName,
+    loading,
+    newUser,
+    role,
+    showRole,
+    type,
+  ]);
 
   const renderUser = useMemo(() => {
     switch (type) {

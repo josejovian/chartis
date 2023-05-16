@@ -80,11 +80,12 @@ export function EventButtonMore({
     if (user?.role === "admin")
       return (
         <>
-          <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
           <Dropdown.Item onClick={handleHideEvent}>
             {event.hide ? "Unhide" : "Hide"}
           </Dropdown.Item>
-          {modalDelete}
+          <Dropdown.Item onClick={onReport} disabled={user?.ban}>
+            Report
+          </Dropdown.Item>
         </>
       );
     if (isAuthor)

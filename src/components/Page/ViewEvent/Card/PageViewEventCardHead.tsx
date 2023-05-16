@@ -52,12 +52,8 @@ export function PageViewEventHead({
   stateActiveTab,
   event,
   stateIdentification,
-  onDelete,
-  stateDeleting,
-  stateModalDelete,
   stateMode,
   type,
-  updateUserSubscribedEventClientSide,
   cardHeight,
   stateFocused,
   stateLoading,
@@ -65,7 +61,7 @@ export function PageViewEventHead({
 }: PageViewEventHeadProps) {
   const imageRef = createRef<HTMLImageElement>();
   const [focused, setFocused] = stateFocused;
-  const [loading, setLoading] = stateLoading;
+  const setLoading = stateLoading[1];
   const [activeTab, setActiveTab] = stateActiveTab;
   const [mode] = stateMode;
   const thumbnailURLState = useState(event.thumbnailSrc);
@@ -226,11 +222,13 @@ export function PageViewEventHead({
 
       if (imgWidth > 0 && imgHeight > 0) {
         setImageSize([cardHeight * ratio, cardHeight]);
-        if (loading && type !== "mobile") setFocused(true);
+        setFocused(type !== "mobile");
         setLoading(false);
       }
     }
-  }, [cardHeight, event.thumbnailSrc, loading, setFocused, setLoading, type]);
+
+    if (type === "mobile") setFocused(false);
+  }, [cardHeight, event.thumbnailSrc, setFocused, setLoading, type]);
 
   useEffect(() => {
     handleAdjustImageSize();

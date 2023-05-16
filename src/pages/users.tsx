@@ -40,7 +40,7 @@ export default function ManageUsers() {
     >
       <PageManageUsers
         isAuthorized={isAuthorized}
-        className={clsx("ui card", type !== "mobile" ? "!p-16" : "!p-4")}
+        className={clsx("ui card", type === "desktop_lg" ? "!p-16" : "!p-4")}
       />
     </LayoutTemplateCard>
   );
@@ -48,6 +48,6 @@ export default function ManageUsers() {
 
 const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {
   desktop_lg: "!px-20",
-  desktop_sm: "!px-20",
+  desktop_sm: "!px-12",
   mobile: "",
 };

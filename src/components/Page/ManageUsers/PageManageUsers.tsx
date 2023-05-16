@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { fs } from "@/firebase";
-import { Button, Icon } from "semantic-ui-react";
+import { Button } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   LayoutCard,
@@ -9,6 +9,7 @@ import {
   ButtonDropdownSelect,
   StickyHeaderTable,
   LayoutNotice,
+  User,
 } from "@/components";
 import { useScreen, useToast } from "@/hooks";
 import { sleep, strDateTime, validateEventQuery, updateData } from "@/utils";
@@ -142,7 +143,7 @@ export function PageManageUsers({
         .then(async () => {
           await sleep(200);
           setProcessing(false);
-          addToastPreset(!isBanned ? "feat-user-unban" : "feat-user-unban");
+          addToastPreset(!isBanned ? "feat-user-ban" : "feat-user-unban");
         })
         .catch(() => {
           setProcessing(false);
@@ -227,23 +228,12 @@ export function PageManageUsers({
   >(
     () => [
       {
-        cellElement: (data) => (
-          <>
-            {data.role === "admin" && <Icon name="shield" />}
-            {data.name}
-          </>
-        ),
+        cellElement: (data) => <User defaultUser={data} type="name" showRole />,
         cellWidth: {
           desktop_lg: 4,
           desktop_sm: 4,
           mobile: 4,
         },
-        cellProps: (data) => ({
-          className: clsx(
-            data.role === "admin" && "font-black text-blue-600",
-            data.ban && "font-black text-red-600"
-          ),
-        }),
         headerName: "Name",
         important: true,
       },

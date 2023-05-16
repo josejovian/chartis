@@ -6,8 +6,9 @@ import * as Yup from "yup";
 import pushid from "pushid";
 import { Button, Form, Icon, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
-import { ModalConfirmation, UserPicture } from "@/components";
+import { ModalConfirmation, User } from "@/components";
 import {
+  RuleComment,
   createComment,
   deleteComment,
   getComments,
@@ -103,9 +104,7 @@ export function PageViewEventCardDiscussionTab({
       return (
         <ModalConfirmation
           trigger={
-            <span className="pl-2 cursor-pointer hover:text-slate-600">
-              Delete
-            </span>
+            <span className="cursor-pointer hover:text-slate-600">Delete</span>
           }
           onConfirm={() => {
             deleteComment(id, commentId)
@@ -134,35 +133,43 @@ export function PageViewEventCardDiscussionTab({
         <div
           className={clsx(COMMENT_ICON_STYLE, !last && COMMENT_SIDELINE_STYLE)}
         >
-          <UserPicture fullName={comment.authorName} />
+          <User id={comment.authorId} type="picture" />
         </div>
         <div className="flex gap-2.5 items-center h-8">
-          <span className="font-semibold text-16px">{comment.authorName}</span>
+          <span className="font-semibold text-16px">
+            <User id={comment.authorId} type="name" />
+          </span>
           <span className="flex pt-1 text-slate-400 text-12px">
             {getTimeDifference(comment.postDate)}
           </span>
         </div>
         <div className="flex items-center">{comment.text}</div>
         <div className={COMMENT_REPORT_STYLE}>
-          <span
-            onClick={() =>
-              showReportModal({
-                commentId: comment.commentId,
-                eventId: id,
-                authorId: comment.authorId,
-                contentType: "comment",
-                reportedBy: auth.currentUser ? auth.currentUser.uid : "invalid",
-              } as ReportBaseType & CommentReportType)
-            }
-            className={"cursor-pointer hover:text-slate-600"}
-          >
-            Report
-          </span>
-          {renderDeleteButton(comment.commentId)}
+          {user && comment.authorId !== user.id && (
+            <span
+              onClick={() =>
+                showReportModal({
+                  commentId: comment.commentId,
+                  eventId: id,
+                  authorId: comment.authorId,
+                  contentType: "comment",
+                  reportedBy: auth.currentUser
+                    ? auth.currentUser.uid
+                    : "invalid",
+                } as ReportBaseType & CommentReportType)
+              }
+              className={"cursor-pointer hover:text-slate-600"}
+            >
+              Report
+            </span>
+          )}
+          {user &&
+            (user.role === "admin" || comment.authorId === user.id) &&
+            renderDeleteButton(comment.commentId)}
         </div>
       </div>
     ),
-    [auth.currentUser, id, renderDeleteButton, showReportModal]
+    [auth.currentUser, id, renderDeleteButton, showReportModal, user]
   );
 
   const renderCommentInput = useMemo(
@@ -176,9 +183,7 @@ export function PageViewEventCardDiscussionTab({
           resetForm();
         }}
         validationSchema={Yup.object().shape({
-          comment: Yup.string()
-            .max(500, "Your comment is too Long!")
-            .required("Required"),
+          comment: RuleComment,
         })}
       >
         {({ submitForm, values, errors }) => (
@@ -269,5 +274,4 @@ const COMMENT_SIDELINE_STYLE = [
 
 const COMMENT_WRAPPER_STYLE = "grid grid-cols-[1fr_15fr] grid-rows-3 gap-x-4";
 
-const COMMENT_REPORT_STYLE =
-  "flex items-center text-slate-400 text-16px divide-x-2 space-x-2";
+const COMMENT_REPORT_STYLE = "flex items-center text-slate-400 text-16px gap-2";

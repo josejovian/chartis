@@ -126,6 +126,17 @@ export function PageViewEventCard({
     return object;
   }, [event, mode]);
 
+  const handleUpdateClientSideEvent = useCallback(
+    (eventId: string, eventData: Partial<EventType>) => {
+      updateClientSideEvent(eventId, eventData);
+      setEvent((prev) => ({
+        ...prev,
+        ...eventData,
+      }));
+    },
+    [setEvent, updateClientSideEvent]
+  );
+
   const handleConstructEventValues = useCallback(
     (values: unknown) => {
       if (!user) return null;
@@ -323,13 +334,7 @@ export function PageViewEventCard({
             updateUserSubscribedEventClientSide
           }
           subscribed={subscribed}
-          updateClientSideEvent={(eventId, eventData) => {
-            updateClientSideEvent(eventId, eventData);
-            setEvent((prev) => ({
-              ...prev,
-              ...eventData,
-            }));
-          }}
+          updateClientSideEvent={handleUpdateClientSideEvent}
           size={type === "mobile" ? "tiny" : undefined}
         />
         <EventButtonMore
@@ -341,7 +346,7 @@ export function PageViewEventCard({
           onEdit={handleEdit}
           onDelete={handleDeleteEvent}
           onReport={handleReport}
-          updateClientSideEvent={updateClientSideEvent}
+          updateClientSideEvent={handleUpdateClientSideEvent}
         />
       </div>
     ),
@@ -350,14 +355,13 @@ export function PageViewEventCard({
       identification,
       updateUserSubscribedEventClientSide,
       subscribed,
+      handleUpdateClientSideEvent,
       type,
       stateDeleting,
       stateModalDelete,
       handleEdit,
       handleDeleteEvent,
       handleReport,
-      updateClientSideEvent,
-      setEvent,
     ]
   );
 
@@ -366,7 +370,7 @@ export function PageViewEventCard({
       mode === "view" && (
         <div
           className={clsx(
-            "flex flex-wrap justify-between py-3 px-12 gap-4 shadow-md",
+            "flex flex-wrap justify-between py-3 px-12 gap-4 shadow-md z-10",
             type === "mobile" && "!px-6"
           )}
         >

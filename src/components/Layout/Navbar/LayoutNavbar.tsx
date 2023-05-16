@@ -283,7 +283,13 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
       >
         {user ? (
           <>
-            <User id={user.id} type="all" truncate />
+            <User
+              className="font-medium"
+              id={user.id}
+              type="all"
+              truncate
+              dark
+            />
             <Button size="tiny" onClick={handleLogout} color="red">
               Logout
             </Button>
