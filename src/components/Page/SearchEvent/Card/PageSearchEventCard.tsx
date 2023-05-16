@@ -62,7 +62,8 @@ export function PageSearchEventCard({
   const { stateIdentification } = useIdentification();
   const [identification] = stateIdentification;
   const { user } = identification;
-  const { id: authorId } = router.query;
+  const authorId =
+    router.pathname === "/event/created" ? user?.id : router.query.id;
   const queried = useRef(0);
 
   const checkForSubscribed = useCallback(
