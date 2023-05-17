@@ -207,6 +207,7 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   const renderNavBarLink = useCallback(
     (link: LayoutNavbarItemProps) => (
       <Link
+        key={`NavLink_${link.href}`}
         href={link.href}
         onClick={() => {
           if (togglable) setIsNavBarVisible(false);
