@@ -51,7 +51,7 @@ export default function App({ Component, pageProps }: AppProps) {
     initialized: false,
   });
   const stateSubscribedIds = useState<Record<string, number>>({});
-  const [subscribedIds, setSubscribedIds] = stateSubscribedIds;
+  const setSubscribedIds = stateSubscribedIds[1];
   const [identification, setIdentification] = stateIdentification;
   const { user } = identification;
   const [screen, setScreen] = useState<ScreenSizeType>({
@@ -249,11 +249,6 @@ export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     handleInitialize();
   }, [handleInitialize]);
-
-  useEffect(() => {
-    console.log("Subscribed IDs");
-    console.log(subscribedIds);
-  }, [subscribedIds]);
 
   return (
     <>

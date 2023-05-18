@@ -63,12 +63,6 @@ export function useEventsObject() {
 
   const updateUserSubscribedEventClientSide = useCallback(
     (eventId: string, version?: number) => {
-      console.log("Given Version: ", version);
-      console.log(
-        typeof version === "number"
-          ? "Version Given, so Subscribing."
-          : "Version not Given, so Unsubscribing."
-      );
       if (typeof version === "number") {
         setSubscribedIds((prev) => ({
           ...prev,
