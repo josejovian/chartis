@@ -65,7 +65,7 @@ export function useEventsObject() {
     (eventId: string, version?: number) => {
       console.log("Given Version: ", version);
       console.log(
-        version
+        typeof version === "number"
           ? "Version Given, so Subscribing."
           : "Version not Given, so Unsubscribing."
       );
