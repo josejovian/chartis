@@ -63,6 +63,12 @@ export function useEventsObject() {
 
   const updateUserSubscribedEventClientSide = useCallback(
     (eventId: string, version?: number) => {
+      console.log("Given Version: ", version);
+      console.log(
+        version
+          ? "Version Given, so Subscribing."
+          : "Version not Given, so Unsubscribing."
+      );
       setSubscribedIds((prev) => ({
         ...prev,
         ...(typeof version === "number"
@@ -71,7 +77,7 @@ export function useEventsObject() {
             }
           : (() => {
               const temp = subscribedIds;
-              delete (temp ?? {})[eventId];
+              delete temp[eventId];
               return temp;
             })()),
       }));
