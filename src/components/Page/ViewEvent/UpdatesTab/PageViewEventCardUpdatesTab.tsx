@@ -35,7 +35,7 @@ export function PageViewEventCardUpdatesTab({
     readData(FIREBASE_COLLECTION_UPDATES, event.id)
       .then((eventUpdates) => {
         if (eventUpdates) {
-          setUpdates(eventUpdates.updates);
+          setUpdates(eventUpdates.updates.sort((a, b) => b.date - a.date));
           setIsEmpty(false);
         }
       })
@@ -90,8 +90,8 @@ export function PageViewEventCardUpdatesTab({
       ) : isEmpty ? (
         <LayoutNotice
           illustration={ASSET_NO_CONTENT}
-          title={"All Clear"}
-          description={"This events have never been modified"}
+          title="All Clear!"
+          description="This event have never been modified."
         />
       ) : (
         renderEventUpdates

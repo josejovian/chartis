@@ -255,8 +255,8 @@ export function PageViewEventCardDiscussionTab({
             {pageIsEmpty ? (
               <LayoutNotice
                 illustration={ASSET_NO_CONTENT}
-                title={"No one was here"}
-                description={"Be the first to post a comment"}
+                title="No one was here"
+                description="Be the first to post a comment"
               />
             ) : (
               comments &&
