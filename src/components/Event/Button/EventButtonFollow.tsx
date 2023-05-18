@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
 import { useToast } from "@/hooks";
-import { toggleEventSubscription } from "@/utils";
+import { sleep, toggleEventSubscription } from "@/utils";
 
 export interface EventButtonFollowProps {
   event: EventType;
@@ -51,8 +51,9 @@ export function EventButtonFollow({
     const currentCount = subscriberCount;
     const nextCount = currentCount + (currentSubscribe ? -1 : 1);
 
-    setSubscriberCount(nextCount);
     setLoading(true);
+    await sleep(100);
+    setSubscriberCount(nextCount);
 
     // Client side update
     updateClientSideEvent(id, {
