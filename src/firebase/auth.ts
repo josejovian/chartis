@@ -45,18 +45,8 @@ export async function login({
   password,
   onSuccess,
   onFail,
-}: loginParams) {
-  return await new Promise((res, rej) => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then((cred) => {
-        onSuccess && onSuccess(cred);
-        res(null);
-      })
-      .catch((error) => {
-        onFail && onFail(error);
-        rej(error);
-      });
-  });
+}: loginParams): Promise<UserCredential> {
+  return signInWithEmailAndPassword(auth, email, password);
 }
 
 export async function register({
