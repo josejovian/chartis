@@ -1,5 +1,65 @@
-import { DAYS, MONTHS } from "@/consts";
+import { DAYS, MONTHS, YEAR_MAX, YEAR_MIN } from "@/consts";
 import { FocusDateType } from "@/types";
+
+export function getCalendarVariables(date: FocusDateType) {
+  const firstDateOfTheMonth = new Date(date.year, date.month, 1);
+  const firstDateOnTheCalendar = new Date(date.year, date.month, 1);
+  firstDateOnTheCalendar.setDate(
+    firstDateOfTheMonth.getDate() - firstDateOfTheMonth.getDay()
+  );
+  const lastDateOfTheMonth = new Date(date.year, date.month, 1);
+  lastDateOfTheMonth.setMonth(lastDateOfTheMonth.getMonth() + 1);
+  lastDateOfTheMonth.setDate(0);
+  const lastDateOnTheCalendar = new Date(
+    firstDateOnTheCalendar.getFullYear(),
+    firstDateOnTheCalendar.getMonth(),
+    firstDateOnTheCalendar.getDate() - 1 + 6 * 7
+  );
+  const offsetDay = firstDateOfTheMonth.getDay();
+
+  return {
+    firstDateOfTheMonth,
+    firstDateOnTheCalendar,
+    lastDateOfTheMonth,
+    lastDateOnTheCalendar,
+    offsetDay,
+  };
+}
+
+export function calculateEarliestTenYears(year: number, cursor: number) {
+  return Math.floor(year / 10) * 10 + 10 * cursor;
+}
+
+export function safeIncrementYear(year: number, increment: number) {
+  let currentYear = year + increment;
+  if (currentYear < YEAR_MIN) currentYear = YEAR_MIN;
+  if (currentYear > YEAR_MAX) currentYear = YEAR_MAX;
+  return currentYear;
+}
+
+export function dateIsSafe(date: Date) {
+  const year = date.getFullYear();
+
+  return year >= YEAR_MIN && year < YEAR_MAX;
+}
+
+export function getSafeDate(date: Date) {
+  const year = date.getFullYear();
+
+  if (year < YEAR_MIN) {
+    date.setFullYear(YEAR_MIN);
+    date.setDate(1);
+    date.setMonth(1);
+  }
+
+  if (YEAR_MAX <= year) {
+    date.setFullYear(YEAR_MAX - 1);
+    date.setDate(31);
+    date.setMonth(12);
+  }
+
+  return date;
+}
 
 export function getDateMonthYear(date: Date): FocusDateType {
   return {

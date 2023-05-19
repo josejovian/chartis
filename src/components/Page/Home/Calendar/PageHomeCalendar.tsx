@@ -1,16 +1,27 @@
 import { useCallback, useMemo } from "react";
 import { Button, Checkbox } from "semantic-ui-react";
 import clsx from "clsx";
-import { EventButtonFilter, PageHomeCalendarDate } from "@/components";
+import {
+  EventButtonFilter,
+  ModalDateTimePick,
+  PageHomeCalendarDate,
+} from "@/components";
 import {
   EventTagNameType,
   EventType,
   FocusDateType,
   StateObject,
 } from "@/types";
-import { getDateMonthYear, strDay, strMonth } from "@/utils";
-import { DAYS } from "@/consts";
-import { useIdentification, useScreen } from "@/hooks";
+import {
+  dateIsSafe,
+  getCalendarVariables,
+  getDateMonthYear,
+  safeIncrementYear,
+  strDay,
+  strMonth,
+} from "@/utils";
+import { DAYS, YEAR_MAX, YEAR_MIN } from "@/consts";
+import { useIdentification, useModal, useScreen } from "@/hooks";
 
 export interface LayoutCalendarProps {
   stateShowHidden: StateObject<boolean>;
@@ -32,19 +43,34 @@ export function LayoutCalendar({
   const { user } = stateIdentification[0];
   const { type } = useScreen();
   const [, setShowHidden] = stateShowHidden;
+  const { setModal } = useModal();
 
   const handleChangeTime = useCallback(
     (direction: number) => {
       setFocusDate((prev) => {
         const temp = new Date();
-        temp.setDate(1);
-        temp.setMonth(prev.month + direction);
-        temp.setFullYear(prev.year);
-        if (
-          (prev.month === 0 && direction < 0) ||
-          (prev.month === 11 && direction > 0)
-        ) {
-          temp.setFullYear(prev.year + direction);
+        const hitFloor =
+          prev.year === YEAR_MIN && prev.month === 0 && direction === -1;
+        const hitCeiling =
+          prev.year === YEAR_MAX - 1 && prev.month === 11 && direction === 1;
+        if (hitFloor) {
+          temp.setDate(1);
+          temp.setMonth(0);
+          temp.setFullYear(YEAR_MIN);
+        } else if (hitCeiling) {
+          temp.setDate(31);
+          temp.setMonth(11);
+          temp.setFullYear(YEAR_MAX - 1);
+        } else {
+          temp.setDate(1);
+          temp.setMonth(prev.month + direction);
+          temp.setFullYear(prev.year);
+          if (
+            (prev.month === 0 && direction < 0) ||
+            (prev.month === 11 && direction > 0)
+          ) {
+            temp.setFullYear(safeIncrementYear(prev.year, direction));
+          }
         }
         return getDateMonthYear(temp);
       });
@@ -53,16 +79,8 @@ export function LayoutCalendar({
   );
 
   const calendar = useMemo(() => {
-    const firstDateOfTheMonth = new Date(focusDate.year, focusDate.month, 1);
-    const firstDateOnTheCalendar = new Date(focusDate.year, focusDate.month, 1);
-    firstDateOnTheCalendar.setDate(
-      firstDateOfTheMonth.getDate() - firstDateOfTheMonth.getDay()
-    );
-    const lastDateOnTheCalendar = new Date(
-      firstDateOnTheCalendar.getFullYear(),
-      firstDateOnTheCalendar.getMonth(),
-      firstDateOnTheCalendar.getDate() - 1 + 6 * 7
-    );
+    const { firstDateOnTheCalendar, lastDateOnTheCalendar } =
+      getCalendarVariables(focusDate);
 
     const dateArr = [];
     for (
@@ -83,23 +101,39 @@ export function LayoutCalendar({
     }
 
     return dateArr;
-  }, [events, focusDate.month, focusDate.year]);
+  }, [events, focusDate]);
 
   const renderMonthControls = useMemo(
     () => (
-      <div className="flex items-center gap-4">
+      <div
+        className={clsx(
+          "w-auto max-[400px]:w-full",
+          "flex justify-center items-center gap-4"
+        )}
+      >
         <Button
           basic
           circular
           icon={"chevron left"}
           onClick={() => handleChangeTime(-1)}
           size={type === "mobile" ? "tiny" : undefined}
+          disabled={focusDate.month === 0 && focusDate.year === YEAR_MIN}
         />
         <h1
           className={clsx(
-            "text-secondary-7 w-40 text-center",
-            type === "mobile" && "!w-24 !text-lg"
+            "text-secondary-7 hover:text-secondary-5 text-center cursor-pointer",
+            type === "mobile" && "w-full !text-lg"
           )}
+          onClick={() =>
+            setModal(
+              <ModalDateTimePick
+                type="monthyear"
+                onSelectDate={(date: Date) => {
+                  setFocusDate(getDateMonthYear(date));
+                }}
+              />
+            )
+          }
         >
           {strMonth(focusDate.month, 3)} {focusDate.year}
         </h1>
@@ -109,22 +143,33 @@ export function LayoutCalendar({
           icon={"chevron right"}
           onClick={() => handleChangeTime(1)}
           size={type === "mobile" ? "tiny" : undefined}
+          disabled={focusDate.month === 11 && focusDate.year === YEAR_MAX - 1}
         />
       </div>
     ),
-    [focusDate.month, focusDate.year, handleChangeTime, type]
+    [
+      focusDate.month,
+      focusDate.year,
+      handleChangeTime,
+      setFocusDate,
+      setModal,
+      type,
+    ]
   );
 
   const renderHead = useMemo(
     () => (
-      <div className="flex justify-between z-0">
+      <div className="flex flex-wrap gap-2 justify-between z-0">
         {renderMonthControls}
-        <div className="flex gap-4">
-          <EventButtonFilter stateFilters={stateFilters} />
+        <div className="w-auto max-[400px]:w-full flex flex-row-reverse">
+          <EventButtonFilter
+            size={type === "mobile" ? "tiny" : "medium"}
+            stateFilters={stateFilters}
+          />
         </div>
       </div>
     ),
-    [renderMonthControls, stateFilters]
+    [renderMonthControls, stateFilters, type]
   );
 
   const renderLegend = useMemo(
@@ -198,26 +243,34 @@ export function LayoutCalendar({
               .fill(0)
               .map((_, idx) => (
                 <tr key={`Calendar_${idx}`}>
-                  {DAYS.map((_, idx2) => (
-                    <PageHomeCalendarDate
-                      key={`Calendar_${idx}_${idx2}`}
-                      calendarDate={calendar && calendar[7 * idx + idx2]}
-                      focus={
-                        calendar &&
-                        calendar[7 * idx + idx2].date.getDate() ===
-                          focusDate.day &&
-                        calendar[7 * idx + idx2].date.getMonth() ===
-                          focusDate.month
-                      }
-                      type={type}
-                      onClick={() => {
-                        if (calendar)
-                          setFocusDate(
-                            getDateMonthYear(calendar[7 * idx + idx2].date)
-                          );
-                      }}
-                    />
-                  ))}
+                  {DAYS.map((_, idx2) => {
+                    const { date } = calendar[7 * idx + idx2];
+
+                    const safe = dateIsSafe(date);
+
+                    return (
+                      <PageHomeCalendarDate
+                        key={`Calendar_${idx}_${idx2}`}
+                        calendarDate={calendar && calendar[7 * idx + idx2]}
+                        focus={
+                          calendar &&
+                          calendar[7 * idx + idx2].date.getDate() ===
+                            focusDate.day &&
+                          calendar[7 * idx + idx2].date.getMonth() ===
+                            focusDate.month
+                        }
+                        type={type}
+                        onClick={() => {
+                          if (calendar && safe) {
+                            setFocusDate(
+                              getDateMonthYear(calendar[7 * idx + idx2].date)
+                            );
+                          }
+                        }}
+                        disabled={!safe}
+                      />
+                    );
+                  })}
                 </tr>
               ))}
           </tbody>

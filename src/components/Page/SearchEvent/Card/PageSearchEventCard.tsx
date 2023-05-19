@@ -100,6 +100,8 @@ export function PageSearchEventCard({
   const displayedEvents = useMemo(() => {
     let queriedEvents: EventType[] = [];
 
+    console.log(eventsArray);
+
     if (queried && query.length > 3) {
       queriedEvents.push(
         ...eventsArray.filter((event) =>
@@ -114,6 +116,12 @@ export function PageSearchEventCard({
       queriedEvents = queriedEvents.filter((event) =>
         Object.keys(subscribedIds).includes(event.id)
       );
+
+    if (viewType === "userCreatedEvents") {
+      queriedEvents = queriedEvents.filter(
+        (event) => userId === event.authorId
+      );
+    }
 
     const filteredEvents = queriedEvents.filter((event) => {
       const eventTags = Object.keys(event.tags);
@@ -165,8 +173,9 @@ export function PageSearchEventCard({
   useEffect(() => {
     switch (viewType) {
       case "userCreatedEvents":
-        authorId &&
-          getEvents([where("authorId", "==", authorId)])
+        console.log(userId);
+        userId &&
+          getEvents([where("authorId", "==", userId)])
             .then((event) => setEventsObjectFromArray(event))
             .catch((e) => {
               addToastPreset("fail-get");

@@ -8,6 +8,7 @@ export interface PageHomeCalendarDateProps {
   focus: boolean;
   type: ScreenSizeCategoryType;
   onClick: () => void;
+  disabled?: boolean;
 }
 
 export function PageHomeCalendarDate({
@@ -15,6 +16,7 @@ export function PageHomeCalendarDate({
   focus = false,
   type,
   onClick,
+  disabled,
 }: PageHomeCalendarDateProps) {
   const month = calendarDate && calendarDate.date.getMonth();
   const date = calendarDate && calendarDate.date.getDate();
@@ -128,14 +130,25 @@ export function PageHomeCalendarDate({
             ? CALENDAR_CELL_DIFFERENT_MONTH_STYLE
             : CALENDAR_CELL_CURRENT_MONTH_STYLE,
           date,
-          focus && CALENDAR_CELL_FOCUS_STYLE
+          focus && CALENDAR_CELL_FOCUS_STYLE,
+          disabled && "invisible"
         )}
-        onClick={onClick}
+        onClick={!disabled ? onClick : undefined}
       >
         <div className="flex flex-col items-center h-full">{renderDate}</div>
       </td>
     ),
-    [count, density, differentMonth, onClick, renderDate, type, date, focus]
+    [
+      type,
+      count,
+      density,
+      differentMonth,
+      date,
+      focus,
+      disabled,
+      onClick,
+      renderDate,
+    ]
   );
 
   const renderCell = useMemo(
