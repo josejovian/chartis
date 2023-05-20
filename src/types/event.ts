@@ -41,10 +41,12 @@ export interface EventDetailSimpleTextType extends EventDetailBaseType {
 }
 
 export interface EventDetailCompactType extends EventDetailBaseType {
+  id: string;
   value: string;
 }
 
 export interface EventDetailComponentType extends EventDetailBaseType {
+  id?: string;
   viewElement: ReactNode;
   editElement: ReactNode;
 }
