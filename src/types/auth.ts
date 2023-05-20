@@ -31,3 +31,5 @@ export type UserProfileTabNameType =
   | "detail"
   | "edit-profile"
   | "edit-password";
+
+export type UserProfileViewNameType = "admin" | "self" | "default";

@@ -314,8 +314,8 @@ export function PageManageReports({
           </>
         ),
         cellWidth: {
-          desktop_lg: 4,
-          desktop_sm: 4,
+          desktop_lg: 3,
+          desktop_sm: 3,
           mobile: 4,
         },
         headerName: "Reason",
@@ -339,8 +339,8 @@ export function PageManageReports({
       {
         cellElement: (data) => strDateTime(new Date(data.date ?? 0)),
         cellWidth: {
-          desktop_lg: 2,
-          desktop_sm: 2,
+          desktop_lg: 3,
+          desktop_sm: 3,
           mobile: 4,
         },
         headerName: "Date",

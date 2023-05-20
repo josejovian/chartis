@@ -2,7 +2,7 @@
 import { createRef, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { getAuth } from "firebase/auth";
-import { readData } from "@/utils";
+import { readData, sleep, updateData } from "@/utils";
 import clsx from "clsx";
 import {
   UserPicture,
@@ -11,13 +11,21 @@ import {
   PageProfileDetailTab,
   PageProfileEdit,
   TemplateSearchEvent,
+  LayoutNotice,
 } from "@/components";
-import { useScreen } from "@/hooks";
-import { UserType, UserProfileTabNameType, ResponsiveStyleType } from "@/types";
+import { useIdentification, useScreen, useToast } from "@/hooks";
+import {
+  UserType,
+  UserProfileTabNameType,
+  ResponsiveStyleType,
+  UserProfileViewNameType,
+} from "@/types";
+import { ASSET_NO_CONTENT } from "@/consts";
+import { Button } from "semantic-ui-react";
 
 export default function Profile() {
   const auth = getAuth();
-  const user = auth.currentUser;
+  const authUser = auth.currentUser;
   const profileCardRef = createRef<HTMLDivElement>();
 
   const [activeCard, setActiveCard] =
@@ -33,9 +41,18 @@ export default function Profile() {
     email: "",
     joinDate: 0,
   });
+  const setUser = stateUser[1];
+  const { stateIdentification } = useIdentification();
+
+  const { initialized, user } = stateIdentification[0];
+  const setIdentification = stateIdentification[1];
+  const { addToastPreset } = useToast();
+
   const [profile, setProfile] = stateUser;
-  const [, setLoading] = useState(true);
-  const [, setError] = useState(false);
+  const [viewType, setViewType] = useState<UserProfileViewNameType>("default");
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleGetProfile = useCallback(async () => {
     if (!id) return;
@@ -44,17 +61,35 @@ export default function Profile() {
       .then((result) => {
         setLoading(false);
         if (result) {
+          setIdentification((prev) => ({
+            ...prev,
+            users: {
+              ...prev.users,
+              [id as string]: {
+                ...result,
+                id: id as string,
+              },
+            },
+          }));
           setError(false);
-          setProfile(result as UserType);
+          setProfile({ ...result, id } as UserType);
+          const thisViewType = (() => {
+            if (initialized && user && authUser) {
+              if (user.id === id) return "self";
+              if (user.role === "admin") return "admin";
+            }
+            return "default";
+          })();
+          setViewType(thisViewType);
         } else {
-          throw Error("Invalid user data.");
+          throw Error("Invalid authUser data.");
         }
       })
       .catch(() => {
         setLoading(false);
         setError(true);
       });
-  }, [id, setProfile]);
+  }, [authUser, id, initialized, setIdentification, setProfile, user]);
 
   const handleAdjustEventSearcherHeight = useCallback(() => {
     const eventSearcherEmbed = document.getElementsByClassName(
@@ -73,6 +108,37 @@ export default function Profile() {
     ).style.maxHeight = `calc(100% - ${profileCardHeight}px)`;
   }, [profileCardRef, type]);
 
+  const handleToggleBanUser = useCallback(
+    async (isBanned: boolean) => {
+      if (processing) return;
+
+      setProcessing(true);
+      await sleep(200);
+      setUser((prev) => ({
+        ...prev,
+        ban: !isBanned,
+      }));
+
+      await updateData("users", id as string, {
+        ban: !isBanned,
+      })
+        .then(async () => {
+          await sleep(200);
+          setProcessing(false);
+          addToastPreset(!isBanned ? "feat-user-ban" : "feat-user-unban");
+        })
+        .catch(() => {
+          setProcessing(false);
+          addToastPreset("fail-post");
+          setUser((prev) => ({
+            ...prev,
+            ban: isBanned,
+          }));
+        });
+    },
+    [addToastPreset, id, processing, setUser]
+  );
+
   useEffect(() => {
     handleGetProfile();
   }, [handleGetProfile]);
@@ -88,17 +154,20 @@ export default function Profile() {
           <PageProfileDetailTab
             profile={profile}
             type={type}
+            viewType={viewType}
             onClickEdit={() => setActiveCard("edit-profile")}
             onClickChangePassword={() => setActiveCard("edit-password")}
+            onBanUser={() => handleToggleBanUser(Boolean(profile.ban))}
+            loadingBan={processing}
           />
         );
       case "edit-password":
         return (
-          user && (
+          authUser && (
             <PageProfileChangePasswordTab
               profile={profile}
               type={type}
-              user={user}
+              user={authUser}
               onCancelEdit={() => setActiveCard("detail")}
             />
           )
@@ -112,7 +181,15 @@ export default function Profile() {
           />
         );
     }
-  }, [activeCard, profile, type, user]);
+  }, [
+    activeCard,
+    profile,
+    type,
+    viewType,
+    processing,
+    authUser,
+    handleToggleBanUser,
+  ]);
 
   const renderProfileCard = useMemo(
     () => (
@@ -133,7 +210,7 @@ export default function Profile() {
         </div>
       </div>
     ),
-    [profile.name, profileCardRef, renderCardContent, type]
+    [profile, profileCardRef, renderCardContent, type]
   );
 
   const renderEventSearcher = useMemo(
@@ -150,6 +227,30 @@ export default function Profile() {
     [activeCard, type]
   );
 
+  const renderContent = useMemo(() => {
+    if (loading) return <LayoutNotice preset="loader" />;
+
+    if (error)
+      return (
+        <LayoutNotice
+          illustration={ASSET_NO_CONTENT}
+          title="This user does not exist"
+          descriptionElement={
+            <Button color="yellow" onClick={() => router.push("/")}>
+              Go to Home
+            </Button>
+          }
+        />
+      );
+
+    return (
+      <>
+        {renderProfileCard}
+        {renderEventSearcher}
+      </>
+    );
+  }, [error, loading, renderEventSearcher, renderProfileCard, router]);
+
   return (
     <LayoutTemplateCard
       title="Profile"
@@ -164,10 +265,7 @@ export default function Profile() {
         "flex flex-col flex-auto !justify-start"
       )}
     >
-      <>
-        {renderProfileCard}
-        {renderEventSearcher}
-      </>
+      {renderContent}
     </LayoutTemplateCard>
   );
 }
