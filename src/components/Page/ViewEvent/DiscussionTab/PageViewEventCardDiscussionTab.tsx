@@ -4,9 +4,9 @@ import { getAuth } from "firebase/auth";
 import { Field, Formik } from "formik";
 import * as Yup from "yup";
 import pushid from "pushid";
-import { Button, Form, Icon, TextArea } from "semantic-ui-react";
+import { Button, Form, Icon, Loader, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
-import { ModalConfirmation, User } from "@/components";
+import { LayoutNotice, ModalConfirmation, User } from "@/components";
 import {
   RuleComment,
   createComment,
@@ -26,6 +26,7 @@ import {
   StateObject,
 } from "@/types";
 import { useReport, useToast } from "@/hooks";
+import { ASSET_NO_CONTENT } from "@/consts";
 
 interface PageViewEventCardDiscussionTabProps {
   stateEvent: StateObject<EventType>;
@@ -43,10 +44,12 @@ export function PageViewEventCardDiscussionTab({
   const [comments, setComments] = useState<CommentType[]>([]);
   const auth = getAuth();
   const isLoggedIn = useMemo(() => auth.currentUser, [auth]);
-  const [loading, setLoading] = useState(false);
+  const [buttonIsLoading, setButtonIsLoading] = useState(false);
   const { addToastPreset } = useToast();
   const { showReportModal } = useReport();
   const { user, initialized } = identification;
+  const [pageIsLoading, setPageIsLoading] = useState(true);
+  const pageIsEmpty = useMemo(() => comments.length <= 0, [comments.length]);
 
   const [deleting, setDeleting] = useState(false);
 
@@ -70,7 +73,7 @@ export function PageViewEventCardDiscussionTab({
       };
       newCommentObject[commentId] = newComment;
 
-      setLoading(true);
+      setButtonIsLoading(true);
       createComment(id, newCommentObject)
         .then(() => {
           setComments((prev) => [newComment, ...prev]);
@@ -84,7 +87,7 @@ export function PageViewEventCardDiscussionTab({
         })
         .finally(() => {
           sleep(100);
-          setLoading(false);
+          setButtonIsLoading(false);
         });
     },
     [addToastPreset, auth.currentUser, id, setEvent]
@@ -93,10 +96,16 @@ export function PageViewEventCardDiscussionTab({
   useEffect(() => {
     if (commentCount && commentCount > 0)
       getComments(id)
-        .then((comments) => setComments(comments))
+        .then((comments) => {
+          setComments(comments);
+        })
         .catch((e) => {
           addToastPreset("fail-get");
+        })
+        .finally(() => {
+          setPageIsLoading(false);
         });
+    else setPageIsLoading(false);
   }, [addToastPreset, commentCount, id]);
 
   const renderDeleteButton = useCallback(
@@ -221,7 +230,7 @@ export function PageViewEventCardDiscussionTab({
                 type="submit"
                 onClick={submitForm}
                 color="yellow"
-                loading={loading}
+                loading={buttonIsLoading}
                 disabled={!authorized || values.comment === ""}
               >
                 <Icon name="paper plane" className="pr-6" />
@@ -232,22 +241,40 @@ export function PageViewEventCardDiscussionTab({
         )}
       </Formik>
     ),
-    [authorized, handlePostComment, loading]
+    [authorized, handlePostComment, buttonIsLoading]
   );
 
   const renderEventComments = useMemo(
-    () => (
-      <div className="flex flex-col gap-8 w-full">
-        {isLoggedIn && renderCommentInput}
-        <div className="flex flex-col gap-4 w-full">
-          {comments &&
-            comments.map((comment, id) =>
-              renderCommentCard(comment, id === comments.length - 1)
+    () =>
+      pageIsLoading ? (
+        <Loader active={pageIsLoading} inline="centered" />
+      ) : (
+        <div className="flex flex-col gap-8 w-full">
+          {isLoggedIn && renderCommentInput}
+          <div className="flex flex-col gap-4 w-full">
+            {pageIsEmpty ? (
+              <LayoutNotice
+                illustration={ASSET_NO_CONTENT}
+                title="No one was here"
+                description="Be the first to post a comment"
+              />
+            ) : (
+              comments &&
+              comments.map((comment, id) =>
+                renderCommentCard(comment, id === comments.length - 1)
+              )
             )}
+          </div>
         </div>
-      </div>
-    ),
-    [comments, isLoggedIn, renderCommentCard, renderCommentInput]
+      ),
+    [
+      comments,
+      isLoggedIn,
+      pageIsEmpty,
+      pageIsLoading,
+      renderCommentCard,
+      renderCommentInput,
+    ]
   );
 
   return (
