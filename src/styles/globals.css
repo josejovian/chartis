@@ -53,6 +53,16 @@
   p {
     @apply text-slate-800;
   }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }
 @tailwind base;
 @layer components {
@@ -101,7 +111,7 @@
     height: 100% !important;
     margin-top: -12px !important;
   }
-  .EventDetailsTable .ui.transparent.input input {
+  .EventDetailsTable :is(.ui.transparent.input input, .EventDetailsTableEntry) {
     @apply !px-3;
   }
   .EventInput:hover > :is(input, textarea),

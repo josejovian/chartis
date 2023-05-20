@@ -100,8 +100,6 @@ export function PageSearchEventCard({
   const displayedEvents = useMemo(() => {
     let queriedEvents: EventType[] = [];
 
-    console.log(eventsArray);
-
     if (queried && query.length > 3) {
       queriedEvents.push(
         ...eventsArray.filter((event) =>
@@ -131,7 +129,15 @@ export function PageSearchEventCard({
     const sortedEvents = sortEvents(filteredEvents);
 
     return sortedEvents;
-  }, [eventsArray, filters, query, sortEvents, subscribedIds, viewType]);
+  }, [
+    eventsArray,
+    filters,
+    query,
+    sortEvents,
+    subscribedIds,
+    userId,
+    viewType,
+  ]);
 
   const handleUpdatePathQueries = useCallback(() => {
     if (queried.current <= 1) return;
@@ -173,7 +179,6 @@ export function PageSearchEventCard({
   useEffect(() => {
     switch (viewType) {
       case "userCreatedEvents":
-        console.log(userId);
         userId &&
           getEvents([where("authorId", "==", userId)])
             .then((event) => setEventsObjectFromArray(event))

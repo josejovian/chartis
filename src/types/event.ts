@@ -28,13 +28,13 @@ export interface EventType {
 
 export interface EventDetailBaseType {
   icon: SemanticICONS;
-  id: string;
   name: string;
   placeholder?: string;
   validate?: (value: unknown) => string | null;
 }
 
 export interface EventDetailSimpleTextType extends EventDetailBaseType {
+  id: string;
   rawValue: string | string[] | number | number[] | undefined;
   moddedValue?: string | string[] | number | number[] | undefined;
   inputType: HTMLInputTypeAttribute;

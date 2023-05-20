@@ -34,7 +34,7 @@ const MODAL_WRAPPER_DESKTOP_STYLE = clsx(
 
 const MODAL_WRAPPER_MOBILE_STYLE = clsx(
   MODAL_WRAPPER_BASE_STYLE,
-  "bottom-0 rounded-t-lg"
+  "!p-4 bottom-0 rounded-t-lg"
 );
 
 const MODAL_WRAPPER_RESPONSIVE_STYLE: ResponsiveStyleType = {

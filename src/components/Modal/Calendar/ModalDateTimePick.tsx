@@ -3,21 +3,26 @@ import { useModal, useScreen } from "@/hooks";
 import { FocusDateType, ResponsiveStyleType } from "@/types";
 import {
   calculateEarliestTenYears,
+  getAmPm,
   getCalendarVariables,
   getDateMonthYear,
+  safeIncrementMonth,
   safeIncrementYear,
+  strDateTime,
 } from "@/utils";
 import clsx from "clsx";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ChangeEvent, ReactNode, useCallback, useMemo, useState } from "react";
 import { Button, Icon } from "semantic-ui-react";
 
 interface DateTimePickProps {
+  hideToday?: boolean;
   defaultDate?: number;
   onSelectDate: (date: Date) => void;
-  type: "date" | "monthyear" | "time";
+  type: "date" | "monthyear" | "time" | "datetime";
 }
 
 export function ModalDateTimePick({
+  hideToday,
   defaultDate,
   onSelectDate,
   type,
@@ -27,16 +32,31 @@ export function ModalDateTimePick({
   const [yearCursor, setYearCursor] = useState<number>(0);
 
   const dateObject = useMemo(() => new Date(date), [date]);
+
+  const {
+    currentYear,
+    currentDate,
+    currentHour,
+    currentMinute,
+    currentMonth,
+    currentAmPm,
+  } = useMemo(
+    () => ({
+      currentYear: dateObject.getFullYear(),
+      currentMonth: dateObject.getMonth(),
+      currentDate: dateObject.getDate(),
+      currentHour: dateObject.getHours(),
+      currentMinute: dateObject.getMinutes(),
+      currentAmPm: getAmPm(dateObject.getHours()),
+    }),
+    [dateObject]
+  );
+
   const [page, setPage] = useState<"date" | "month" | "year" | "time">(
     (() => {
-      switch (type) {
-        case "date":
-          return "date";
-        case "monthyear":
-          return "year";
-        case "time":
-          return "time";
-      }
+      if (type === "date" || type === "datetime") return "date";
+      if (type === "monthyear") return "year";
+      return "date";
     })()
   );
 
@@ -48,10 +68,14 @@ export function ModalDateTimePick({
       day,
       month,
       year,
+      hour,
+      minute,
       onUpdate,
     }: Partial<FocusDateType> & { onUpdate?: (date: Date) => void }) => {
       const newDateObject = new Date(date);
 
+      if (minute !== undefined) newDateObject.setMinutes(minute);
+      if (hour !== undefined) newDateObject.setHours(hour);
       if (day) newDateObject.setDate(day);
       if (month !== undefined) newDateObject.setMonth(month);
       if (year) newDateObject.setFullYear(year);
@@ -67,7 +91,7 @@ export function ModalDateTimePick({
     () => (
       <div
         className={clsx(
-          "w-full grid gap-2 mt-4",
+          "w-full grid mt-4",
           screenType !== "mobile" ? ["grid-cols-4"] : ["grid-cols-3"]
         )}
       >
@@ -77,17 +101,19 @@ export function ModalDateTimePick({
               className={clsx(
                 DATE_SELECT_BUTTON_RESPONSIVE_STYLE[screenType],
                 DATE_SELECT_BUTTON_STYLE,
-                idx === dateObject.getMonth() && DATE_SELECT_BUTTON_ACTIVE_STYLE
+                idx === currentMonth && DATE_SELECT_BUTTON_ACTIVE_STYLE
               )}
               onClick={() => {
                 handleUpdateDate({
-                  year: dateObject.getFullYear(),
+                  year: currentYear,
                   month: idx,
                   onUpdate: onSelectDate,
                 });
 
                 if (type === "monthyear") {
                   clearModal();
+                } else {
+                  setPage("date");
                 }
               }}
               key={`Date_${month}`}
@@ -98,17 +124,24 @@ export function ModalDateTimePick({
         })}
       </div>
     ),
-    [clearModal, dateObject, handleUpdateDate, onSelectDate, screenType, type]
+    [
+      clearModal,
+      currentMonth,
+      currentYear,
+      handleUpdateDate,
+      onSelectDate,
+      screenType,
+      type,
+    ]
   );
 
   const renderYearPicker = useMemo(() => {
-    const currentYear = dateObject.getFullYear();
     const earliestTenYear = calculateEarliestTenYears(currentYear, yearCursor);
 
     return (
       <div
         className={clsx(
-          "grid gap-2 mt-4",
+          "grid mt-4",
           screenType !== "mobile"
             ? ["grid-cols-4"]
             : ["grid-cols-3 sm:grid-cols-4"]
@@ -122,18 +155,15 @@ export function ModalDateTimePick({
               className={clsx(
                 DATE_SELECT_BUTTON_RESPONSIVE_STYLE[screenType],
                 DATE_SELECT_BUTTON_STYLE,
-                year === dateObject.getFullYear() &&
-                  DATE_SELECT_BUTTON_ACTIVE_STYLE,
+                year === currentYear && DATE_SELECT_BUTTON_ACTIVE_STYLE,
                 (idx === 0 || idx === 11) && "invisible"
               )}
               key={`Select_${idx}`}
-              color={dateObject.getFullYear() === year ? "yellow" : undefined}
+              color={currentYear === year ? "yellow" : undefined}
               onClick={() => {
                 handleUpdateDate({ year });
                 setYearCursor(0);
-                if (type === "monthyear") {
-                  setPage("month");
-                }
+                setPage("month");
               }}
             >
               {year}
@@ -142,52 +172,98 @@ export function ModalDateTimePick({
         })}
       </div>
     );
-  }, [dateObject, handleUpdateDate, screenType, type, yearCursor]);
+  }, [currentYear, handleUpdateDate, screenType, yearCursor]);
+
+  const renderDateInstance = useCallback(
+    ({
+      day,
+      month,
+      year,
+      className,
+      disabled,
+    }: FocusDateType & {
+      className?: string;
+      disabled?: boolean;
+    }) => (
+      <button
+        className={clsx(
+          disabled && "invisible",
+          "text-center !p-3",
+          DATE_SELECT_BUTTON_STYLE,
+          DATE_SELECT_BUTTON_RESPONSIVE_STYLE[screenType],
+          className,
+          currentDate === day &&
+            currentMonth === month &&
+            DATE_SELECT_BUTTON_ACTIVE_STYLE
+        )}
+        key={`Date_${day}`}
+        onClick={() => {
+          handleUpdateDate({
+            day,
+            month,
+            year,
+          });
+        }}
+        disabled={disabled}
+      >
+        {day}
+      </button>
+    ),
+    [currentDate, currentMonth, handleUpdateDate, screenType]
+  );
 
   const renderDatePicker = useMemo(() => {
-    const { lastDateOfTheMonth, offsetDay } = getCalendarVariables(
-      getDateMonthYear(dateObject)
-    );
+    const { lastDateOfTheMonth, offsetDay, firstDateOnTheCalendar } =
+      getCalendarVariables(getDateMonthYear(dateObject));
 
     return (
-      <div className="grid grid-cols-7 mt-4 !w-full">
-        {DAYS.map((day) => (
-          <button
-            tabIndex={0}
+      <div className="grid grid-cols-7 mt-4 !w-full h-[300px]">
+        {DAYS.map((day, idx) => (
+          <div
             className={clsx(
-              date <= 0 && "invisible",
-              screenType !== "mobile" ? "!w-16 !h-16" : "!w-full !h-16",
-              "bg-white hover:bg-secondary-1 active:bg-secondary-2 focus:bg-secondary-2"
+              "text-center bg-gray-100 font-black !p-3",
+              DATE_SELECT_BUTTON_RESPONSIVE_STYLE[screenType],
+              idx === 0 && "rounded-l-lg",
+              idx === 6 && "rounded-r-lg"
             )}
-            key={`Date_${date}`}
+            key={`Date_Day_${day}`}
           >
             {day.slice(0, 1)}
-          </button>
+          </div>
         ))}
-        {Array.from({ length: lastDateOfTheMonth.getDate() + offsetDay }).map(
-          (_, idx) => {
-            const date = idx - offsetDay + 1;
-            return (
-              <button
-                tabIndex={0}
-                className={clsx(
-                  date <= 0 && "invisible",
-                  screenType !== "mobile" ? "!w-16 !h-16" : "!w-full !h-16",
-                  "bg-white hover:bg-secondary-1 active:bg-secondary-2 focus:bg-secondary-2"
-                )}
-                key={`Date_${date}`}
-                onClick={() => {
-                  console.log("X");
-                }}
-              >
-                {date}
-              </button>
-            );
-          }
-        )}
+        {Array.from({ length: offsetDay }).map((_, idx) => {
+          const thisDate = new Date(firstDateOnTheCalendar);
+          thisDate.setDate(thisDate.getDate() + idx);
+          const year = thisDate.getFullYear();
+          return renderDateInstance({
+            ...getDateMonthYear(thisDate),
+            className: "text-secondary-4",
+            disabled: year < YEAR_MIN || year >= YEAR_MAX,
+          });
+        })}
+        {Array.from({ length: lastDateOfTheMonth.getDate() }).map((_, idx) => {
+          const date = idx + 1;
+          return renderDateInstance({
+            day: date,
+            month: currentMonth,
+            year: currentYear,
+          });
+        })}
+        {Array.from({
+          length: 42 - (offsetDay + lastDateOfTheMonth.getDate()),
+        }).map((_, idx) => {
+          const thisDate = new Date(lastDateOfTheMonth);
+          thisDate.setDate(thisDate.getDate() + idx + 1);
+          const year = thisDate.getFullYear();
+          return renderDateInstance({
+            ...getDateMonthYear(thisDate),
+            className: "text-secondary-4",
+            disabled: year < YEAR_MIN || year >= YEAR_MAX,
+          });
+        })}
       </div>
     );
-  }, [date, dateObject, screenType]);
+  }, [currentMonth, currentYear, dateObject, renderDateInstance, screenType]);
 
   const renderPickerHeader = useCallback(
     ({
@@ -205,7 +281,7 @@ export function ModalDateTimePick({
     }) => {
       return (
         <div className="flex justify-between w-full">
-          <h2 className="w-full pl-4">{title}</h2>
+          <h2 className="w-full">{title}</h2>
           <div className="flex gap-2">
             <Button
               size="tiny"
@@ -232,140 +308,315 @@ export function ModalDateTimePick({
     []
   );
 
-  const renderMonthYearTypeScreen = useMemo(() => {
-    if (page === "year") {
-      return (
-        <>
-          {renderPickerHeader({
-            title: dateObject.getFullYear(),
-            onClickLeft: () => {
-              setYearCursor((prev) => {
-                const newCursor = prev - 1;
-                const newYear = calculateEarliestTenYears(
-                  dateObject.getFullYear(),
-                  newCursor
-                );
-                return newYear >= YEAR_MIN ? prev - 1 : prev;
-              });
-            },
-            disableLeft:
-              calculateEarliestTenYears(dateObject.getFullYear(), yearCursor) <=
-              YEAR_MIN,
-            onClickRight: () => {
-              setYearCursor((prev) => {
-                const newCursor = prev + 1;
-                const newYear = calculateEarliestTenYears(
-                  dateObject.getFullYear(),
-                  newCursor
-                );
-                return newYear < YEAR_MAX ? prev + 1 : prev;
-              });
-            },
-            disableRight:
-              calculateEarliestTenYears(
-                dateObject.getFullYear(),
-                yearCursor + 1
-              ) >= YEAR_MAX,
-          })}
-          {renderYearPicker}
-        </>
-      );
-    } else {
-      return (
-        <>
-          {renderPickerHeader({
-            title: dateObject.getFullYear(),
-            onClickLeft: () => {
+  const renderSelectYearScreen = useMemo(
+    () => (
+      <>
+        {renderPickerHeader({
+          title: currentYear,
+          onClickLeft: () => {
+            setYearCursor((prev) => {
+              const newCursor = prev - 1;
+              const newYear = calculateEarliestTenYears(currentYear, newCursor);
+              return newYear >= YEAR_MIN ? prev - 1 : prev;
+            });
+          },
+          disableLeft:
+            calculateEarliestTenYears(currentYear, yearCursor) <= YEAR_MIN,
+          onClickRight: () => {
+            setYearCursor((prev) => {
+              const newCursor = prev + 1;
+              const newYear = calculateEarliestTenYears(currentYear, newCursor);
+              return newYear < YEAR_MAX ? prev + 1 : prev;
+            });
+          },
+          disableRight:
+            calculateEarliestTenYears(currentYear, yearCursor + 1) >= YEAR_MAX,
+        })}
+        {renderYearPicker}
+      </>
+    ),
+    [currentYear, renderPickerHeader, renderYearPicker, yearCursor]
+  );
+
+  const renderSelectMonthScreen = useMemo(
+    () => (
+      <>
+        {renderPickerHeader({
+          title: currentYear,
+          onClickLeft: () => {
+            handleUpdateDate({
+              year: safeIncrementYear(currentYear, -1),
+            });
+          },
+          disableLeft: currentYear - 1 < YEAR_MIN,
+          onClickRight: () => {
+            handleUpdateDate({
+              year: safeIncrementYear(currentYear, 1),
+            });
+          },
+          disableRight: currentYear + 1 >= YEAR_MAX,
+        })}
+        {renderMonthPicker}
+      </>
+    ),
+    [currentYear, handleUpdateDate, renderMonthPicker, renderPickerHeader]
+  );
+
+  const handleValidateHours = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      let input = e.target.value;
+
+      input = input
+        .split("")
+        .filter((char) => char !== " " && !isNaN(Number(char)))
+        .join("");
+
+      let hours = Number(input);
+      let hours24 = Number(input);
+
+      if (input !== "" && !isNaN(hours) && !isNaN(hours24)) {
+        if (hours <= 0) {
+          hours = 12;
+          hours24 = 0;
+        } else if (hours > 24) {
+          hours = 12;
+          hours24 = 0;
+        } else if (hours > 12) {
+          hours -= 12;
+        } else if (hours < 12) {
+          hours24 = currentAmPm === "am" ? hours : 12 + hours;
+        } else if (hours === 12) {
+          hours24 = currentAmPm === "am" ? 0 : 12;
+        }
+
+        hours = Math.floor(hours);
+
+        e.target.value = String(hours);
+        handleUpdateDate({
+          hour: hours24,
+        });
+      } else {
+        e.target.value = input;
+      }
+    },
+    [currentAmPm, handleUpdateDate]
+  );
+
+  const handleValidateMinutes = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      let input = e.target.value;
+
+      input = input
+        .split("")
+        .filter((char) => char !== " " && !isNaN(Number(char)))
+        .join("");
+
+      let minutes = Number(input);
+
+      if (input !== "" && !isNaN(minutes)) {
+        if (minutes < 0) minutes = 0;
+        if (minutes > 59) minutes = 59;
+        e.target.value = String(minutes);
+        handleUpdateDate({
+          minute: minutes,
+        });
+      } else {
+        e.target.value = input;
+      }
+    },
+    [handleUpdateDate]
+  );
+
+  const renderTimePicker = useMemo(
+    () => (
+      <div className="flex items-center justify-center w-full gap-4 mt-4">
+        <div className="flex items-center justify-center gap-2">
+          <input
+            className={INPUT_STYLE}
+            type="text"
+            onChange={handleValidateHours}
+            defaultValue={
+              currentHour > 12
+                ? currentHour - 12
+                : currentHour === 0
+                ? 12
+                : currentHour
+            }
+          />
+          <span>:</span>
+          <input
+            className={INPUT_STYLE}
+            type="text"
+            onChange={handleValidateMinutes}
+            defaultValue={currentMinute}
+          />
+        </div>
+        <div className="flex">
+          <Button
+            className="!rounded-none !rounded-l-md"
+            content="AM"
+            color={currentAmPm === "am" ? "yellow" : undefined}
+            onClick={() => {
+              const hours = currentHour;
               handleUpdateDate({
-                year: safeIncrementYear(dateObject.getFullYear(), -1),
+                hour: hours >= 12 ? hours - 12 : hours,
+                day: currentDate,
               });
-            },
-            disableLeft: dateObject.getFullYear() - 1 < YEAR_MIN,
-            onClickRight: () => {
+            }}
+            basic={currentAmPm !== "am"}
+          />
+          <Button
+            className="!rounded-none !rounded-r-md"
+            content="PM"
+            color={currentAmPm === "pm" ? "yellow" : undefined}
+            onClick={() => {
+              const hours = currentHour;
               handleUpdateDate({
-                year: safeIncrementYear(dateObject.getFullYear(), 1),
+                hour: hours < 12 ? hours + 12 : hours,
+                day: currentDate,
               });
-            },
-            disableRight: dateObject.getFullYear() + 1 >= YEAR_MAX,
-          })}
-          {renderMonthPicker}
-        </>
-      );
+            }}
+            basic={currentAmPm !== "pm"}
+          />
+        </div>
+      </div>
+    ),
+    [
+      currentAmPm,
+      currentDate,
+      currentHour,
+      currentMinute,
+      handleUpdateDate,
+      handleValidateHours,
+      handleValidateMinutes,
+    ]
+  );
+
+  const renderSelectDateScreen = useMemo(
+    () => (
+      <>
+        {renderPickerHeader({
+          title: (
+            <div
+              className={clsx(
+                "flex items-center gap-1 hover:text-secondary-5 cursor-pointer"
+              )}
+              onClick={() => {
+                setPage("year");
+              }}
+            >
+              {`${MONTHS[currentMonth].slice(0, 3)} ${currentYear}`}
+              <Icon size="small" name="triangle down" />
+            </div>
+          ),
+          onClickLeft: () => {
+            const { month, year } = safeIncrementMonth(
+              currentYear,
+              currentMonth,
+              -1
+            );
+            handleUpdateDate({
+              month,
+              year,
+            });
+          },
+          disableLeft: currentYear - 1 < YEAR_MIN && currentMonth === 0,
+          onClickRight: () => {
+            const { month, year } = safeIncrementMonth(
+              currentYear,
+              currentMonth,
+              1
+            );
+            handleUpdateDate({
+              month,
+              year,
+            });
+          },
+          disableRight: currentYear + 1 >= YEAR_MAX && currentMonth === 11,
+        })}
+
+        {renderDatePicker}
+        {renderTimePicker}
+      </>
+    ),
+    [
+      currentMonth,
+      currentYear,
+      handleUpdateDate,
+      renderDatePicker,
+      renderPickerHeader,
+      renderTimePicker,
+    ]
+  );
+
+  const renderContent = useMemo(() => {
+    switch (page) {
+      case "date":
+        return renderSelectDateScreen;
+      case "month":
+        return renderSelectMonthScreen;
+      case "year":
+        return renderSelectYearScreen;
+      default:
+        return <></>;
     }
   }, [
-    dateObject,
-    handleUpdateDate,
     page,
-    renderMonthPicker,
-    renderPickerHeader,
-    renderYearPicker,
-    yearCursor,
+    renderSelectDateScreen,
+    renderSelectMonthScreen,
+    renderSelectYearScreen,
   ]);
 
-  if (type === "monthyear") {
-    return (
+  return (
+    <div
+      className={clsx(
+        "flex flex-col m-auto",
+        screenType !== "mobile" ? "w-[640px]" : "w-full"
+      )}
+    >
+      {renderContent}
       <div
         className={clsx(
-          "flex flex-col m-auto",
-          screenType !== "mobile" ? "w-96" : "w-full"
+          "flex items-center !h-fit  mt-4",
+          hideToday ? "justify-between" : "justify-center",
+          screenType !== "mobile" ? "gap-2" : "flex-col gap-4"
         )}
       >
-        {renderMonthYearTypeScreen}
-        <div className="flex justify-center gap-2 mt-4">
-          <Button
-            onClick={() => {
-              setDate(new Date().getTime());
-              onSelectDate(new Date());
-              clearModal();
-            }}
-          >
-            Today
-          </Button>
-        </div>
+        <Button
+          className={clsx(hideToday && "!hidden")}
+          disabled={hideToday}
+          onClick={() => {
+            setDate(new Date().getTime());
+            onSelectDate(new Date());
+            clearModal();
+          }}
+        >
+          Today
+        </Button>
+        {type === "datetime" && page === "date" && (
+          <>
+            <span>
+              <b>Selected Date:</b> {strDateTime(dateObject)}
+            </span>
+            <div className={clsx("flex justify-end gap-4")}>
+              <Button basic onClick={clearModal}>
+                Cancel
+              </Button>
+              <Button
+                color="yellow"
+                onClick={() => {
+                  onSelectDate(dateObject);
+                  clearModal();
+                }}
+              >
+                Finish
+              </Button>
+            </div>
+          </>
+        )}
       </div>
-    );
-  }
-
-  if (type === "date") {
-    return (
-      <div
-        className="flex flex-col w-full mx-auto"
-        style={{
-          maxWidth: "600px",
-        }}
-      >
-        <div className="flex items-between w-full">
-          <div className="flex w-full gap-4">
-            <h2>Dec</h2>
-            <h2>2033</h2>
-          </div>
-          <Button
-            size="tiny"
-            icon
-            circular
-            onClick={() => {
-              setYearCursor((prev) => prev - 1);
-            }}
-          >
-            <Icon name="angle left" />
-          </Button>
-          <Button
-            size="tiny"
-            icon
-            circular
-            onClick={() => {
-              setYearCursor((prev) => prev + 1);
-            }}
-          >
-            <Icon name="angle right" />
-          </Button>
-        </div>
-        <div>{renderDatePicker}</div>
-      </div>
-    );
-  }
-
-  return <div></div>;
+    </div>
+  );
 }
 
 const DATE_SELECT_BUTTON_STYLE = clsx(
@@ -381,3 +632,8 @@ const DATE_SELECT_BUTTON_RESPONSIVE_STYLE: ResponsiveStyleType = {
 };
 
 const DATE_SELECT_BUTTON_ACTIVE_STYLE = "bg-primary-2 text-primary-6 font-bold";
+
+const INPUT_STYLE = clsx(
+  "w-12 bg-secondary-1 hover:bg-secondary-2",
+  "active:bg-primary-1 focus:bg-primary-1 !p-3 !outline-none !rounded-md"
+);
