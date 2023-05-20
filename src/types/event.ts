@@ -31,6 +31,7 @@ export interface EventDetailBaseType {
   name: string;
   placeholder?: string;
   validate?: (value: unknown) => string | null;
+  required?: boolean;
 }
 
 export interface EventDetailSimpleTextType extends EventDetailBaseType {

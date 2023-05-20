@@ -28,6 +28,7 @@ export function PageViewEventCardDetailTabDetail({
           moddedValue,
           placeholder,
           inputType,
+          required,
         } = detail as EventDetailUnionType;
 
         return (
@@ -36,6 +37,7 @@ export function PageViewEventCardDetailTabDetail({
               <div className="!w-fit flex gap-1 text-slate-500">
                 <Icon name={icon} />
                 <span>{name}</span>
+                {required && <span className="font-black text-red-500">*</span>}
               </div>
             </th>
             <td

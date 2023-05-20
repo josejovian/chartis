@@ -178,6 +178,7 @@ export function PageViewEventCardDetailTab({
         name: "TAGS",
         viewElement: renderEventTags,
         editElement: renderEditEventTags,
+        required: true,
       },
       {
         icon: "group",
@@ -205,6 +206,7 @@ export function PageViewEventCardDetailTab({
           date: startDate,
           onClick: () => handleEditDate("start"),
         }),
+        required: true,
       },
       {
         icon: "calendar",
