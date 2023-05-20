@@ -5,7 +5,7 @@ import { useCallback, useContext, useMemo } from "react";
 export function useEventsObject() {
   const { stateEventsObject, stateSubscribedIds } = useContext(EventsContext);
   const [eventsObject, setEventsObject] = stateEventsObject;
-  const [subscribedIds, setSubscribedIds] = stateSubscribedIds;
+  const setSubscribedIds = stateSubscribedIds[1];
 
   const eventsArray = useMemo(
     () => Object.values(eventsObject),
@@ -63,20 +63,20 @@ export function useEventsObject() {
 
   const updateUserSubscribedEventClientSide = useCallback(
     (eventId: string, version?: number) => {
-      setSubscribedIds((prev) => ({
-        ...prev,
-        ...(typeof version === "number"
-          ? {
-              [eventId]: version,
-            }
-          : (() => {
-              const temp = subscribedIds;
-              delete (temp ?? {})[eventId];
-              return temp;
-            })()),
-      }));
+      if (typeof version === "number") {
+        setSubscribedIds((prev) => ({
+          ...prev,
+          [eventId]: version,
+        }));
+      } else {
+        setSubscribedIds((prev) => {
+          const temp = { ...prev };
+          delete temp[eventId];
+          return temp;
+        });
+      }
     },
-    [setSubscribedIds, subscribedIds]
+    [setSubscribedIds]
   );
 
   return useMemo(

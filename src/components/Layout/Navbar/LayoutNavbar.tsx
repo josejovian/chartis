@@ -247,11 +247,17 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
       );
 
       return link.openInNewTab ? (
-        <a href={link.href} target="_blank" rel="noreferrer">
+        <a
+          key={`NavLink_${link.name}`}
+          href={link.href}
+          target="_blank"
+          rel="noreferrer"
+        >
           {linkText}
         </a>
       ) : (
         <Link
+          key={`NavLink_${link.name}`}
           href={link.href}
           onClick={() => {
             if (togglable) setIsNavBarVisible(false);

@@ -2,13 +2,13 @@ import { useCallback, useMemo, useState } from "react";
 import { Button, Label, type SemanticSIZES } from "semantic-ui-react";
 import { EventType, IdentificationType } from "@/types";
 import { useToast } from "@/hooks";
-import { toggleEventSubscription } from "@/utils";
+import { sleep, toggleEventSubscription } from "@/utils";
 
 export interface EventButtonFollowProps {
   event: EventType;
   identification: IdentificationType;
   size?: SemanticSIZES;
-  subscribed?: boolean;
+  defaultSubscribed?: boolean;
   updateUserSubscribedEventClientSide: (
     eventId: string,
     version?: number
@@ -20,7 +20,7 @@ export function EventButtonFollow({
   event,
   identification,
   size,
-  subscribed,
+  defaultSubscribed,
   updateUserSubscribedEventClientSide,
   updateClientSideEvent,
 }: EventButtonFollowProps) {
@@ -28,6 +28,7 @@ export function EventButtonFollow({
 
   const { id, subscriberIds = [], guestSubscriberCount, authorId } = event;
   const { user } = identification;
+  const [subscribed, setSubscribed] = useState(defaultSubscribed || false);
 
   const isAuthor = useMemo(
     () => Boolean(user && user.id === authorId),
@@ -51,8 +52,9 @@ export function EventButtonFollow({
     const currentCount = subscriberCount;
     const nextCount = currentCount + (currentSubscribe ? -1 : 1);
 
-    setSubscriberCount(nextCount);
     setLoading(true);
+    await sleep(100);
+    setSubscriberCount(nextCount);
 
     // Client side update
     updateClientSideEvent(id, {
@@ -65,6 +67,7 @@ export function EventButtonFollow({
       event.id,
       currentSubscribe ? undefined : event.version
     );
+    setSubscribed(!currentSubscribe);
 
     // Server side update
     toggleEventSubscription(
@@ -86,6 +89,7 @@ export function EventButtonFollow({
           !currentSubscribe ? undefined : event.version
         );
         addToastPreset("fail-post");
+        setSubscribed(currentSubscribe);
         setLoading(false);
       });
   }, [

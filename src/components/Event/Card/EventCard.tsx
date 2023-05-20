@@ -233,7 +233,7 @@ export function EventCard({
         <EventButtonFollow
           event={event}
           identification={identification}
-          subscribed={subscribed}
+          defaultSubscribed={subscribed}
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }

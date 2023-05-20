@@ -333,7 +333,7 @@ export function PageViewEventCard({
           updateUserSubscribedEventClientSide={
             updateUserSubscribedEventClientSide
           }
-          subscribed={subscribed}
+          defaultSubscribed={subscribed}
           updateClientSideEvent={handleUpdateClientSideEvent}
           size={type === "mobile" ? "tiny" : undefined}
         />
