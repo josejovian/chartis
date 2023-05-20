@@ -4,8 +4,9 @@ import {
   UserProfileViewNameType,
   UserType,
 } from "@/types";
+import { strDate } from "@/utils";
 import { useMemo } from "react";
-import { Button } from "semantic-ui-react";
+import { Button, Icon } from "semantic-ui-react";
 
 interface PageProfileDetailProps {
   profile: UserType;
@@ -64,7 +65,16 @@ export function PageProfileDetailTab({
           <h1>
             <User defaultUser={profile} type="name" showRole />
           </h1>
-          <h6>{profile.email}</h6>
+          <div className="flex flex-row mt-1 gap-4 text-secondary-6">
+            <h6>
+              <Icon name="envelope" />
+              {profile.email}
+            </h6>
+            <h6>
+              <Icon name="calendar" />
+              Joined on {strDate(new Date(profile.joinDate ?? 0))}
+            </h6>
+          </div>
         </div>
       ) : (
         <UserProfile profile={profile} className="!mb-4" />

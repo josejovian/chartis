@@ -2,6 +2,8 @@ import { UserType } from "@/types";
 import { UserPicture } from "./UserPicture";
 import clsx from "clsx";
 import { User } from "./User";
+import { Icon } from "semantic-ui-react";
+import { strDate } from "@/utils";
 
 interface UserPictureProps {
   className?: string;
@@ -16,7 +18,16 @@ export function UserProfile({ profile, className }: UserPictureProps) {
         <h1 className="text-20px">
           <User defaultUser={profile} type="name" showRole />
         </h1>
-        <h6>{profile.email}</h6>
+        <div className="flex flex-col mt-1 gap-2 text-sm text-secondary-6">
+          <h6>
+            <Icon name="envelope" />
+            {profile.email}
+          </h6>
+          <h6>
+            <Icon name="calendar" />
+            Joined on {strDate(new Date(profile.joinDate ?? 0))}
+          </h6>
+        </div>
       </div>
     </div>
   );
