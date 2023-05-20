@@ -29,6 +29,7 @@ interface LayoutNavbarItemProps {
   permission?: UserPermissionType;
   hidden?: boolean;
   alert?: boolean;
+  openInNewTab?: boolean;
 }
 
 export interface LayoutNavbarProps {
@@ -119,6 +120,13 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
         href: "/reports",
         permission: "admin",
       },
+      {
+        category: "Feedback",
+        name: "Feedback Form",
+        icon: "bug",
+        href: "https://forms.gle/chxLcBdCDbvrnwts9",
+        openInNewTab: true,
+      },
     ];
 
     const accessibleLinks = allLinks
@@ -205,13 +213,8 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
   );
 
   const renderNavBarLink = useCallback(
-    (link: LayoutNavbarItemProps) => (
-      <Link
-        href={link.href}
-        onClick={() => {
-          if (togglable) setIsNavBarVisible(false);
-        }}
-      >
+    (link: LayoutNavbarItemProps) => {
+      const linkText = (
         <span
           className={clsx(
             "relative flex items-center h-8 border-l-4 text-sm pl-4",
@@ -241,8 +244,23 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
           </span>
           <span>{link.name}</span>
         </span>
-      </Link>
-    ),
+      );
+
+      return link.openInNewTab ? (
+        <a href={link.href} target="_blank" rel="noreferrer">
+          {linkText}
+        </a>
+      ) : (
+        <Link
+          href={link.href}
+          onClick={() => {
+            if (togglable) setIsNavBarVisible(false);
+          }}
+        >
+          {linkText}
+        </Link>
+      );
+    },
     [router.asPath, setIsNavBarVisible, togglable]
   );
 
