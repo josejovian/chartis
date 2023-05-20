@@ -314,7 +314,7 @@ export function PageSearchEventCard({
         )}
       >
         <TemplateSearchInput
-          placeholder="Search eventsArray..."
+          placeholder="Search event..."
           stateQuery={stateQuery}
         />
         <div className="flex grow-0 gap-4 justify-end">
