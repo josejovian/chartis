@@ -77,6 +77,17 @@ export function EventButtonMore({
   }, [addToast, hide, id, updateClientSideEvent]);
 
   const renderDropdownItems = useMemo(() => {
+    if (isAuthor)
+      return (
+        <>
+          <Dropdown.Item onClick={handleHideEvent}>
+            {event.hide ? "Unhide" : "Hide"}
+          </Dropdown.Item>
+          <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
+          {modalDelete}
+        </>
+      );
+
     if (user?.role === "admin")
       return (
         <>
@@ -86,13 +97,6 @@ export function EventButtonMore({
           <Dropdown.Item onClick={onReport} disabled={user?.ban}>
             Report
           </Dropdown.Item>
-        </>
-      );
-    if (isAuthor)
-      return (
-        <>
-          <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
-          {modalDelete}
         </>
       );
     return (
