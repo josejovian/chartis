@@ -6,6 +6,8 @@ import {
   type UserCredential,
 } from "firebase/auth";
 import { auth } from "./config";
+import { createData } from "@/utils";
+import { FIREBASE_COLLECTION_USERS } from "@/consts";
 
 export function getErrorMessage(code: any) {
   switch (code) {
@@ -43,8 +45,6 @@ export interface registerParams {
 export async function login({
   email,
   password,
-  onSuccess,
-  onFail,
 }: loginParams): Promise<UserCredential> {
   return signInWithEmailAndPassword(auth, email, password);
 }
@@ -53,20 +53,24 @@ export async function register({
   email,
   name,
   password,
-  onSuccess,
-  onFail,
-}: registerParams) {
-  return await new Promise((res, rej) => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((cred) => {
-        onSuccess && onSuccess(cred);
-        res(null);
-      })
-      .catch((error) => {
-        onFail && onFail(error);
-        rej(error.code);
-      });
-  });
+}: registerParams): Promise<void> {
+  return createUserWithEmailAndPassword(auth, email, password).then(
+    (userCredential) => {
+      return createData(
+        FIREBASE_COLLECTION_USERS,
+        {
+          name: name,
+          email: email,
+          joinDate: new Date().getTime(),
+          notificationCount: 0,
+          subscribedEvents: [],
+          unseenEvents: [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        userCredential.user.uid
+      );
+    }
+  );
 }
 
 export async function logout() {
