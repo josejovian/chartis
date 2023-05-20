@@ -44,6 +44,7 @@ export default function Notification() {
     >
       <PageManageReports
         className={clsx("ui card", type === "desktop_lg" ? "!p-16" : "!p-4")}
+        isAuthorized={isAuthorized}
       />
     </LayoutTemplateCard>
   );
