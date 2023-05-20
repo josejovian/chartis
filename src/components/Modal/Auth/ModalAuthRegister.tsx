@@ -75,9 +75,6 @@ export function ModalAuthRegister() {
         if (casted.password !== casted.confirmPassword) {
           errors.confirmPassword = "Password doesn't match";
         }
-        if (casted.password.length < 4) {
-          errors.password = "Password's length must be more than 4!";
-        }
         if (casted.name === "") {
           errors.name = "Name cannot be empty";
         }
