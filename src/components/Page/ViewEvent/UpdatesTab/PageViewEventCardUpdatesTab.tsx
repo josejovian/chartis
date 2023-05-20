@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import { EventUpdate } from "@/components";
+import { EventUpdate, LayoutNotice } from "@/components";
 import {
   EventType,
   UpdateNameType,
@@ -8,6 +8,9 @@ import {
   UpdateVersion,
 } from "@/types";
 import { readData } from "@/utils";
+import { ASSET_NO_CONTENT, FIREBASE_COLLECTION_UPDATES } from "@/consts";
+import { useToast } from "@/hooks";
+import { Loader } from "semantic-ui-react";
 
 interface PageViewEventCardUpdatesTabProps {
   event: EventType;
@@ -19,14 +22,30 @@ export function PageViewEventCardUpdatesTab({
   type,
 }: PageViewEventCardUpdatesTabProps) {
   const [updates, setUpdates] = useState<UpdateVersion[]>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEmpty, setIsEmpty] = useState(true);
+  const { addToastPreset } = useToast();
 
   const handleGetEventUpdates = useCallback(async () => {
-    if (event.version === 0) return;
+    if (event.version === 0) {
+      setIsLoading(false);
+      return;
+    }
 
-    const eventUpdates = await readData("updates", event.id);
-
-    if (eventUpdates) setUpdates(eventUpdates.updates);
-  }, [event]);
+    readData(FIREBASE_COLLECTION_UPDATES, event.id)
+      .then((eventUpdates) => {
+        if (eventUpdates) {
+          setUpdates(eventUpdates.updates.sort((a, b) => b.date - a.date));
+          setIsEmpty(false);
+        }
+      })
+      .catch(() => {
+        addToastPreset("fail-get");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [addToastPreset, event.id, event.version]);
 
   useEffect(() => {
     handleGetEventUpdates();
@@ -66,7 +85,17 @@ export function PageViewEventCardUpdatesTab({
         type === "mobile" && "!px-6"
       )}
     >
-      {renderEventUpdates}
+      {isLoading ? (
+        <Loader active={isLoading} inline="centered" />
+      ) : isEmpty ? (
+        <LayoutNotice
+          illustration={ASSET_NO_CONTENT}
+          title="All Clear!"
+          description="This event have never been modified."
+        />
+      ) : (
+        renderEventUpdates
+      )}
     </div>
   );
 }
