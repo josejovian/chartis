@@ -150,7 +150,11 @@ export default function ModalReport(props: ModalReportProps) {
                 fluid
                 {...field}
               />
-              <FormErrorMessage meta={meta} className="text-right mt-2" />
+              <FormErrorMessage
+                error={meta.error}
+                showError={meta.error && meta.touched}
+                className="text-right mt-2"
+              />
             </div>
           )}
         </Field>

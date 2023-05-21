@@ -179,7 +179,8 @@ export function PageViewEventHead({
                   Upload Thumbnail
                 </Button>
                 <FormErrorMessage
-                  meta={meta}
+                  error={meta.error}
+                  showError={meta.touched && meta.error}
                   className="absolute bg-white -mx-2 !z-50"
                   overlap
                 />
