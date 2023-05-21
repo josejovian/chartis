@@ -28,23 +28,26 @@ export interface EventType {
 
 export interface EventDetailBaseType {
   icon: SemanticICONS;
-  id: string;
   name: string;
   placeholder?: string;
   validate?: (value: unknown) => string | null;
+  required?: boolean;
 }
 
 export interface EventDetailSimpleTextType extends EventDetailBaseType {
+  id: string;
   rawValue: string | string[] | number | number[] | undefined;
   moddedValue?: string | string[] | number | number[] | undefined;
   inputType: HTMLInputTypeAttribute;
 }
 
 export interface EventDetailCompactType extends EventDetailBaseType {
+  id: string;
   value: string;
 }
 
 export interface EventDetailComponentType extends EventDetailBaseType {
+  id?: string;
   viewElement: ReactNode;
   editElement: ReactNode;
 }

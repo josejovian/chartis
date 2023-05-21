@@ -64,7 +64,7 @@ export const TOAST_PRESETS: Record<ToastPresetType, ToastType> = {
   },
   "feat-report-create": {
     title: "Report Submitted",
-    description: "Thank you for the repot━an admin will take care of it.",
+    description: "Thank you for the report━an admin will take care of it.",
     variant: "success",
   },
   "feat-report-update": {
@@ -84,7 +84,7 @@ export const TOAST_PRESETS: Record<ToastPresetType, ToastType> = {
     variant: "success",
   },
   "feat-user-unban": {
-    title: "Report Unbanned",
+    title: "User Unbanned",
     description: "",
     variant: "success",
   },

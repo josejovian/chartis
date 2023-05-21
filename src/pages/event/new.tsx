@@ -30,7 +30,10 @@ export default function CreateEvent() {
   });
 
   const stateMode = useState<EventModeType>("create");
-  const stateEvent = useState(EVENT_EMPTY);
+  const stateEvent = useState({
+    ...EVENT_EMPTY,
+    startDate: new Date().getTime(),
+  });
 
   return (
     <LayoutTemplateCard

@@ -115,6 +115,12 @@ export function PageSearchEventCard({
         Object.keys(subscribedIds).includes(event.id)
       );
 
+    if (viewType === "userCreatedEvents") {
+      queriedEvents = queriedEvents.filter(
+        (event) => userId === event.authorId
+      );
+    }
+
     const filteredEvents = queriedEvents.filter((event) => {
       const eventTags = Object.keys(event.tags);
       return filters.every((filter) => eventTags.includes(filter));
@@ -123,7 +129,15 @@ export function PageSearchEventCard({
     const sortedEvents = sortEvents(filteredEvents);
 
     return sortedEvents;
-  }, [eventsArray, filters, query, sortEvents, subscribedIds, viewType]);
+  }, [
+    eventsArray,
+    filters,
+    query,
+    sortEvents,
+    subscribedIds,
+    userId,
+    viewType,
+  ]);
 
   const handleUpdatePathQueries = useCallback(() => {
     if (queried.current <= 1) return;
@@ -165,8 +179,8 @@ export function PageSearchEventCard({
   useEffect(() => {
     switch (viewType) {
       case "userCreatedEvents":
-        authorId &&
-          getEvents([where("authorId", "==", authorId)])
+        userId &&
+          getEvents([where("authorId", "==", userId)])
             .then((event) => setEventsObjectFromArray(event))
             .catch((e) => {
               addToastPreset("fail-get");
@@ -300,7 +314,7 @@ export function PageSearchEventCard({
         )}
       >
         <TemplateSearchInput
-          placeholder="Search eventsArray..."
+          placeholder="Search event..."
           stateQuery={stateQuery}
         />
         <div className="flex grow-0 gap-4 justify-end">

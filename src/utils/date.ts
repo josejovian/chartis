@@ -1,11 +1,105 @@
-import { DAYS, MONTHS } from "@/consts";
+import { DAYS, MONTHS, YEAR_MAX, YEAR_MIN } from "@/consts";
 import { FocusDateType } from "@/types";
+
+export function getCalendarVariables(date: FocusDateType) {
+  const firstDateOfTheMonth = new Date(date.year, date.month, 1);
+  const firstDateOnTheCalendar = new Date(date.year, date.month, 1);
+  firstDateOnTheCalendar.setDate(
+    firstDateOfTheMonth.getDate() - firstDateOfTheMonth.getDay()
+  );
+  const lastDateOfTheMonth = new Date(date.year, date.month, 1);
+  lastDateOfTheMonth.setMonth(lastDateOfTheMonth.getMonth() + 1);
+  lastDateOfTheMonth.setDate(0);
+  const lastDateOnTheCalendar = new Date(
+    firstDateOnTheCalendar.getFullYear(),
+    firstDateOnTheCalendar.getMonth(),
+    firstDateOnTheCalendar.getDate() - 1 + 6 * 7
+  );
+  const offsetDay = firstDateOfTheMonth.getDay();
+
+  return {
+    firstDateOfTheMonth,
+    firstDateOnTheCalendar,
+    lastDateOfTheMonth,
+    lastDateOnTheCalendar,
+    offsetDay,
+  };
+}
+
+export function calculateEarliestTenYears(year: number, cursor: number) {
+  return Math.floor(year / 10) * 10 + 10 * cursor;
+}
+
+export function getAmPm(hours: number) {
+  if (hours >= 12 && hours < 24) return "pm";
+
+  return "am";
+}
+
+export function safeIncrementMonth(
+  year: number,
+  month: number,
+  increment: number
+) {
+  let newMonth = month + increment;
+  let newYear = year;
+
+  if (newMonth === -1) newYear--;
+  if (newMonth === 12) newYear++;
+
+  if (newYear < YEAR_MIN) {
+    newYear = YEAR_MIN;
+    newMonth = 0;
+  }
+  if (newMonth > YEAR_MAX) {
+    newYear = YEAR_MAX;
+    newMonth = 11;
+  }
+  return {
+    year: newYear,
+    month: newMonth,
+  };
+}
+
+export function safeIncrementYear(year: number, increment: number) {
+  let newYear = year + increment;
+  if (newYear < YEAR_MIN) newYear = YEAR_MIN;
+  if (newYear > YEAR_MAX) newYear = YEAR_MAX;
+  return newYear;
+}
+
+export function dateIsSafe(date: Date) {
+  const year = date.getFullYear();
+
+  return year >= YEAR_MIN && year < YEAR_MAX;
+}
+
+export function getSafeDate(date: Date) {
+  const year = date.getFullYear();
+
+  if (year < YEAR_MIN) {
+    date.setFullYear(YEAR_MIN);
+    date.setDate(1);
+    date.setMonth(1);
+  }
+
+  if (YEAR_MAX <= year) {
+    date.setFullYear(YEAR_MAX - 1);
+    date.setDate(31);
+    date.setMonth(12);
+  }
+
+  return date;
+}
 
 export function getDateMonthYear(date: Date): FocusDateType {
   return {
     day: date.getDate(),
     month: date.getMonth(),
     year: date.getFullYear(),
+    hour: date.getMonth(),
+    minute: date.getMinutes(),
+    second: date.getSeconds(),
   };
 }
 
@@ -14,6 +108,9 @@ export function parseFromDateMonthYear(date: FocusDateType): Date {
   now.setDate(date.day);
   now.setMonth(date.month);
   now.setFullYear(date.year);
+  if (date.hour) now.setHours(date.hour);
+  if (date.minute) now.setMinutes(date.minute);
+  if (date.second) now.setSeconds(date.second);
   return now;
 }
 

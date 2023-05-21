@@ -124,8 +124,10 @@ export function User({
           )}
           href={newUser ? `/profile/${newUser.id}` : "#"}
         >
-          {role === "admin" && showRole && <Icon name="shield" />}
           {displayedName}
+          {role === "admin" && showRole && (
+            <Icon className="pl-[0.5em]" name="shield" />
+          )}
         </Link>
       );
   }, [

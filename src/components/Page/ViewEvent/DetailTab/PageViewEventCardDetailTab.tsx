@@ -7,6 +7,7 @@ import {
   EventTags,
   FormErrorMessage,
   FormInputDropdown,
+  ModalDateTimePick,
   PageViewEventCardDetailTabDetail,
 } from "@/components";
 import { getLocalTimeInISO, strDateTime } from "@/utils";
@@ -20,6 +21,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
+import { useModal } from "@/hooks";
 
 export interface PageViewEventCardDetailTabProps {
   event: EventType;
@@ -44,6 +46,7 @@ export function PageViewEventCardDetailTab({
 }: PageViewEventCardDetailTabProps) {
   const { location, organizer, startDate, endDate, description } = event;
   const [tags, setTags] = stateTags;
+  const { setModal } = useModal();
 
   const renderEventTags = useMemo(
     () => (
@@ -102,14 +105,80 @@ export function PageViewEventCardDetailTab({
     [handleUpdateTagJSON, tags, validateForm]
   );
 
+  const handleEditDate = useCallback(
+    (type: "start" | "end") => {
+      setModal(
+        <ModalDateTimePick
+          type="datetime"
+          defaultDate={type === "start" ? startDate : endDate}
+          onSelectDate={(date) => {
+            setFieldValue &&
+              setFieldValue(
+                type === "start" ? "startDate" : "endDate",
+                getLocalTimeInISO(date.getTime())
+              );
+          }}
+          hideToday
+        />
+      );
+    },
+    [endDate, setFieldValue, setModal, startDate]
+  );
+
+  const renderEventDate = useCallback(
+    ({
+      inputId,
+      inputName,
+      date,
+      onClick,
+    }: {
+      inputId: string;
+      inputName: string;
+      date?: number;
+      onClick?: () => void;
+    }) => (
+      <>
+        <Field name={inputName}>
+          {({ field, meta }: any) => {
+            return (
+              <div
+                className="EventDetailsTableEntry flex items-center cursor-pointer !h-full"
+                onClick={onClick}
+              >
+                <Input
+                  id={inputId}
+                  name={inputName}
+                  className="!hidden"
+                  type="datetime-local"
+                  transparent
+                  {...field}
+                />
+                <div>
+                  {field.value ? strDateTime(new Date(field.value)) : "-"}
+                </div>
+                <FormErrorMessage
+                  icon
+                  meta={meta}
+                  className="mt-2 !ml-0"
+                  overlap
+                />
+              </div>
+            );
+          }}
+        </Field>
+      </>
+    ),
+    []
+  );
+
   const details = useMemo<EventDetailType[]>(
     () => [
       {
         icon: "tags",
-        id: "tags",
         name: "TAGS",
         viewElement: renderEventTags,
         editElement: renderEditEventTags,
+        required: true,
       },
       {
         icon: "group",
@@ -129,26 +198,35 @@ export function PageViewEventCardDetailTab({
       },
       {
         icon: "calendar",
-        id: "startDate",
         name: "START",
-        rawValue: undefined,
-        moddedValue: strDateTime(new Date(startDate)),
-        inputType: "datetime-local",
+        viewElement: startDate && strDateTime(new Date(startDate)),
+        editElement: renderEventDate({
+          inputId: "startDate",
+          inputName: "startDate",
+          date: startDate,
+          onClick: () => handleEditDate("start"),
+        }),
+        required: true,
       },
       {
         icon: "calendar",
-        id: "endDate",
         name: "END",
-        rawValue: endDate ? getLocalTimeInISO(endDate) : undefined,
-        moddedValue: endDate && strDateTime(new Date(endDate)),
-        inputType: "datetime-local",
+        viewElement: endDate && strDateTime(new Date(endDate)),
+        editElement: renderEventDate({
+          inputId: "endDate",
+          inputName: "endDate",
+          date: endDate,
+          onClick: () => handleEditDate("end"),
+        }),
       },
     ],
     [
       endDate,
+      handleEditDate,
       location,
       organizer,
       renderEditEventTags,
+      renderEventDate,
       renderEventTags,
       startDate,
     ]

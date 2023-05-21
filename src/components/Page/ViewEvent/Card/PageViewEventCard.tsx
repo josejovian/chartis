@@ -264,8 +264,9 @@ export function PageViewEventCard({
   );
 
   const handleLeaveEdit = useCallback(() => {
+    router.replace(`/event/${event.id}`, undefined, {});
     setMode("view");
-  }, [setMode]);
+  }, [event.id, router, setMode]);
 
   const renderCardActiveContentTab = useCallback(
     ({
