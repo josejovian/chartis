@@ -20,15 +20,14 @@ export function ModalAuthLogin() {
   const handleLogin = useCallback(
     async (values: unknown) => {
       setLoading(true);
-      await login({
-        ...(values as FormLoginProps),
-        onSuccess: () => {
+      login(values as FormLoginProps)
+        .then((userCredential) => {
           addToastPreset("auth-login");
           setLoading(false);
           clearModal();
           router.replace(router.asPath);
-        },
-        onFail: (e) => {
+        })
+        .catch((e) => {
           const errorMessage = getErrorMessage((e as any).code);
           addToast({
             title: "Login Failed",
@@ -36,8 +35,7 @@ export function ModalAuthLogin() {
             variant: "danger",
           });
           setLoading(false);
-        },
-      });
+        });
     },
     [addToast, addToastPreset, clearModal, router]
   );

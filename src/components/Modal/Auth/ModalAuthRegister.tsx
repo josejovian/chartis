@@ -1,79 +1,48 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { type UserCredential, updateProfile } from "firebase/auth";
-import { auth, getErrorMessage, register } from "@/firebase";
+import { getErrorMessage, register } from "@/firebase";
 import { ModalAuthLogin, ModalAuthTemplate } from "@/components";
 import { useModal, useToast } from "@/hooks";
-import { FormRegister, SchemaRegister, createData } from "@/utils";
+import { FormRegister, SchemaRegister } from "@/utils";
 import { FormRegisterProps } from "@/types";
-import { FIREBASE_COLLECTION_USERS } from "@/consts";
 
 export function ModalAuthRegister() {
   const [loading, setLoading] = useState(false);
   const { setModal, clearModal } = useModal();
-  const { addToastPreset, addToast } = useToast();
+  const { addToast } = useToast();
   const router = useRouter();
 
   const handleShowLoginModal = useCallback(() => {
     setModal(<ModalAuthLogin />);
   }, [setModal]);
 
-  const handleStoreUserData = useCallback(
-    async (data: FormRegisterProps, cred: UserCredential) => {
-      await createData(
-        FIREBASE_COLLECTION_USERS,
-        {
-          name: data.name,
-          email: data.email,
-          joinDate: new Date().getTime(),
-          notificationCount: 0,
-          subscribedEvents: [],
-          unseenEvents: [],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        cred.user.uid
-      )
-        .then(async () => {
-          setLoading(false);
-          if (auth.currentUser) {
-            await updateProfile(auth.currentUser, {
-              displayName: data.name,
-            });
-          } else throw Error("Auth somehow doesn't have currentUser.");
-        })
-        .then(() => {
-          addToastPreset("auth-login");
-          setLoading(false);
-          clearModal();
-          router.replace(router.asPath);
-        })
-        .catch(() => {
-          addToastPreset("fail-generic");
-        });
-    },
-    [addToastPreset, clearModal, router]
-  );
-
   const handleRegister = useCallback(
     async (values: unknown) => {
       setLoading(true);
       const data = values as FormRegisterProps;
-      await register({
-        ...data,
-        onSuccess: (cred) => handleStoreUserData(data, cred),
-        onFail: (e) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const errorMessage = getErrorMessage((e as any).code);
+      register(data)
+        .then(() => {
+          addToast({
+            title: "Registration Success",
+            description: "Welcome",
+            variant: "success",
+          });
+          clearModal();
+          router.replace(router.asPath);
+        })
+        .catch((e) => {
+          const errorMessage = getErrorMessage(e.code);
           addToast({
             title: "Registration Failed",
             description: errorMessage.message,
             variant: "danger",
           });
+        })
+        .finally(() => {
           setLoading(false);
-        },
-      });
+        });
     },
-    [addToast, handleStoreUserData]
+    [addToast, clearModal, router]
   );
 
   const renderFormHead = useMemo(
@@ -105,9 +74,6 @@ export function ModalAuthRegister() {
         const errors: Record<string, string> = {};
         if (casted.password !== casted.confirmPassword) {
           errors.confirmPassword = "Password doesn't match";
-        }
-        if (casted.password.length < 4) {
-          errors.password = "Password's length must be more than 4!";
         }
         if (casted.name === "") {
           errors.name = "Name cannot be empty";
