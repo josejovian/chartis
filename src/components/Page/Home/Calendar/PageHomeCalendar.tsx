@@ -128,8 +128,8 @@ export function LayoutCalendar({
             setModal(
               <ModalDateTimePick
                 type="monthyear"
-                onSelectDate={(date: Date) => {
-                  setFocusDate(getDateMonthYear(date));
+                onSelectDate={(date) => {
+                  date && setFocusDate(getDateMonthYear(date));
                 }}
               />
             )

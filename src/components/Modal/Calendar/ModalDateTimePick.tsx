@@ -16,13 +16,15 @@ import { Button, Icon } from "semantic-ui-react";
 
 interface DateTimePickProps {
   hideToday?: boolean;
+  hideReset?: boolean;
   defaultDate?: number;
-  onSelectDate: (date: Date) => void;
+  onSelectDate: (date?: Date) => void;
   type: "date" | "monthyear" | "time" | "datetime";
 }
 
 export function ModalDateTimePick({
   hideToday,
+  hideReset,
   defaultDate,
   onSelectDate,
   type,
@@ -463,7 +465,6 @@ export function ModalDateTimePick({
                 day: currentDate,
               });
             }}
-            basic={currentAmPm !== "am"}
           />
           <Button
             className="!rounded-none !rounded-r-md"
@@ -476,7 +477,6 @@ export function ModalDateTimePick({
                 day: currentDate,
               });
             }}
-            basic={currentAmPm !== "pm"}
           />
         </div>
       </div>
@@ -599,15 +599,31 @@ export function ModalDateTimePick({
               <b>Selected Date:</b> {strDateTime(dateObject)}
             </span>
             <div className={clsx("flex justify-end gap-4")}>
-              <Button basic onClick={clearModal}>
+              <Button
+                basic
+                onClick={clearModal}
+                size={screenType === "mobile" ? "mini" : undefined}
+              >
                 Cancel
               </Button>
+              {!hideReset && (
+                <Button
+                  onClick={() => {
+                    onSelectDate && onSelectDate(undefined);
+                    clearModal();
+                  }}
+                  size={screenType === "mobile" ? "mini" : undefined}
+                >
+                  Reset
+                </Button>
+              )}
               <Button
                 color="yellow"
                 onClick={() => {
                   onSelectDate(dateObject);
                   clearModal();
                 }}
+                size={screenType === "mobile" ? "mini" : undefined}
               >
                 Finish
               </Button>

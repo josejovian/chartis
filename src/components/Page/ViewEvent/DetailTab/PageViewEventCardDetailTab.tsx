@@ -115,7 +115,7 @@ export function PageViewEventCardDetailTab({
             setFieldValue &&
               setFieldValue(
                 type === "start" ? "startDate" : "endDate",
-                getLocalTimeInISO(date.getTime())
+                date ? getLocalTimeInISO(date.getTime()) : undefined
               );
           }}
           hideToday
@@ -157,8 +157,12 @@ export function PageViewEventCardDetailTab({
                   {field.value ? strDateTime(new Date(field.value)) : "-"}
                 </div>
                 <FormErrorMessage
-                  icon
-                  meta={meta}
+                  error={meta.error}
+                  showError={
+                    inputId === "startDate" ||
+                    inputId === "endDate" ||
+                    meta.touched
+                  }
                   className="mt-2 !ml-0"
                   overlap
                 />
@@ -246,7 +250,12 @@ export function PageViewEventCardDetailTab({
                 transparent
                 {...field}
               />
-              <FormErrorMessage icon meta={meta} className="mt-2" />
+              <FormErrorMessage
+                icon
+                error={meta.error}
+                showError={meta.error && meta.touched}
+                className="mt-2"
+              />
             </div>
           )}
         </Field>
@@ -290,7 +299,12 @@ export function PageViewEventCardDetailTab({
                 placeholder="Enter event description (8 - 256 characters long)."
                 {...field}
               />
-              <FormErrorMessage icon meta={meta} className="mt-2" />
+              <FormErrorMessage
+                icon
+                error={meta.error}
+                showError={meta.error && meta.touched}
+                className="mt-2"
+              />
             </div>
           )}
         </Field>
