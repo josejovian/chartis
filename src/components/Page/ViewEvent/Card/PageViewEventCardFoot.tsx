@@ -25,7 +25,7 @@ export function PageViewEventFoot({
     () => (
       <div className={FOOT_STYLE}>
         <ModalConfirmation
-          trigger={<Button>Cancel</Button>}
+          trigger={<Button basic>Cancel</Button>}
           onConfirm={onLeaveEdit}
           modalText="Are you sure you want to leave making changes? The changes will not be saved."
           confirmText="Leave"

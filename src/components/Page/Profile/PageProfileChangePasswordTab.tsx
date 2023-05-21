@@ -129,7 +129,9 @@ export function PageProfileChangePasswordTab({
               }}
             />
             <div className="flex gap-4">
-              <Button onClick={onCancelEdit}>Cancel</Button>
+              <Button onClick={onCancelEdit} basic>
+                Cancel
+              </Button>
               <Button
                 type="submit"
                 color="yellow"

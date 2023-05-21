@@ -4,10 +4,11 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/router";
-import { Formik } from "formik";
+import { Formik, type FormikTouched } from "formik";
 import pushid from "pushid";
 import {
   LayoutCard,
@@ -23,7 +24,6 @@ import {
 } from "@/components";
 import { useReport, useToast } from "@/hooks";
 import {
-  SchemaEvent,
   createEvent,
   deleteEvent,
   getLocalTimeInISO,
@@ -31,6 +31,8 @@ import {
   sleep,
   updateEvent,
   validateEndDate,
+  validateEventDescription,
+  validateEventName,
   validateImage,
   validateStartDate,
   validateTags,
@@ -91,6 +93,8 @@ export function PageViewEventCard({
   const [activeTab, setActiveTab] = stateActiveTab;
   const stateLoading = useState(false);
   const loading = stateLoading[0];
+  const formTouched = useRef<Partial<Record<keyof EventType, boolean>>>({});
+  const formValidateAll = useRef(false);
 
   const { addToastPreset } = useToast();
   const stateModalDelete = useState(false);
@@ -247,8 +251,17 @@ export function PageViewEventCard({
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
-      const { startDate, endDate, thumbnailSrc } = values;
+      const { name, description, startDate, endDate, thumbnailSrc } = values;
+
       const result = {
+        name:
+          formValidateAll.current || formTouched.current.name
+            ? validateEventName(name)
+            : undefined,
+        description:
+          formValidateAll.current || formTouched.current.description
+            ? validateEventDescription(description)
+            : undefined,
         startDate: validateStartDate(startDate),
         endDate: validateEndDate(startDate, endDate),
         tags: validateTags(tags),
@@ -415,6 +428,7 @@ export function PageViewEventCard({
       submitForm,
       validateForm,
       setFieldValue,
+      touched,
     }: {
       submitForm?: () => void;
       validateForm?: () => void;
@@ -423,12 +437,15 @@ export function PageViewEventCard({
         value: any,
         shouldValidate?: boolean | undefined
       ) => void;
+      touched?: FormikTouched<EventType>;
     }) => {
       const activeTabContent = renderCardActiveContentTab({
         submitForm,
         validateForm,
         setFieldValue,
       });
+
+      if (touched) formTouched.current = touched as any;
 
       return (
         <>
@@ -456,7 +473,10 @@ export function PageViewEventCard({
             stateSubmitting={stateSubmitting}
             stateMode={stateMode}
             onLeaveEdit={handleLeaveEdit}
-            submitForm={submitForm}
+            submitForm={() => {
+              formValidateAll.current = true;
+              submitForm && submitForm();
+            }}
           />
         </>
       );
@@ -514,12 +534,12 @@ export function PageViewEventCard({
         <Formik
           initialValues={initialEventData}
           validate={handleValidateExtraForm}
-          validationSchema={SchemaEvent}
+          validateOnBlur
           onSubmit={handleSubmitForm}
           validateOnChange
         >
           {/** @todos Submit button seems to not work unless you do this. */}
-          {({ submitForm, validateForm, setFieldValue }) => (
+          {({ submitForm, validateForm, setFieldValue, touched }) => (
             <LayoutCard
               className={clsx(className, !focusThumbnail && "!h-full")}
               form
@@ -528,6 +548,7 @@ export function PageViewEventCard({
                 submitForm,
                 validateForm,
                 setFieldValue,
+                touched,
               })}
             </LayoutCard>
           )}

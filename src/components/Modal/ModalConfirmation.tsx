@@ -43,7 +43,7 @@ export function ModalConfirmation({
         </Modal.Description>
       </Modal.Content>
       <Modal.Actions className="flex justify-end gap-4">
-        <Button color="black" onClick={() => setOpen(false)}>
+        <Button onClick={() => setOpen(false)} basic>
           {cancelText}
         </Button>
         <Button
