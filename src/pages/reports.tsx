@@ -24,6 +24,7 @@ export default function Notification() {
   return (
     <LayoutTemplateCard
       title="Reports"
+      htmlTitle="Manage Reports"
       leftButton={
         isAuthorized
           ? {

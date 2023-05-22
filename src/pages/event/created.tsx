@@ -19,10 +19,7 @@ export default function SubscribedEvent() {
 
   const renderPage = useMemo(
     () => (
-      <TemplateSearchEvent
-        title="Created Events"
-        viewType="userCreatedEvents"
-      />
+      <TemplateSearchEvent title="Your Events" viewType="userCreatedEvents" />
     ),
     []
   );

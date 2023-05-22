@@ -38,6 +38,7 @@ export default function CreateEvent() {
   return (
     <LayoutTemplateCard
       title="Create Event"
+      htmlTitle="Create Event"
       leftButton={{
         icon: "arrow left",
         onClick: () => {

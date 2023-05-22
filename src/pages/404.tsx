@@ -9,6 +9,7 @@ export default function Custom404() {
   return (
     <LayoutTemplate
       title=""
+      htmlTitle="Not Found"
       classNameMain={clsx(
         "!bg-sky-50",
         LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]

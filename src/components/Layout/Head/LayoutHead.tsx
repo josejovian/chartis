@@ -7,6 +7,7 @@ import {
   LayoutHeadButtonProps,
   LayoutHeadElement,
 } from "@/components";
+import Head from "next/head";
 
 export interface LayoutHeadProps {
   stateNavBar: StateObject<boolean>;
@@ -15,6 +16,7 @@ export interface LayoutHeadProps {
   rightButton?: LayoutHeadButtonProps;
   rightElement?: ReactNode;
   title: string;
+  htmlTitle: string;
   type: ScreenSizeCategoryType;
 }
 
@@ -25,6 +27,7 @@ export function LayoutHead({
   rightButton,
   rightElement,
   title,
+  htmlTitle,
   type,
 }: LayoutHeadProps) {
   const setNavBar = stateNavBar[1];
@@ -104,21 +107,30 @@ export function LayoutHead({
 
   const renderMobileHead = useMemo(
     () => (
-      <div
-        className={LAYOUT_HEAD_MOBILE_STYLE}
-        style={{
-          minHeight: "64px",
-        }}
-      >
-        {renderLeft}
-        {renderTitle}
-        {renderRight}
-      </div>
+      <>
+        <div
+          className={LAYOUT_HEAD_MOBILE_STYLE}
+          style={{
+            minHeight: "64px",
+          }}
+        >
+          {renderLeft}
+          {renderTitle}
+          {renderRight}
+        </div>
+      </>
     ),
     [renderLeft, renderRight, renderTitle]
   );
 
-  return type === "mobile" ? renderMobileHead : renderDesktopHead;
+  return (
+    <>
+      <Head>
+        <title>{htmlTitle ? `Chartis | ${htmlTitle}` : "Chartis"}</title>
+      </Head>
+      {type === "mobile" ? renderMobileHead : renderDesktopHead}
+    </>
+  );
 }
 
 const LAYOUT_HEAD_BASE_STYLE = clsx(

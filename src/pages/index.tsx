@@ -110,7 +110,12 @@ export default function Home() {
   }, [handlePopulateCalendar]);
 
   return (
-    <LayoutTemplate title="Home" classNameMain="!bg-white" side={renderSidebar}>
+    <LayoutTemplate
+      title="Home"
+      htmlTitle=""
+      classNameMain="!bg-white"
+      side={renderSidebar}
+    >
       <LayoutCalendar
         stateShowHidden={stateShowHidden}
         stateFocusDate={stateFocusDate}

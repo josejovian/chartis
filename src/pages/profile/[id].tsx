@@ -219,7 +219,7 @@ export default function Profile() {
       (type !== "mobile" || activeCard === "detail") && (
         <TemplateSearchEvent
           className="PageSearchEventCard PageSearchEventCardEmbed !bg-sky-50 !pb-0 !mx-0 !overflow-visible"
-          title="Created Events"
+          title="Your Events"
           viewType="userCreatedEvents"
           noWrapper
         />
@@ -254,6 +254,7 @@ export default function Profile() {
   return (
     <LayoutTemplateCard
       title="Profile"
+      htmlTitle={error ? "User Not Found" : `${profile.name}'s Profile`}
       leftButton={{
         icon: "arrow left",
         onClick: () => {

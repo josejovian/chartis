@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { LayoutTemplateCard, PageSearchEventCard } from "@/components";
 import { EventSearchType, ResponsiveStyleType } from "@/types";
-import { useScreen } from "@/hooks";
+import { useIdentification, useScreen } from "@/hooks";
 import clsx from "clsx";
 import { useMemo } from "react";
 
@@ -20,6 +20,8 @@ export function TemplateSearchEvent({
 }: TemplateSearchEventProps) {
   const router = useRouter();
   const { type } = useScreen();
+  const { stateIdentification } = useIdentification();
+  const { user } = stateIdentification[0];
 
   const renderSearcher = useMemo(
     () => (
@@ -29,12 +31,13 @@ export function TemplateSearchEvent({
           !noWrapper && "p-4",
           className
         )}
+        userId={user ? user.id : undefined}
         viewType={viewType ?? "default"}
         type={type}
         noWrapper
       />
     ),
-    [className, noWrapper, type, viewType]
+    [className, noWrapper, type, user, viewType]
   );
 
   return noWrapper ? (
@@ -42,6 +45,7 @@ export function TemplateSearchEvent({
   ) : (
     <LayoutTemplateCard
       title={title}
+      htmlTitle={title}
       leftButton={{
         icon: "arrow left",
         onClick: () => {

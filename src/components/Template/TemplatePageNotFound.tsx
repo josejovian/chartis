@@ -33,6 +33,7 @@ export function TemplatePageNotFound({
   return includeLayoutWrapper ? (
     <LayoutTemplateCard
       title=""
+      htmlTitle="Page Not Found"
       classNameMain={LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type]}
     >
       {renderNotice}
