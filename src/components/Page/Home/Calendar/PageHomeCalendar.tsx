@@ -121,7 +121,7 @@ export function LayoutCalendar({
         />
         <h1
           className={clsx(
-            "text-secondary-7 hover:text-secondary-5 text-center cursor-pointer",
+            "text-primary-6 hover:text-primary-5 text-center cursor-pointer",
             type === "mobile" && "w-full !text-lg"
           )}
           onClick={() =>
