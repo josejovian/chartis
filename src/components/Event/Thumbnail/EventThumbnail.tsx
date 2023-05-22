@@ -20,6 +20,7 @@ export interface EventThumbnailProps {
   footer?: ReactNode;
   onWheel?: UIEventHandler<HTMLDivElement>;
   alwaysShow?: boolean;
+  onClick?: () => void;
 }
 
 export function EventThumbnail({
@@ -32,6 +33,7 @@ export function EventThumbnail({
   footer,
   onWheel,
   alwaysShow,
+  onClick,
 }: EventThumbnailProps) {
   const placeholderURL = "/placeholder.png";
   const [imageURL, setImageURL] = useState(

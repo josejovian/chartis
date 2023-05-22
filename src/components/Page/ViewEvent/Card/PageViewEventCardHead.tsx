@@ -300,10 +300,19 @@ export function PageViewEventHead({
               height: `${cardHeight}px`,
             }
           : {
-              height: type !== "mobile" ? "240px" : "320px",
-              minHeight: type !== "mobile" ? "240px" : "320px",
+              height: "240px",
+              minHeight: "240px",
             }
       }
+      onClick={(e) => {
+        e.stopPropagation();
+        if (event.thumbnailSrc && type === "mobile")
+          Object.assign(document.createElement("a"), {
+            target: "_blank",
+            rel: "noopener noreferrer",
+            href: thumbnailURL,
+          }).click();
+      }}
     >
       <EventThumbnail
         imageRef={imageRef}
@@ -337,7 +346,12 @@ export function PageViewEventHead({
         )}
       >
         {mode === "view" && renderCrumb}
-        <div className={clsx("flex items-end justify-between h-fit")}>
+        <div
+          className={clsx("flex items-end justify-between h-fit")}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           {mode === "view" ? renderViewTabs : renderEditTabs}
         </div>
       </div>
