@@ -292,13 +292,11 @@ export function PageViewEventCard({
         name,
         description,
         startDate,
-        endDate: newRawEndDate,
+        endDate,
         thumbnailSrc,
         organizer,
         location,
       } = values;
-
-      const endDate = new Date(newRawEndDate).getTime();
 
       const result = {
         name:
