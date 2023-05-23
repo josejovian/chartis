@@ -123,8 +123,15 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
       {
         category: "Feedback",
         name: "Feedback Form",
-        icon: "bug",
+        icon: "star",
         href: "https://forms.gle/chxLcBdCDbvrnwts9",
+        openInNewTab: true,
+      },
+      {
+        category: "Feedback",
+        name: "Bug Report",
+        icon: "bug",
+        href: "https://forms.gle/Px7545MRmbudMe4J8",
         openInNewTab: true,
       },
     ];
@@ -272,29 +279,23 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
 
   const renderLinks = useMemo(
     () => (
-      <div
-        className={
-          permission !== "guest" ? "divide-y divide-slate-600 space-y-4" : ""
-        }
-      >
+      <div className={"divide-y divide-slate-600 space-y-4"}>
         {Object.keys(links).map((categoryName, idx) => (
           <div key={`navbarmain${categoryName}`}>
-            {permission !== "guest" && (
-              <span
-                className={clsx(
-                  idx > 0 && "p-4",
-                  "block text-slate-300 italic font-black uppercase"
-                )}
-              >
-                {categoryName}
-              </span>
-            )}
+            <span
+              className={clsx(
+                idx > 0 && "p-4",
+                "block text-slate-300 italic font-black uppercase"
+              )}
+            >
+              {categoryName}
+            </span>
             {links[categoryName].map((link) => renderNavBarLink(link))}
           </div>
         ))}
       </div>
     ),
-    [links, permission, renderNavBarLink]
+    [links, renderNavBarLink]
   );
 
   const renderAuth = useMemo(
