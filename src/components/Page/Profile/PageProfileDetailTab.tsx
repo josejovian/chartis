@@ -65,7 +65,7 @@ export function PageProfileDetailTab({
           <h1>
             <User defaultUser={profile} type="name" showRole />
           </h1>
-          <div className="flex flex-row mt-1 gap-4 text-secondary-6">
+          <div className="flex flex-row flex-wrap mt-1 gap-2 mb-2 text-secondary-6">
             <h6>
               <Icon name="envelope" />
               {profile.email}

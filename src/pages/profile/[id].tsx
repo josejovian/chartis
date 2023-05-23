@@ -197,7 +197,9 @@ export default function Profile() {
         ref={profileCardRef}
         className={clsx(
           "ProfileCard card ui !w-full !flex-row !h-fit",
-          type !== "mobile" ? "!p-16 gap-16" : "!p-4"
+          type === "desktop_lg" && "!p-16 gap-16",
+          type === "desktop_sm" && "!p-8 gap-8",
+          type === "mobile" && "!p-4"
         )}
       >
         <div>
@@ -216,7 +218,7 @@ export default function Profile() {
   const renderEventSearcher = useMemo(
     () =>
       /** @todos this won't show the currently viewed events */
-      (type !== "mobile" || activeCard === "detail") && (
+      activeCard === "detail" && (
         <TemplateSearchEvent
           className="PageSearchEventCard PageSearchEventCardEmbed !bg-sky-50 !pb-0 !mx-0 !overflow-visible"
           title="Your Events"
@@ -225,7 +227,7 @@ export default function Profile() {
           noWrapper
         />
       ),
-    [activeCard, id, type]
+    [activeCard, id]
   );
 
   const renderContent = useMemo(() => {
