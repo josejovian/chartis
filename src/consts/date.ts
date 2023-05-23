@@ -23,5 +23,5 @@ export const DAYS = [
   "Saturday",
 ];
 
-export const YEAR_MIN = 1970;
+export const YEAR_MIN = 2020;
 export const YEAR_MAX = 2100;

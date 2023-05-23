@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo } from "react";
 import { Field } from "formik";
-import { Input, TextArea } from "semantic-ui-react";
+import { Icon, Input, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventTags,
@@ -142,7 +142,7 @@ export function PageViewEventCardDetailTab({
           {({ field, meta }: any) => {
             return (
               <div
-                className="EventDetailsTableEntry flex items-center cursor-pointer !h-full"
+                className="EventDetailsTableEntry relative flex items-center cursor-pointer !h-full"
                 onClick={onClick}
               >
                 <Input
@@ -153,9 +153,18 @@ export function PageViewEventCardDetailTab({
                   transparent
                   {...field}
                 />
-                <div>
-                  {field.value ? strDateTime(new Date(field.value)) : "-"}
-                </div>
+                {field.value ? strDateTime(new Date(field.value)) : "-"}
+                {field.value && (
+                  <div className="ml-4 text-red-500 hover:text-red-700">
+                    <Icon
+                      onClick={(e: Event) => {
+                        e.stopPropagation();
+                        setFieldValue && setFieldValue(inputId, undefined);
+                      }}
+                      name="x"
+                    />
+                  </div>
+                )}
                 <FormErrorMessage
                   error={meta.error}
                   showError={
@@ -172,7 +181,7 @@ export function PageViewEventCardDetailTab({
         </Field>
       </>
     ),
-    []
+    [setFieldValue]
   );
 
   const details = useMemo<EventDetailType[]>(

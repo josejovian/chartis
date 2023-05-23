@@ -221,10 +221,11 @@ export default function Profile() {
           className="PageSearchEventCard PageSearchEventCardEmbed !bg-sky-50 !pb-0 !mx-0 !overflow-visible"
           title="Your Events"
           viewType="userCreatedEvents"
+          userId={id as string}
           noWrapper
         />
       ),
-    [activeCard, type]
+    [activeCard, id, type]
   );
 
   const renderContent = useMemo(() => {
