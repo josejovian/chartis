@@ -3,8 +3,10 @@ import * as Yup from "yup";
 import {
   VALIDATION_EVENT_DESCRIPTION_MAX_LENGTH,
   VALIDATION_EVENT_DESCRIPTION_MIN_LENGTH,
+  VALIDATION_EVENT_LOCATION_MAX_LENGTH,
   VALIDATION_EVENT_NAME_MAX_LENGTH,
   VALIDATION_EVENT_NAME_MIN_LENGTH,
+  VALIDATION_EVENT_ORGANIZER_MAX_LENGTH,
   VALIDATION_REPORT_COMMENT_MAX_LENGTH,
   VALIDATION_REPORT_COMMENT_MIN_LENGTH,
   VALIDATION_REPORT_REASON_MAX_LENGTH,
@@ -77,6 +79,18 @@ export function validateEventDescription(description: string) {
 
 export function validateStartDate(start?: number) {
   if (!start) return "Start date is required.";
+  return undefined;
+}
+
+export function validateLocation(string?: string) {
+  if (string && string.length > VALIDATION_EVENT_LOCATION_MAX_LENGTH)
+    return `Location is too long (max. ${VALIDATION_EVENT_LOCATION_MAX_LENGTH})`;
+  return undefined;
+}
+
+export function validateOrganizer(string?: string) {
+  if (string && string.length > VALIDATION_EVENT_ORGANIZER_MAX_LENGTH)
+    return `Organizer is too long (max. ${VALIDATION_EVENT_ORGANIZER_MAX_LENGTH})`;
   return undefined;
 }
 

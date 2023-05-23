@@ -22,6 +22,10 @@ import {
   StateObject,
 } from "@/types";
 import { useModal } from "@/hooks";
+import {
+  VALIDATION_EVENT_DESCRIPTION_MAX_LENGTH,
+  VALIDATION_EVENT_DESCRIPTION_MIN_LENGTH,
+} from "@/utils/form/const";
 
 export interface PageViewEventCardDetailTabProps {
   event: EventType;
@@ -308,7 +312,7 @@ export function PageViewEventCardDetailTab({
                   e.currentTarget.style.height =
                     e.currentTarget.scrollHeight + "px";
                 }}
-                placeholder="Enter event description (8 - 256 characters long)."
+                placeholder={`Enter event description (${VALIDATION_EVENT_DESCRIPTION_MIN_LENGTH} - ${VALIDATION_EVENT_DESCRIPTION_MAX_LENGTH} characters long).`}
                 {...field}
               />
               <FormErrorMessage

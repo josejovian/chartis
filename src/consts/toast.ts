@@ -57,6 +57,11 @@ export const TOAST_PRESETS: Record<ToastPresetType, ToastType> = {
     description: "",
     variant: "success",
   },
+  "feat-event-update-fail": {
+    title: "Update Failed!",
+    description: "You can only update if you update at least one field.",
+    variant: "danger",
+  },
   "feat-event-delete": {
     title: "Event Deleted",
     description: "",

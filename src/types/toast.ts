@@ -12,6 +12,7 @@ export type ToastPresetType =
   | "feat-unfollow"
   | "feat-event-create"
   | "feat-event-update"
+  | "feat-event-update-fail"
   | "feat-event-delete"
   | "feat-report-create"
   | "feat-report-update"

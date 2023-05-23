@@ -34,6 +34,8 @@ import {
   validateEventDescription,
   validateEventName,
   validateImage,
+  validateLocation,
+  validateOrganizer,
   validateStartDate,
   validateTags,
 } from "@/utils";
@@ -199,6 +201,41 @@ export function PageViewEventCard({
             setSubmitting(false);
           });
       } else if (eventPreviousValues && eventPreviousValues.current) {
+        const {
+          newEvent: {
+            description,
+            name,
+            startDate,
+            endDate,
+            organizer,
+            tags,
+            location,
+          },
+        } = data;
+        const {
+          description: oldDesc,
+          name: oldName,
+          startDate: oldStartDate,
+          endDate: oldEndDate,
+          location: oldLocation,
+          organizer: oldOrg,
+          tags: oldTags,
+        } = eventPreviousValues.current;
+
+        if (
+          description === oldDesc &&
+          name === oldName &&
+          startDate === oldStartDate &&
+          endDate === oldEndDate &&
+          location === oldLocation &&
+          organizer === oldOrg &&
+          tags === oldTags
+        ) {
+          addToastPreset("feat-event-update-fail");
+          setSubmitting(false);
+          return;
+        }
+
         updateEvent(
           eventPreviousValues.current.id,
           eventPreviousValues.current,
@@ -251,7 +288,17 @@ export function PageViewEventCard({
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
-      const { name, description, startDate, endDate, thumbnailSrc } = values;
+      const {
+        name,
+        description,
+        startDate,
+        endDate: newRawEndDate,
+        thumbnailSrc,
+        organizer,
+        location,
+      } = values;
+
+      const endDate = new Date(newRawEndDate).getTime();
 
       const result = {
         name:
@@ -262,6 +309,8 @@ export function PageViewEventCard({
           formValidateAll.current || formTouched.current.description
             ? validateEventDescription(description)
             : undefined,
+        location: validateLocation(location),
+        organizer: validateOrganizer(organizer),
         startDate: validateStartDate(startDate),
         endDate: validateEndDate(startDate, endDate),
         tags: validateTags(tags),

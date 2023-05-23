@@ -89,6 +89,20 @@ export function compareEventValues(before: EventType, after: EventType) {
         valuePrevious: stringifyEventValue(before, key),
         valueNew: stringifyEventValue(after, key),
       };
+
+      if (before[key] === "" || !before[key]) {
+        updates[UpdateChangesType] = {
+          ...updates[UpdateChangesType],
+          valuePrevious: "-",
+        };
+      }
+
+      if (after[key] === "" || !after[key]) {
+        updates[UpdateChangesType] = {
+          ...updates[UpdateChangesType],
+          valueNew: "-",
+        };
+      }
     }
   });
 
@@ -255,6 +269,21 @@ export async function updateEvent(
     operationType: "update",
     value: {
       ...(newValue as Partial<EventType>),
+      ...(newValue.endDate === undefined
+        ? {
+            endDate: deleteField(),
+          }
+        : {}),
+      ...(newValue.location === undefined
+        ? {
+            location: deleteField(),
+          }
+        : {}),
+      ...(newValue.organizer === undefined
+        ? {
+            organizer: deleteField(),
+          }
+        : {}),
       version: increment(1),
       lastUpdatedAt: new Date().getTime(),
     },
