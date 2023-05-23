@@ -114,6 +114,10 @@
   .EventDetailsTable :is(.ui.transparent.input input, .EventDetailsTableEntry) {
     @apply !px-3;
   }
+  .EventDetailsTableMobile
+    :is(.ui.transparent.input input, .EventDetailsTableEntry) {
+    @apply !pr-0;
+  }
   .EventInput:hover > :is(input, textarea),
   .EventInput:hover {
     @apply !bg-gray-200;

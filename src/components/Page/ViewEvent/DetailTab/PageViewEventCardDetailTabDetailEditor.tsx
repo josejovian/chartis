@@ -24,11 +24,14 @@ export function PageViewEventCardDetailTabDetailEditor({
   return (
     <Field name={name} validate={validate}>
       {({ field, meta }: any) => (
-        <div className={className}>
+        <div className={clsx(className, "break-word")}>
           <Input
             id={id}
             name={name}
-            className={clsx(!children ? "w-full !border-0 !h-10" : "!hidden")}
+            className={clsx(
+              "break-word",
+              !children ? "w-full !border-0 !h-10" : "!hidden"
+            )}
             transparent
             {...props}
             {...field}

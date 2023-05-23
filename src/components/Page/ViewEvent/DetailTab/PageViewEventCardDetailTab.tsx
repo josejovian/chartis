@@ -155,7 +155,7 @@ export function PageViewEventCardDetailTab({
                 />
                 {field.value ? strDateTime(new Date(field.value)) : "-"}
                 {field.value && (
-                  <div className="ml-4 text-red-500 hover:text-red-700">
+                  <div className="ml-4 text-secondary-5 hover:text-secondary-7">
                     <Icon
                       onClick={(e: Event) => {
                         e.stopPropagation();
@@ -197,6 +197,7 @@ export function PageViewEventCardDetailTab({
         icon: "group",
         id: "organizer",
         name: "ORGANIZER",
+        shortName: "ORG",
         rawValue: organizer,
         inputType: "text",
         placeholder: "Enter event organizer",
@@ -205,6 +206,7 @@ export function PageViewEventCardDetailTab({
         icon: "location arrow",
         id: "location",
         name: "LOCATION",
+        shortName: "LOC",
         rawValue: location,
         inputType: "text",
         placeholder: "Enter event location",
@@ -276,11 +278,12 @@ export function PageViewEventCardDetailTab({
     () => (
       <PageViewEventCardDetailTabDetail
         details={details}
+        type={type}
         mode={mode}
         className="!mt-0"
       />
     ),
-    [details, mode]
+    [details, mode, type]
   );
 
   const renderEventDescription = useMemo(

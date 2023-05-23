@@ -29,6 +29,7 @@ export interface EventType {
 export interface EventDetailBaseType {
   icon: SemanticICONS;
   name: string;
+  shortName?: string;
   placeholder?: string;
   validate?: (value: unknown) => string | null;
   required?: boolean;
