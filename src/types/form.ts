@@ -3,7 +3,7 @@ import { type SemanticICONS } from "semantic-ui-react";
 export interface FormCustomFieldProps {
   iconLabel?: SemanticICONS;
   id: string;
-  initial: string;
+  initial?: string;
   name: string;
   type: string;
   placeholder: string;

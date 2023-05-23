@@ -32,7 +32,8 @@ export function FormInputDropdown({
           <>
             <Input className="!hidden" size="big" transparent {...field} />
             <FormErrorMessage
-              meta={meta}
+              error={meta.error}
+              showError={meta.error && meta.touched}
               className="!z-10"
               {...formErrorMessageProps}
             />

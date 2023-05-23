@@ -24,6 +24,7 @@ export default function ManageUsers() {
   return (
     <LayoutTemplateCard
       title="Users"
+      htmlTitle="Manage Users"
       leftButton={{
         icon: "arrow left",
         onClick: () => {

@@ -90,6 +90,7 @@ export default function Notification() {
   return (
     <LayoutTemplateCard
       title="Updates"
+      htmlTitle="Updates"
       leftButton={{
         icon: "arrow left",
         onClick: () => {

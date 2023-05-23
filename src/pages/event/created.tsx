@@ -5,6 +5,7 @@ import { useAuthorization, useIdentification } from "@/hooks";
 
 export default function SubscribedEvent() {
   const { stateIdentification } = useIdentification();
+  const { user } = stateIdentification[0];
   const auth = getAuth();
   const isAuthorized = useAuthorization({
     auth,
@@ -20,11 +21,12 @@ export default function SubscribedEvent() {
   const renderPage = useMemo(
     () => (
       <TemplateSearchEvent
-        title="Created Events"
+        title="Your Events"
         viewType="userCreatedEvents"
+        userId={user ? user.id : undefined}
       />
     ),
-    []
+    [user]
   );
 
   return isAuthorized ? renderPage : renderGuestNotAllowed;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo } from "react";
 import { Field } from "formik";
-import { Input, TextArea } from "semantic-ui-react";
+import { Icon, Input, TextArea } from "semantic-ui-react";
 import clsx from "clsx";
 import {
   EventTags,
@@ -22,6 +22,10 @@ import {
   StateObject,
 } from "@/types";
 import { useModal } from "@/hooks";
+import {
+  VALIDATION_EVENT_DESCRIPTION_MAX_LENGTH,
+  VALIDATION_EVENT_DESCRIPTION_MIN_LENGTH,
+} from "@/utils/form/const";
 
 export interface PageViewEventCardDetailTabProps {
   event: EventType;
@@ -115,7 +119,7 @@ export function PageViewEventCardDetailTab({
             setFieldValue &&
               setFieldValue(
                 type === "start" ? "startDate" : "endDate",
-                getLocalTimeInISO(date.getTime())
+                date ? getLocalTimeInISO(date.getTime()) : undefined
               );
           }}
           hideToday
@@ -142,7 +146,7 @@ export function PageViewEventCardDetailTab({
           {({ field, meta }: any) => {
             return (
               <div
-                className="EventDetailsTableEntry flex items-center cursor-pointer !h-full"
+                className="EventDetailsTableEntry relative flex items-center cursor-pointer !h-full"
                 onClick={onClick}
               >
                 <Input
@@ -153,12 +157,25 @@ export function PageViewEventCardDetailTab({
                   transparent
                   {...field}
                 />
-                <div>
-                  {field.value ? strDateTime(new Date(field.value)) : "-"}
-                </div>
+                {field.value ? strDateTime(new Date(field.value)) : "-"}
+                {field.value && (
+                  <div className="ml-4 text-secondary-5 hover:text-secondary-7">
+                    <Icon
+                      onClick={(e: Event) => {
+                        e.stopPropagation();
+                        setFieldValue && setFieldValue(inputId, undefined);
+                      }}
+                      name="x"
+                    />
+                  </div>
+                )}
                 <FormErrorMessage
-                  icon
-                  meta={meta}
+                  error={meta.error}
+                  showError={
+                    inputId === "startDate" ||
+                    inputId === "endDate" ||
+                    meta.touched
+                  }
                   className="mt-2 !ml-0"
                   overlap
                 />
@@ -168,7 +185,7 @@ export function PageViewEventCardDetailTab({
         </Field>
       </>
     ),
-    []
+    [setFieldValue]
   );
 
   const details = useMemo<EventDetailType[]>(
@@ -184,6 +201,7 @@ export function PageViewEventCardDetailTab({
         icon: "group",
         id: "organizer",
         name: "ORGANIZER",
+        shortName: "ORG",
         rawValue: organizer,
         inputType: "text",
         placeholder: "Enter event organizer",
@@ -192,6 +210,7 @@ export function PageViewEventCardDetailTab({
         icon: "location arrow",
         id: "location",
         name: "LOCATION",
+        shortName: "LOC",
         rawValue: location,
         inputType: "text",
         placeholder: "Enter event location",
@@ -246,7 +265,12 @@ export function PageViewEventCardDetailTab({
                 transparent
                 {...field}
               />
-              <FormErrorMessage icon meta={meta} className="mt-2" />
+              <FormErrorMessage
+                icon
+                error={meta.error}
+                showError={meta.error && meta.touched}
+                className="mt-2"
+              />
             </div>
           )}
         </Field>
@@ -258,11 +282,12 @@ export function PageViewEventCardDetailTab({
     () => (
       <PageViewEventCardDetailTabDetail
         details={details}
+        type={type}
         mode={mode}
         className="!mt-0"
       />
     ),
-    [details, mode]
+    [details, mode, type]
   );
 
   const renderEventDescription = useMemo(
@@ -287,10 +312,15 @@ export function PageViewEventCardDetailTab({
                   e.currentTarget.style.height =
                     e.currentTarget.scrollHeight + "px";
                 }}
-                placeholder="Enter event description (8 - 256 characters long)."
+                placeholder={`Enter event description (${VALIDATION_EVENT_DESCRIPTION_MIN_LENGTH} - ${VALIDATION_EVENT_DESCRIPTION_MAX_LENGTH} characters long).`}
                 {...field}
               />
-              <FormErrorMessage icon meta={meta} className="mt-2" />
+              <FormErrorMessage
+                icon
+                error={meta.error}
+                showError={meta.error && meta.touched}
+                className="mt-2"
+              />
             </div>
           )}
         </Field>

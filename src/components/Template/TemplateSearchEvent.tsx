@@ -10,6 +10,7 @@ export interface TemplateSearchEventProps {
   className?: string;
   viewType?: EventSearchType;
   title: string;
+  userId?: string;
 }
 
 export function TemplateSearchEvent({
@@ -17,6 +18,7 @@ export function TemplateSearchEvent({
   className,
   viewType,
   title,
+  userId,
 }: TemplateSearchEventProps) {
   const router = useRouter();
   const { type } = useScreen();
@@ -29,12 +31,13 @@ export function TemplateSearchEvent({
           !noWrapper && "p-4",
           className
         )}
+        userId={userId}
         viewType={viewType ?? "default"}
         type={type}
         noWrapper
       />
     ),
-    [className, noWrapper, type, viewType]
+    [className, noWrapper, type, userId, viewType]
   );
 
   return noWrapper ? (
@@ -42,6 +45,7 @@ export function TemplateSearchEvent({
   ) : (
     <LayoutTemplateCard
       title={title}
+      htmlTitle={title}
       leftButton={{
         icon: "arrow left",
         onClick: () => {

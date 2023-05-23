@@ -121,6 +121,10 @@ export function PageViewEventCardDiscussionTab({
                 setComments((prev) =>
                   prev.filter((c) => c.commentId !== commentId)
                 );
+                setEvent((prev) => ({
+                  ...prev,
+                  commentCount: (prev.commentCount ?? 0) - 1,
+                }));
               })
               .finally(() => {
                 setDeleting(false);
@@ -133,7 +137,7 @@ export function PageViewEventCardDiscussionTab({
         />
       );
     },
-    [deleting, id]
+    [deleting, id, setEvent]
   );
 
   const renderCommentCard = useCallback(

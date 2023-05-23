@@ -88,21 +88,14 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
       },
       {
         category: "Events",
-        name: "Post Event",
+        name: "Create Event",
         icon: "calendar plus",
         permission: "user",
         href: "/event/new",
       },
       {
         category: "Events",
-        name: "Your Events",
-        icon: "calendar alternate",
-        permission: "user",
-        href: "/event/created",
-      },
-      {
-        category: "Events",
-        name: "Followed Events",
+        name: "Subscribed Events",
         icon: "calendar check",
         href: "/event/subscribed",
       },

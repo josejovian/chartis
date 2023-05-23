@@ -15,6 +15,7 @@ export interface LayoutTemplateProps {
   rightButton?: LayoutHeadButtonProps;
   rightElement?: ReactNode;
   title: string;
+  htmlTitle: string;
   minPermission?: UserPermissionType;
   authorized?: boolean;
   unauthorizedElement?: ReactNode;
@@ -31,6 +32,7 @@ export function LayoutTemplate({
   rightButton,
   rightElement,
   title,
+  htmlTitle,
   minPermission,
   authorized,
   unauthorizedElement,
@@ -67,6 +69,7 @@ export function LayoutTemplate({
           rightButton={showContent ? rightButton : undefined}
           rightElement={showContent ? rightElement : undefined}
           title={showContent ? title : ""}
+          htmlTitle={showContent ? htmlTitle : "Not Found"}
           type={type}
         />
         <div
@@ -82,6 +85,7 @@ export function LayoutTemplate({
     ),
     [
       classNameMain,
+      htmlTitle,
       inlineMain,
       leftButton,
       leftElement,

@@ -181,7 +181,9 @@ export function PageSearchEventCard({
       case "userCreatedEvents":
         userId &&
           getEvents([where("authorId", "==", userId)])
-            .then((event) => setEventsObjectFromArray(event))
+            .then((event) => {
+              setEventsObjectFromArray(event);
+            })
             .catch((e) => {
               addToastPreset("fail-get");
             });

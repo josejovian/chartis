@@ -89,6 +89,20 @@ export function compareEventValues(before: EventType, after: EventType) {
         valuePrevious: stringifyEventValue(before, key),
         valueNew: stringifyEventValue(after, key),
       };
+
+      if (before[key] === "" || !before[key]) {
+        updates[UpdateChangesType] = {
+          ...updates[UpdateChangesType],
+          valuePrevious: "-",
+        };
+      }
+
+      if (after[key] === "" || !after[key]) {
+        updates[UpdateChangesType] = {
+          ...updates[UpdateChangesType],
+          valueNew: "-",
+        };
+      }
     }
   });
 
@@ -255,6 +269,21 @@ export async function updateEvent(
     operationType: "update",
     value: {
       ...(newValue as Partial<EventType>),
+      ...(newValue.endDate === undefined
+        ? {
+            endDate: deleteField(),
+          }
+        : {}),
+      ...(newValue.location === undefined
+        ? {
+            location: deleteField(),
+          }
+        : {}),
+      ...(newValue.organizer === undefined
+        ? {
+            organizer: deleteField(),
+          }
+        : {}),
       version: increment(1),
       lastUpdatedAt: new Date().getTime(),
     },
@@ -436,8 +465,26 @@ export async function deleteComment(
   eventId: string,
   commentId: string
 ): Promise<void> {
-  return updateData(FIREBASE_COLLECTION_COMMENTS, eventId, {
-    [commentId]: deleteField(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  const batchOperations: BatchOperationType[] = [];
+
+  // delete event document
+  batchOperations.push({
+    collectionName: FIREBASE_COLLECTION_COMMENTS,
+    operationType: "delete",
+    documentId: eventId,
+    value: {
+      [commentId]: deleteField(),
+    },
+  });
+
+  batchOperations.push({
+    collectionName: FIREBASE_COLLECTION_EVENTS,
+    documentId: eventId,
+    operationType: "update",
+    value: {
+      commentCount: increment(-1),
+    },
+  });
+
+  return writeDataBatch(batchOperations);
 }

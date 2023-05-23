@@ -14,6 +14,7 @@ interface PageViewEventCardDetailTabDetailEditorProps
 }
 
 export function PageViewEventCardDetailTabDetailEditor({
+  id,
   name,
   validate,
   className,
@@ -23,10 +24,14 @@ export function PageViewEventCardDetailTabDetailEditor({
   return (
     <Field name={name} validate={validate}>
       {({ field, meta }: any) => (
-        <div className={className}>
+        <div className={clsx(className, "break-word")}>
           <Input
+            id={id}
             name={name}
-            className={clsx(!children ? "w-full !border-0 !h-10" : "!hidden")}
+            className={clsx(
+              "break-word",
+              !children ? "w-full !border-0 !h-10" : "!hidden"
+            )}
             transparent
             {...props}
             {...field}
@@ -34,8 +39,8 @@ export function PageViewEventCardDetailTabDetailEditor({
           />
           {children}
           <FormErrorMessage
-            meta={meta}
-            // className="absolute -bottom-1.5 bg-white mx-3 !z-50 border border-secondary-2"
+            error={meta.error}
+            showError={meta.touched}
             overlap
           />
         </div>

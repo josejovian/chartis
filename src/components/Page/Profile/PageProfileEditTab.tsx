@@ -62,7 +62,9 @@ export function PageProfileEdit({
             <ModalAuthInput props={FieldChangeName} />
             <ModalAuthInput props={FieldProfileEmail} />
             <div className="flex gap-4">
-              <Button onClick={onCancelEdit}>Cancel</Button>
+              <Button onClick={onCancelEdit} basic>
+                Cancel
+              </Button>
               <Button
                 color="yellow"
                 type="submit"

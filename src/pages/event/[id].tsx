@@ -144,6 +144,7 @@ export default function ViewEvent() {
   return (
     <LayoutTemplateCard
       title="Event"
+      htmlTitle={error || !event ? "Event Not Found" : event.name}
       leftButton={{
         icon: "arrow left",
         onClick: () => {
