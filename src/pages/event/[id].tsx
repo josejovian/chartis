@@ -4,7 +4,7 @@ import {
   LayoutTemplateCard,
   PageViewEventCard,
 } from "@/components";
-import { ASSET_NO_CONTENT, EVENT_DUMMY_1 } from "@/consts";
+import { ASSET_NO_CONTENT, EVENT_EMPTY } from "@/consts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIdentification, useScreen, useEventsObject } from "@/hooks";
 import { EventModeType, EventType, ResponsiveStyleType } from "@/types";
@@ -33,10 +33,10 @@ export default function ViewEvent() {
     () => (loading ? undefined : eventsObject[id as string]),
     [eventsObject, id, loading]
   );
-  const stateEvent = useState(EVENT_DUMMY_1);
+  const stateEvent = useState(EVENT_EMPTY);
   const setEvent = stateEvent[1];
 
-  const eventPreviousValues = useRef<EventType>(EVENT_DUMMY_1);
+  const eventPreviousValues = useRef<EventType>(EVENT_EMPTY);
   const [error, setError] = useState(false);
 
   const { stateIdentification } = useIdentification();
