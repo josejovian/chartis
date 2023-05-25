@@ -9,8 +9,7 @@ import {
 
 export const EVENT_EMPTY: EventType = {
   id: "unset",
-  authorId: "admin",
-  authorName: "admin",
+  authorId: "unset",
   name: "",
   description: "",
   organizer: "",
@@ -19,30 +18,6 @@ export const EVENT_EMPTY: EventType = {
   startDate: 0,
   tags: {},
   version: 0,
-};
-
-export const EVENT_DUMMY_1: EventType = {
-  id: "0",
-  authorId: "admin",
-  authorName: "admin",
-  name: "December Monthly Report Deadline",
-  description: "Reminder pengumpulan laporan enrichment untuk bulan Desember.",
-  postDate: 0,
-  startDate: 0,
-  endDate: 10,
-  tags: {},
-};
-
-export const EVENT_DUMMY_2: EventType = {
-  id: "1",
-  authorId: "admin",
-  authorName: "admin",
-  name: "December Monthly Report Deadline",
-  description: "Reminder pengumpulan laporan enrichment untuk bulan Desember.",
-  postDate: 0,
-  startDate: 0,
-  endDate: 10,
-  tags: {},
 };
 
 export const EVENT_TAGS: Record<EventTagNameType, DropdownOptionType> = {
