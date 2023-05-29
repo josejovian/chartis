@@ -27,7 +27,7 @@ export default function Notification() {
   const [isLoading] = useState(false);
 
   useEffect(() => {
-    handleFetchNotification();
+    handleFetchNotification(user ?? undefined);
   }, [handleFetchNotification, user]);
 
   const handleReadAllNotifications = useCallback(async () => {
