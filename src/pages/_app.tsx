@@ -200,7 +200,6 @@ export default function App({ Component, pageProps }: AppProps) {
       const listener = onSnapshot(
         doc(fs, FIREBASE_COLLECTION_USERS, user.id),
         async (doc) => {
-          setHasNotification((prev) => !prev);
           const newUser = doc.data();
           if (newUser) {
             const { unseenEvents = {} } = newUser as UserType;
