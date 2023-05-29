@@ -33,6 +33,7 @@ const TOAST_CONTEXT_DEFAULT: ToastContextPropsType = {
 
 const NOTIFICATION_CONTEXT_DEFAULT: NotificationContextPropsType = {
   stateNotification: [[], (newNotifications) => {}],
+  stateHasNotification: [false, (newState) => {}],
 };
 const EVENTS_CONTEXT_DEFAULT: EventsContextPropsType = {
   stateEventsObject: [{}, (newEventsObject) => {}],

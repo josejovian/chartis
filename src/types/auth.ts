@@ -9,7 +9,6 @@ export interface UserDatabaseType {
   joinDate: number;
   subscribedEvents?: Record<string, number>;
   unseenEvents?: Record<string, boolean>;
-  notificationCount?: number;
   role?: UserRoleType;
   ban?: boolean;
 }

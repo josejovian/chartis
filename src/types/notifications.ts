@@ -11,4 +11,5 @@ export interface NotificationType {
 
 export interface NotificationContextPropsType {
   stateNotification: StateObject<NotificationData[]>;
+  stateHasNotification: StateObject<boolean>;
 }

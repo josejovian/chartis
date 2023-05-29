@@ -62,7 +62,6 @@ export async function register({
           name: name,
           email: email,
           joinDate: new Date().getTime(),
-          notificationCount: 0,
           subscribedEvents: [],
           unseenEvents: [],
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

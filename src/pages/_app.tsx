@@ -32,7 +32,7 @@ import {
   UserType,
   NotificationData,
 } from "@/types";
-import { useNavBar, useNotification } from "@/hooks";
+import { useNavBar } from "@/hooks";
 import { useRouter } from "next/router";
 import { readData } from "@/utils";
 
@@ -62,15 +62,15 @@ export default function App({ Component, pageProps }: AppProps) {
   const initializeListener = useRef(false);
   const [toasts, setToasts] = useState<ToastLiveType[]>([]);
   const stateNotification = useState<NotificationData[]>([]);
-  const setNotification = stateNotification[1];
   const toastCount = useRef(0);
   const auth = getAuth();
   const listenerRef = useRef<Unsubscribe>();
-  const { handleUpdateNotifications } = useNotification();
   const { togglable } = useNavBar({
     screen,
   });
   const router = useRouter();
+  const stateHasNotification = useState(false);
+  const [hasNotification, setHasNotification] = stateHasNotification;
 
   const handleAddToast = useCallback((toast: ToastType) => {
     toastCount.current++;
@@ -192,6 +192,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const handleListenForUpdates = useCallback(() => {
     if (user && !initializeListener.current) {
       initializeListener.current = true;
+      if (hasNotification) return;
 
       const { subscribedEvents = {} } = user;
       const subscribedEventIds = Object.keys(subscribedEvents);
@@ -199,6 +200,7 @@ export default function App({ Component, pageProps }: AppProps) {
       const listener = onSnapshot(
         doc(fs, FIREBASE_COLLECTION_USERS, user.id),
         async (doc) => {
+          setHasNotification((prev) => !prev);
           const newUser = doc.data();
           if (newUser) {
             const { unseenEvents = {} } = newUser as UserType;
@@ -206,10 +208,15 @@ export default function App({ Component, pageProps }: AppProps) {
               Object.entries(unseenEvents).length > 0 &&
               subscribedEventIds.length > 0
             ) {
-              const newNotifs = await handleUpdateNotifications(
-                newUser as UserType
-              );
-              if (newNotifs) setNotification(newNotifs);
+              for (const eventID in unseenEvents) {
+                if (Object.hasOwnProperty.call(unseenEvents, eventID)) {
+                  const isUnseen = unseenEvents[eventID];
+                  if (isUnseen) {
+                    setHasNotification(true);
+                    break;
+                  }
+                }
+              }
             }
           }
         }
@@ -220,7 +227,7 @@ export default function App({ Component, pageProps }: AppProps) {
       return listener;
     }
     return null;
-  }, [handleUpdateNotifications, setNotification, user]);
+  }, [hasNotification, setHasNotification, user]);
 
   // notification listener
   useEffect(() => {
@@ -274,6 +281,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }}
         notificationProps={{
           stateNotification,
+          stateHasNotification,
         }}
       >
         <div id="App" className={clsx("flex flex-row w-full h-full")}>

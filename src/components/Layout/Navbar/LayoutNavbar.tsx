@@ -45,14 +45,14 @@ export function LayoutNavbar({ stateNavBar }: LayoutNavbarProps) {
     screen,
   });
   const { user } = stateIdentification[0];
-  const { notification } = useNotification();
+  const { hasNotification } = useNotification();
   const router = useRouter();
   const { setModal } = useModal();
   const { addToastPreset } = useToast();
 
   const isNotificationAlertVisible = useMemo(
-    () => notification.length > 0,
-    [notification.length]
+    () => hasNotification,
+    [hasNotification]
   );
 
   // @todo move this to useAuthorization

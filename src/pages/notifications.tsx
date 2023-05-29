@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { BatchOperationType, updateData, writeDataBatch } from "@/utils";
 import clsx from "clsx";
@@ -18,8 +18,17 @@ export default function Notification() {
   const [{ user }] = stateIdentification;
   const router = useRouter();
   const { type } = useScreen();
-  const { notification, setNotification } = useNotification();
+  const {
+    notification,
+    setNotification,
+    setHasNotification,
+    handleFetchNotification,
+  } = useNotification();
   const [isLoading] = useState(false);
+
+  useEffect(() => {
+    handleFetchNotification();
+  }, [handleFetchNotification, user]);
 
   const handleReadAllNotifications = useCallback(async () => {
     if (!user) return;
@@ -40,11 +49,12 @@ export default function Notification() {
     return writeDataBatch(batchOperations)
       .then(() => {
         setNotification([]);
+        setHasNotification(false);
       })
       .catch(() => {
         addToastPreset("fail-post");
       });
-  }, [addToastPreset, notification, setNotification, user]);
+  }, [addToastPreset, notification, setHasNotification, setNotification, user]);
 
   const handleReadNotification = useCallback(
     async (targetEventId: string, targetEventVersion: number) => {
@@ -60,12 +70,19 @@ export default function Notification() {
               (notification) => notification.eventId !== targetEventId
             )
           );
+          if (notification.length <= 0) setHasNotification(false);
         })
         .catch(() => {
           addToastPreset("fail-post");
         });
     },
-    [addToastPreset, setNotification, user]
+    [
+      addToastPreset,
+      notification.length,
+      setHasNotification,
+      setNotification,
+      user,
+    ]
   );
 
   const renderNotification = useMemo(
