@@ -23,12 +23,14 @@ export default function Notification() {
     setNotification,
     setHasNotification,
     handleFetchNotification,
+    hasNotification,
   } = useNotification();
   const [isLoading] = useState(false);
 
   useEffect(() => {
-    handleFetchNotification(user ?? undefined);
-  }, [handleFetchNotification, user]);
+    if (hasNotification) handleFetchNotification(user ?? undefined);
+    else setNotification([]);
+  }, [handleFetchNotification, hasNotification, setNotification, user]);
 
   const handleReadAllNotifications = useCallback(async () => {
     if (!user) return;

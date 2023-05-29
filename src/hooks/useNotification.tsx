@@ -16,7 +16,10 @@ export function useNotification() {
 
   const handleFetchNotification = useCallback(
     async (user?: UserType) => {
-      if (!user) return null;
+      if (!user) {
+        setNotification([]);
+        return;
+      }
 
       const { subscribedEvents = {}, unseenEvents = {} } = user;
       const subscribedEventIds = Object.keys(subscribedEvents);
@@ -91,8 +94,6 @@ export function useNotification() {
       }
 
       setNotification(notificationUpdates);
-
-      return notificationUpdates;
     },
     [setNotification]
   );
