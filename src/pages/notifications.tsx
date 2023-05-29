@@ -67,24 +67,19 @@ export default function Notification() {
         [`unseenEvents.${targetEventId}`]: false,
       })
         .then(() => {
-          setNotification((prev) =>
-            prev.filter(
+          setNotification((prev) => {
+            const after = prev.filter(
               (notification) => notification.eventId !== targetEventId
-            )
-          );
-          if (notification.length <= 0) setHasNotification(false);
+            );
+            if (after.length <= 0) setHasNotification(false);
+            return after;
+          });
         })
         .catch(() => {
           addToastPreset("fail-post");
         });
     },
-    [
-      addToastPreset,
-      notification.length,
-      setHasNotification,
-      setNotification,
-      user,
-    ]
+    [addToastPreset, setHasNotification, setNotification, user]
   );
 
   const renderNotification = useMemo(
