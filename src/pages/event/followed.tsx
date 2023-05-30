@@ -1,9 +1,9 @@
 import { TemplateSearchEvent } from "@/components";
 
-export default function SubscribedEvent() {
+export default function FollowedEvent() {
   return (
     <TemplateSearchEvent
-      title="Subscribed Events"
+      title="Followed Events"
       viewType="userFollowedEvents"
     />
   );
