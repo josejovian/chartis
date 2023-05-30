@@ -15,11 +15,9 @@ import {
   ScreenSizeCategoryType,
   StateObject,
   IdentificationType,
-  EventTagNameType,
   EventCardTabType,
   EventCardTabNameType,
 } from "@/types";
-import { EVENT_TAGS } from "@/consts";
 import { useAuthorization } from "@/hooks";
 import { getAuth } from "firebase/auth";
 import { Field } from "formik";
@@ -75,15 +73,6 @@ export function PageViewEventHead({
   const [imageSize, setImageSize] = useState<[number, number]>();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const listener = useRef(false);
-
-  const crumb = useMemo(
-    () =>
-      Object.keys(event.tags).length > 0 &&
-      `Events / ${
-        EVENT_TAGS[Object.keys(event.tags)[0] as EventTagNameType].name
-      } / ${event.name}`,
-    [event.name, event.tags]
-  );
 
   const tabs = useMemo<EventCardTabType[]>(
     () => [
@@ -235,15 +224,6 @@ export function PageViewEventHead({
     handleAdjustImageSize();
   }, [cardHeight, handleAdjustImageSize]);
 
-  const renderCrumb = useMemo(
-    () => (
-      <span className="p-4 text-16px font-bold text-white drop-shadow-md">
-        {crumb}
-      </span>
-    ),
-    [crumb]
-  );
-
   const handleWheelEvent = useCallback(
     (e: unknown) => {
       const we = e as WheelEvent;
@@ -345,9 +325,8 @@ export function PageViewEventHead({
           "transition-all duration-200"
         )}
       >
-        {mode === "view" && renderCrumb}
         <div
-          className={clsx("flex items-end justify-between h-fit")}
+          className={clsx("flex items-end justify-between h-full")}
           onClick={(e) => {
             e.stopPropagation();
           }}
