@@ -332,6 +332,7 @@ export function PageViewEventCard({
     ({
       validateForm,
       setFieldValue,
+      values,
     }: {
       submitForm?: () => void;
       validateForm?: () => void;
@@ -340,6 +341,7 @@ export function PageViewEventCard({
         value: any,
         shouldValidate?: boolean | undefined
       ) => void;
+      values: any;
     }) => {
       switch (activeTab) {
         case "detail":
@@ -351,6 +353,7 @@ export function PageViewEventCard({
               stateTags={stateTags}
               validateForm={validateForm}
               setFieldValue={setFieldValue}
+              values={values}
             />
           );
         case "updates":
@@ -475,6 +478,7 @@ export function PageViewEventCard({
       submitForm,
       validateForm,
       setFieldValue,
+      values,
       touched,
     }: {
       submitForm?: () => void;
@@ -485,11 +489,13 @@ export function PageViewEventCard({
         shouldValidate?: boolean | undefined
       ) => void;
       touched?: FormikTouched<EventType>;
+      values?: any;
     }) => {
       const activeTabContent = renderCardActiveContentTab({
         submitForm,
         validateForm,
         setFieldValue,
+        values,
       });
 
       if (touched) formTouched.current = touched as any;
@@ -586,7 +592,7 @@ export function PageViewEventCard({
           validateOnChange
         >
           {/** @todos Submit button seems to not work unless you do this. */}
-          {({ submitForm, validateForm, setFieldValue, touched }) => (
+          {({ submitForm, validateForm, setFieldValue, touched, values }) => (
             <LayoutCard
               className={clsx(className, !focusThumbnail && "!h-full")}
               form
@@ -595,6 +601,7 @@ export function PageViewEventCard({
                 submitForm,
                 validateForm,
                 setFieldValue,
+                values,
                 touched,
               })}
             </LayoutCard>

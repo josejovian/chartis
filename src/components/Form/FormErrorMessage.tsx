@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { Icon } from "semantic-ui-react";
 
 export interface FormErrorMessageProps {
+  hideIfNone?: boolean;
   showError?: boolean;
   error?: string;
   className?: string;
@@ -14,9 +15,10 @@ export function FormErrorMessage({
   overlap,
   showError,
   error,
+  hideIfNone,
 }: FormErrorMessageProps) {
   const visible = showError && error;
-  return visible || !overlap ? (
+  return (visible || !overlap) && (!hideIfNone || visible) ? (
     <div
       className={clsx(
         "text-red-500",

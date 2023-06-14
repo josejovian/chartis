@@ -21,11 +21,7 @@ import {
   ScreenSizeCategoryType,
   StateObject,
 } from "@/types";
-import { useModal } from "@/hooks";
-import {
-  VALIDATION_EVENT_DESCRIPTION_MAX_LENGTH,
-  VALIDATION_EVENT_DESCRIPTION_MIN_LENGTH,
-} from "@/utils/form/const";
+import { useModal, useToast } from "@/hooks";
 
 export interface PageViewEventCardDetailTabProps {
   event: EventType;
@@ -38,6 +34,7 @@ export interface PageViewEventCardDetailTabProps {
     value: any,
     shouldValidate?: boolean | undefined
   ) => void;
+  values?: any;
 }
 
 export function PageViewEventCardDetailTab({
@@ -47,10 +44,12 @@ export function PageViewEventCardDetailTab({
   stateTags,
   validateForm,
   setFieldValue,
+  values,
 }: PageViewEventCardDetailTabProps) {
   const { location, organizer, startDate, endDate, description } = event;
   const [tags, setTags] = stateTags;
   const { setModal } = useModal();
+  const { addToast } = useToast();
 
   const renderEventTags = useMemo(
     () => (
@@ -123,6 +122,7 @@ export function PageViewEventCardDetailTab({
               );
           }}
           hideToday
+          hideReset
         />
       );
     },
@@ -133,21 +133,29 @@ export function PageViewEventCardDetailTab({
     ({
       inputId,
       inputName,
-      date,
       onClick,
+      disabled,
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      onDisabledClick = () => {},
     }: {
       inputId: string;
       inputName: string;
       date?: number;
       onClick?: () => void;
+      onDisabledClick?: () => void;
+      disabled?: boolean;
     }) => (
       <>
         <Field name={inputName}>
           {({ field, meta }: any) => {
             return (
               <div
-                className="EventDetailsTableEntry relative flex items-center cursor-pointer !h-full"
-                onClick={onClick}
+                className={clsx(
+                  "relative flex items-center ",
+                  "EventDetailsTableEntry cursor-pointer !h-full",
+                  disabled && "cursor-not-allowed"
+                )}
+                onClick={!disabled ? onClick : onDisabledClick}
               >
                 <Input
                   id={inputId}
@@ -157,7 +165,17 @@ export function PageViewEventCardDetailTab({
                   transparent
                   {...field}
                 />
-                {field.value ? strDateTime(new Date(field.value)) : "-"}
+                <span
+                  className={clsx(
+                    !field.value && "EventDetailsTableEntryPlaceholder"
+                  )}
+                >
+                  {field.value
+                    ? strDateTime(new Date(field.value))
+                    : inputName === "startDate"
+                    ? "Choose start date"
+                    : "Choose end date"}
+                </span>
                 {field.value && (
                   <div className="ml-4 text-secondary-5 hover:text-secondary-7">
                     <Icon
@@ -236,10 +254,19 @@ export function PageViewEventCardDetailTab({
           inputName: "endDate",
           date: endDate,
           onClick: () => handleEditDate("end"),
+          disabled: values && !values.startDate,
+          onDisabledClick: () =>
+            addToast({
+              variant: "danger",
+              title: "Oops!",
+              description:
+                "Before selecting end date, please select start date first.",
+            }),
         }),
       },
     ],
     [
+      addToast,
       endDate,
       handleEditDate,
       location,
@@ -248,6 +275,7 @@ export function PageViewEventCardDetailTab({
       renderEventDate,
       renderEventTags,
       startDate,
+      values,
     ]
   );
 
@@ -256,9 +284,9 @@ export function PageViewEventCardDetailTab({
       mode !== "view" && (
         <Field name="name">
           {({ field, meta }: any) => (
-            <div className="mt-5">
+            <div className="mt-5 mb-4">
               <Input
-                className="EventInput w-full font-bold !text-red-100 !font-bold !h-8 !border-0"
+                className="EventInput w-full font-bold !text-red-100 !font-bold !h-8 !border-0 !px-2 !rounded-md"
                 style={{ fontSize: "1.5rem" }}
                 size="big"
                 placeholder="Enter event name"
@@ -269,7 +297,8 @@ export function PageViewEventCardDetailTab({
                 icon
                 error={meta.error}
                 showError={meta.error && meta.touched}
-                className="mt-2"
+                className="mt-2 ml-2"
+                hideIfNone
               />
             </div>
           )}
@@ -299,7 +328,7 @@ export function PageViewEventCardDetailTab({
           {({ field, meta }: any) => (
             <div className="mt-8">
               <TextArea
-                className="EventInput !p-0 !b-0 !text-14px"
+                className="EventInput !px-3 !py-1 !b-0 !text-14px"
                 transparent
                 style={{
                   resize: "none",
@@ -312,14 +341,14 @@ export function PageViewEventCardDetailTab({
                   e.currentTarget.style.height =
                     e.currentTarget.scrollHeight + "px";
                 }}
-                placeholder={`Enter event description (${VALIDATION_EVENT_DESCRIPTION_MIN_LENGTH} - ${VALIDATION_EVENT_DESCRIPTION_MAX_LENGTH} characters long).`}
+                placeholder="Enter event description"
                 {...field}
               />
               <FormErrorMessage
                 icon
                 error={meta.error}
                 showError={meta.error && meta.touched}
-                className="mt-2"
+                className="mt-2 ml-3"
               />
             </div>
           )}

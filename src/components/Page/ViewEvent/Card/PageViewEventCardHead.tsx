@@ -248,24 +248,26 @@ export function PageViewEventHead({
       <div
         className={clsx(
           "EventCardThumbnailToggle",
-          "absolute mx-auto flex flex-col items-center z-10",
-          "text-white hover:text-gray-200 cursor-pointer drop-shadow-md",
+          "absolute mx-auto w-full flex flex-col-reverse items-center z-10",
+          "text-white hover:text-gray-200 cursor-pointer drop-shadow-lg transition-all",
           focused
-            ? "EventCardThumbnailToggleFocused"
-            : "transition-all top-0 opacity-20 hover:opacity-100 hover:top-1"
+            ? "EventCardThumbnailToggleFocused h-32 bg-gradient-to-t from-black"
+            : "top-0 opacity-50 hover:opacity-100 hover:top-1"
         )}
         onClick={() => {
           setFocused((prev) => !prev);
         }}
       >
-        <Icon
-          className="!m-0"
-          name={focused ? "chevron down" : "chevron up"}
-          size="huge"
-        />
-        <span className={clsx("h-8", !focused && "hidden")}>
-          Scroll down to continue
-        </span>
+        <div className="mx-auto flex flex-col items-center">
+          <Icon
+            className="!m-0"
+            name={focused ? "chevron down" : "chevron up"}
+            size="huge"
+          />
+          <span className={clsx("h-8", !focused && "hidden")}>
+            Scroll down to continue
+          </span>
+        </div>
       </div>
     ),
     [focused, setFocused]
@@ -285,8 +287,12 @@ export function PageViewEventHead({
             }
       }
       onClick={(e) => {
-        e.stopPropagation();
-        if (event.thumbnailSrc && type === "mobile")
+        const target = e.target as HTMLDivElement;
+        if (
+          event.thumbnailSrc &&
+          type === "mobile" &&
+          target.className.includes("MobileThumbnailHit")
+        )
           Object.assign(document.createElement("a"), {
             target: "_blank",
             rel: "noopener noreferrer",
@@ -326,10 +332,10 @@ export function PageViewEventHead({
         )}
       >
         <div
-          className={clsx("flex items-end justify-between h-full")}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
+          className={clsx(
+            type === "mobile" && "MobileThumbnailHitbox",
+            "flex items-end justify-between h-full"
+          )}
         >
           {mode === "view" ? renderViewTabs : renderEditTabs}
         </div>

@@ -3,9 +3,11 @@ import { Icon, Message, type SemanticICONS } from "semantic-ui-react";
 import clsx from "clsx";
 import { ToastContext } from "@/contexts";
 import { ToastLiveType, ToastVariantType } from "@/types";
+import { useScreen } from "@/hooks";
 
 export function ToastWrapper() {
   const { toasts, setToasts } = useContext(ToastContext);
+  const { type } = useScreen();
 
   const renderToasts = useMemo(
     () =>
@@ -15,6 +17,7 @@ export function ToastWrapper() {
           id={id}
           className={clsx(
             TOAST_BASE_STYLE,
+            type !== "mobile" ? "!ml-auto !mr-16" : "!mx-auto",
             preExpire ? "toast-out" : time > 0 && "toast"
           )}
           positive={variant === "success"}
@@ -22,14 +25,36 @@ export function ToastWrapper() {
         >
           <Icon size="large" name={TOAST_MESSAGE_ICON[variant]} />
           <div className="">
-            <h3 className={clsx("leading-6 text-18px")}>{title}</h3>
+            <h3
+              className={clsx(
+                type !== "mobile"
+                  ? "leading-6 text-18px"
+                  : "leading-2 text-14px"
+              )}
+            >
+              {title}
+            </h3>
             {description !== "" && (
-              <p className="!mt-2 text-18px">{description}</p>
+              <p
+                className={clsx(
+                  type !== "mobile" ? "!mt-2 text-18px" : "!mt-2 text-12px"
+                )}
+              >
+                {description}
+              </p>
             )}
           </div>
+          <button
+            className="absolute right-4 hover:opacity-50 active:opacity-25 focus:opacity-25"
+            onClick={() => {
+              setToasts((prev) => prev.filter((temp) => temp.id !== id));
+            }}
+          >
+            <Icon name="close" />
+          </button>
         </Message>
       )),
-    [toasts]
+    [setToasts, toasts, type]
   );
 
   useEffect(() => {
@@ -64,7 +89,8 @@ export function ToastWrapper() {
   return (
     <section
       className={clsx(
-        "fixed right-16 bottom-16 w-96",
+        "fixed right-0 !w-full",
+        type !== "mobile" ? "bottom-16" : "bottom-0",
         "flex flex-col-reverse gap-8 justify-center z-50"
       )}
     >
@@ -75,11 +101,11 @@ export function ToastWrapper() {
 
 const TOAST_BASE_STYLE = clsx(
   "flex flex-row",
-  "relative w-full py-4 px-4 gap-2 !my-0",
+  "relative max-w-[320px] w-full py-4 px-4 gap-2 !my-0",
   "shadow-lg border rounded-md transition-all duration-600"
 );
 
 const TOAST_MESSAGE_ICON: Record<ToastVariantType, SemanticICONS> = {
-  danger: "remove circle",
+  danger: "exclamation circle",
   success: "check circle",
 };

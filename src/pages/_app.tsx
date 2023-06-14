@@ -74,13 +74,14 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const handleAddToast = useCallback((toast: ToastType) => {
     toastCount.current++;
+    const now = new Date().getTime();
     setToasts((prev) => [
       ...prev,
       {
         ...toast,
-        id: `Toast-${toastCount.current}`,
-        createdAt: new Date().getTime(),
-        time: 4,
+        id: `Toast-${toastCount.current}-${now}`,
+        createdAt: now,
+        time: 3,
       } as ToastLiveType,
     ]);
   }, []);

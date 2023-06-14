@@ -63,17 +63,20 @@ export function EventButtonMore({
 
     updateData(FIREBASE_COLLECTION_EVENTS, id, {
       hide: !hide,
-    }).then(() => {
-      addToast({
-        title: `Success`,
-        description: `Event is now ${!hide ? "hidden" : "visible"}`,
-        variant: "success",
-      });
+    })
+      .then(() => {
+        addToast({
+          title: `Success`,
+          description: `Event is now ${!hide ? "hidden" : "visible"}`,
+          variant: "success",
+        });
 
-      updateClientSideEvent(id, {
-        hide: !hide,
-      });
-    });
+        updateClientSideEvent(id, {
+          hide: !hide,
+        });
+      })
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      .catch(() => {});
   }, [addToast, hide, id, updateClientSideEvent]);
 
   const renderDropdownItems = useMemo(() => {
