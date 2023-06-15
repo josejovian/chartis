@@ -2,8 +2,13 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { BatchOperationType, updateData, writeDataBatch } from "@/utils";
 import clsx from "clsx";
-import { LayoutTemplateCard, PageNotificationsCard } from "@/components";
 import {
+  LayoutTemplateCard,
+  PageNotificationsCard,
+  TemplatePageGuestNotAllowed,
+} from "@/components";
+import {
+  useAuthorization,
   useIdentification,
   useNotification,
   useScreen,
@@ -11,15 +16,22 @@ import {
 } from "@/hooks";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
 import { ResponsiveStyleType } from "@/types";
+import { getAuth } from "firebase/auth";
 
 export default function Notification() {
   const { addToastPreset } = useToast();
+  const auth = getAuth();
   const { stateIdentification } = useIdentification();
   const [{ user }] = stateIdentification;
   const router = useRouter();
   const { type } = useScreen();
   const { notification, setNotification } = useNotification();
   const [isLoading] = useState(false);
+  const isAuthorized = useAuthorization({
+    auth,
+    stateIdentification,
+    minPermission: "user",
+  });
 
   const handleReadAllNotifications = useCallback(async () => {
     if (!user) return;
@@ -101,6 +113,9 @@ export default function Notification() {
         LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE[type],
         "!pb-0"
       )}
+      minPermission="user"
+      authorized={isAuthorized}
+      unauthorizedElement={<TemplatePageGuestNotAllowed />}
     >
       {renderNotification}
     </LayoutTemplateCard>

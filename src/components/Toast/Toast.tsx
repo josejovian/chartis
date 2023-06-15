@@ -39,6 +39,9 @@ export function ToastWrapper() {
                 className={clsx(
                   type !== "mobile" ? "!mt-2 text-18px" : "!mt-2 text-12px"
                 )}
+                style={{
+                  color: variant === "success" ? "#2C662D" : "#9F3A38",
+                }}
               >
                 {description}
               </p>
@@ -89,8 +92,8 @@ export function ToastWrapper() {
   return (
     <section
       className={clsx(
-        "fixed right-0 !w-full",
-        type !== "mobile" ? "bottom-16" : "bottom-0",
+        "fixed right-0",
+        type !== "mobile" ? "bottom-16" : "bottom-0 !w-full",
         "flex flex-col-reverse gap-8 justify-center z-50"
       )}
     >

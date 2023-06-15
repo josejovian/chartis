@@ -256,7 +256,8 @@ export function PageManageReports({
         trigger={<span></span>}
         stateOpen={stateModalDelete}
         loading={loading.delete}
-        modalText="Are you sure you want to perform this action? This cannot be undone later."
+        modalHeader="Permanently Delete Report?"
+        modalText="This action cannot be undone later."
         confirmText="Delete"
         onConfirm={handleDeleteReport}
       />
@@ -514,6 +515,10 @@ export function PageManageReports({
       renderUserTable,
     ]
   );
+
+  if (isAuthorized && loading.page) {
+    return <LayoutNotice preset="loader" />;
+  }
 
   return <>{!loading.page && renderPage}</>;
 }

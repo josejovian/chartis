@@ -132,7 +132,8 @@ export function PageViewEventCardDiscussionTab({
           }}
           loading={deleting}
           color="red"
-          modalText="Are you sure you want to delete this event? This cannot be undone later."
+          modalHeader="Permanently Delete Comment?"
+          modalText="This cannot be undone later."
           confirmText="Delete"
         />
       );
@@ -191,6 +192,15 @@ export function PageViewEventCardDiscussionTab({
         initialValues={{
           comment: "",
         }}
+        validate={() => {
+          const errors: any = {};
+
+          if (user?.ban) {
+            errors.comment = "Banned users can't comment.";
+          }
+
+          return errors;
+        }}
         onSubmit={(values, { resetForm }) => {
           handlePostComment(values);
           resetForm();
@@ -198,6 +208,7 @@ export function PageViewEventCardDiscussionTab({
         validationSchema={Yup.object().shape({
           comment: RuleComment,
         })}
+        validateOnMount={user?.ban}
       >
         {({ submitForm, values, errors }) => (
           <Form className="form flex flex-col items-end gap-4">
@@ -245,7 +256,7 @@ export function PageViewEventCardDiscussionTab({
         )}
       </Formik>
     ),
-    [authorized, handlePostComment, buttonIsLoading]
+    [user?.ban, handlePostComment, buttonIsLoading, authorized]
   );
 
   const renderEventComments = useMemo(
