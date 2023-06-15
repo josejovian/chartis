@@ -18,9 +18,10 @@ import {
   EventCardTabType,
   EventCardTabNameType,
 } from "@/types";
-import { useAuthorization } from "@/hooks";
+import { useAuthorization, useToast } from "@/hooks";
 import { getAuth } from "firebase/auth";
 import { Field } from "formik";
+import { validateImage } from "@/utils";
 
 export interface PageViewEventHeadProps {
   event: EventType;
@@ -73,6 +74,7 @@ export function PageViewEventHead({
   const [imageSize, setImageSize] = useState<[number, number]>();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const listener = useRef(false);
+  const { addToast } = useToast();
 
   const tabs = useMemo<EventCardTabType[]>(
     () => [
@@ -181,9 +183,19 @@ export function PageViewEventHead({
                   ref={imageInputRef}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange={(event: any) => {
-                    setFieldValue &&
-                      setFieldValue("thumbnailSrc", event.target.files[0]);
-                    setThumbnailURL(URL.createObjectURL(event.target.files[0]));
+                    const file = event.target.files[0];
+
+                    const error = validateImage(file);
+                    if (error) {
+                      addToast({
+                        title: "Image Invalid",
+                        description: error,
+                        variant: "danger",
+                      });
+                    } else if (file) {
+                      setFieldValue && setFieldValue("thumbnailSrc", file);
+                      setThumbnailURL(URL.createObjectURL(file));
+                    }
                   }}
                   style={{ display: "none" }}
                 />
@@ -193,7 +205,7 @@ export function PageViewEventHead({
         </Field>
       </div>
     ),
-    [setFieldValue, setThumbnailURL]
+    [addToast, setFieldValue, setThumbnailURL]
   );
 
   const handleAdjustImageSize = useCallback(() => {

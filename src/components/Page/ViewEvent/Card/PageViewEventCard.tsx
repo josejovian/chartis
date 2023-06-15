@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRouter } from "next/router";
+import { Router, useRouter } from "next/router";
 import { Formik, type FormikTouched } from "formik";
 import pushid from "pushid";
 import {
@@ -21,8 +21,9 @@ import {
   User,
   EventButtonFollow,
   EventButtonMore,
+  ModalConfirmation,
 } from "@/components";
-import { useReport, useToast } from "@/hooks";
+import { useModal, useReport, useToast } from "@/hooks";
 import {
   createEvent,
   deleteEvent,
@@ -80,6 +81,7 @@ export function PageViewEventCard({
   subscribed,
 }: ModalViewEventProps) {
   const router = useRouter();
+  const { asPath, query } = router;
   const stateFocusThumbnail = useState(true);
   const focusThumbnail = stateFocusThumbnail[0];
   const [event, setEvent] = stateEvent;
@@ -98,7 +100,7 @@ export function PageViewEventCard({
   const formTouched = useRef<Partial<Record<keyof EventType, boolean>>>({});
   const formValidateAll = useRef(false);
 
-  const { addToastPreset } = useToast();
+  const { addToast, addToastPreset } = useToast();
   const stateModalDelete = useState(false);
   const [, setModalDelete] = stateModalDelete;
 
@@ -106,6 +108,7 @@ export function PageViewEventCard({
   const { user, initialized } = identification;
   const [cardHeight, setCardHeight] = useState(0);
   const { showReportModal } = useReport();
+  const { setModal, clearModal } = useModal();
 
   const authorized = useMemo(() => {
     if (!initialized) return undefined;
@@ -315,12 +318,20 @@ export function PageViewEventCard({
         thumbnailSrc: validateImage(thumbnailSrc),
       };
 
+      if (result.thumbnailSrc) {
+        addToast({
+          title: "Image Invalid",
+          description: result.thumbnailSrc,
+          variant: "danger",
+        });
+      }
+
       if (Object.values(result).filter((entry) => entry).length === 0)
         return {};
 
       return result;
     },
-    [tags]
+    [addToast, tags]
   );
 
   const handleLeaveEdit = useCallback(() => {
@@ -372,9 +383,22 @@ export function PageViewEventCard({
   );
 
   const handleEdit = useCallback(() => {
+    const { pathname, query } = router;
     setActiveTab("detail");
     setMode("edit");
-  }, [setActiveTab, setMode]);
+
+    router.replace(
+      {
+        pathname,
+        query: {
+          ...query,
+          mode: "edit",
+        },
+      },
+      undefined,
+      { shallow: true }
+    );
+  }, [router, setActiveTab, setMode]);
 
   const handleReport = useCallback(() => {
     showReportModal({
@@ -576,6 +600,81 @@ export function PageViewEventCard({
   useEffect(() => {
     handleInitializeHeight();
   });
+
+  const handleInterceptRoute = useCallback(
+    (destination: any) => {
+      if (
+        Object.keys(formTouched.current).length > 0 &&
+        (asPath.includes("new") || query.mode === "edit") &&
+        !destination.includes("commit=true")
+      ) {
+        Router.events.emit("routeChangeError");
+
+        const temp = { ...query };
+        delete temp.mode;
+
+        setModal(
+          <div
+            className={clsx(
+              "ui modal transition visible active ModifiedModal",
+              "!static",
+              type !== "mobile" ? "!m-[-32px]" : "!m-[-16px]"
+            )}
+          >
+            <ModalConfirmation
+              trigger={<></>}
+              onCancel={() => {
+                clearModal();
+              }}
+              onConfirm={() => {
+                router.replace(`${destination}?commit=true`);
+                clearModal();
+              }}
+              modalHeader={
+                asPath.includes("new")
+                  ? "Leave Creating Event?"
+                  : "Leave Editing Event?"
+              }
+              modalText={
+                asPath.includes("new")
+                  ? "Your progress will not be saved, and you will have to start over. Leave anyway?"
+                  : "The changes will not be saved, and you will have to start over. Leave anyway?"
+              }
+              confirmText="Leave"
+              cancelText="Stay"
+              contentsOnly
+            />
+          </div>
+        );
+
+        throw Error("Intercepted!");
+      }
+    },
+    [asPath, clearModal, query, router, setModal, type]
+  );
+
+  const handleInterceptUnload = useCallback(
+    (e: BeforeUnloadEvent) => {
+      if (
+        Object.keys(formTouched.current).length > 0 &&
+        (asPath.includes("new") || query.mode === "edit")
+      ) {
+        (e || window.event).returnValue = "change";
+        return "change";
+      }
+    },
+    [asPath, query.mode]
+  );
+
+  useEffect(() => {
+    Router.events.on("routeChangeStart", handleInterceptRoute);
+    window.addEventListener("beforeunload", handleInterceptUnload);
+
+    return () => {
+      Router.events.off("routeChangeStart", handleInterceptRoute);
+      window.removeEventListener("beforeunload", handleInterceptUnload);
+    };
+  }, [handleInterceptRoute, handleInterceptUnload]);
 
   const renderPage = useMemo(
     () =>

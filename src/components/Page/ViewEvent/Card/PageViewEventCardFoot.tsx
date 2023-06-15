@@ -27,7 +27,8 @@ export function PageViewEventFoot({
         <ModalConfirmation
           trigger={<Button basic>Cancel</Button>}
           onConfirm={onLeaveEdit}
-          modalText="Are you sure you want to leave making changes? The changes will not be saved."
+          modalHeader="Leave Making Changes?"
+          modalText="The changes will not be saved."
           confirmText="Leave"
           cancelText="Stay"
         />

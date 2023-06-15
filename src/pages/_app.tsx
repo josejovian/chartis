@@ -14,7 +14,12 @@ import "@/styles/globals.css";
 import "semantic-ui-css/semantic.min.css";
 import { Lato } from "@next/font/google";
 import clsx from "clsx";
-import { LayoutNavbar, Modal, ToastWrapper } from "@/components";
+import {
+  LayoutNavbar,
+  Modal,
+  ModalConfirmation,
+  ToastWrapper,
+} from "@/components";
 import { ContextWrapper } from "@/contexts";
 import {
   DESKTOP_SMALL_SCREEN_THRESHOLD,
@@ -35,6 +40,7 @@ import {
 import { useNavBar, useNotification } from "@/hooks";
 import { useRouter } from "next/router";
 import { readData } from "@/utils";
+import { Button } from "semantic-ui-react";
 
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
@@ -70,6 +76,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const { togglable } = useNavBar({
     screen,
   });
+  const statePrevent = useState(false);
   const router = useRouter();
 
   const handleAddToast = useCallback((toast: ToastType) => {
@@ -81,7 +88,7 @@ export default function App({ Component, pageProps }: AppProps) {
         ...toast,
         id: `Toast-${toastCount.current}-${now}`,
         createdAt: now,
-        time: 3,
+        time: 5,
       } as ToastLiveType,
     ]);
   }, []);
@@ -157,7 +164,10 @@ export default function App({ Component, pageProps }: AppProps) {
       <>
         {togglable && navBar && (
           <div
-            className="fixed left-0 top-0 w-screen h-screen z-20 bg-slate-900 opacity-50"
+            className="fixed left-0 top-0 w-screen h-screen z-20"
+            style={{
+              backgroundColor: "rgba(0, 0, 0, 0.85)",
+            }}
             onClick={() => {
               setNavBar(false);
             }}
@@ -179,7 +189,10 @@ export default function App({ Component, pageProps }: AppProps) {
           )}
         >
           <div
-            className="w-screen h-screen z-40 bg-black opacity-80"
+            className="w-screen h-screen z-40"
+            style={{
+              backgroundColor: "rgba(0, 0, 0, 0.85)",
+            }}
             onClick={() => {
               setModal(null);
             }}
@@ -243,13 +256,28 @@ export default function App({ Component, pageProps }: AppProps) {
     });
     handleUpdateScreen();
     initialize.current = true;
-
     handleUpdateLoggedInUserData();
   }, [handleUpdateLoggedInUserData, handleUpdateScreen]);
 
   useEffect(() => {
     handleInitialize();
   }, [handleInitialize]);
+
+  const renderEdit = useMemo(
+    () => (
+      <ModalConfirmation
+        stateOpen={statePrevent}
+        trigger={<Button className="!hidden">Cancel</Button>}
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onConfirm={() => {}}
+        modalHeader="Leave Editing Event?"
+        modalText="The changes will not be saved, and you will have to start over. Leave anyway?"
+        confirmText="Leave"
+        cancelText="Stay"
+      />
+    ),
+    [statePrevent]
+  );
 
   return (
     <>
@@ -280,6 +308,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <div id="App" className={clsx("flex flex-row w-full h-full")}>
           {renderShadeNavBar}
           {renderShadeModal}
+          {renderEdit}
           <LayoutNavbar stateNavBar={stateNavBar} />
           <div className="flex flex-auto w-full h-full">
             <Component {...pageProps} />

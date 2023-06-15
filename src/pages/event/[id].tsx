@@ -16,7 +16,7 @@ export default function ViewEvent() {
   const router = useRouter();
   const { id } = router.query;
   const stateMode = useState<EventModeType>("view");
-  const setMode = stateMode[1];
+  const [mode, setMode] = stateMode;
   const { width, type } = useScreen();
   const [loading, setLoading] = useState(true);
   const {
@@ -27,6 +27,7 @@ export default function ViewEvent() {
     updateUserSubscribedEventClientSide,
   } = useEventsObject();
   const subscribedIds = stateSubscribedIds[0];
+  const queryRef = useRef([false, false]);
 
   const eventsObject = stateEventsObject[0];
   const event = useMemo(
@@ -74,18 +75,40 @@ export default function ViewEvent() {
   }, [id, setEvent, setEventSingle]);
 
   const handleInstantEdit = useCallback(() => {
-    if (
-      router.query.mode === "edit" &&
-      event &&
-      user &&
-      user.id === event.authorId
-    ) {
+    if (event && user && user.id === event.authorId) {
       const { pathname, query } = router;
+
+      if (query.mode === "edit") {
+        if (queryRef.current[0]) return;
+        queryRef.current[0] = true;
+      } else {
+        if (queryRef.current[1]) return;
+        queryRef.current[1] = true;
+      }
+
+      if (!query.mode || query.mode === mode) return;
+
       delete router.query.shouldRefetchUser;
-      router.replace({ pathname, query }, undefined, { shallow: true });
-      setMode("edit");
+
+      const newQuery = query;
+      if (mode !== "edit") {
+        newQuery.mode = "edit";
+        setMode("edit");
+      } else {
+        delete newQuery.mode;
+        setMode("view");
+      }
+
+      router.replace(
+        {
+          pathname,
+          query: newQuery,
+        },
+        undefined,
+        { shallow: true }
+      );
     }
-  }, [event, router, setMode, user]);
+  }, [event, mode, router, setMode, user]);
 
   useEffect(() => {
     handleGetEvent();
@@ -93,7 +116,7 @@ export default function ViewEvent() {
 
   useEffect(() => {
     handleInstantEdit();
-  }, [handleInstantEdit]);
+  }, [router, mode, handleInstantEdit]);
 
   const renderContent = useMemo(() => {
     if (loading) return <LayoutNotice preset="loader" />;

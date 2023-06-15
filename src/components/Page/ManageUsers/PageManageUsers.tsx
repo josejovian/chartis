@@ -370,5 +370,9 @@ export function PageManageUsers({
     [className, renderCaption, renderControls, renderUserTable]
   );
 
+  if (isAuthorized && loading) {
+    return <LayoutNotice preset="loader" />;
+  }
+
   return <>{!loading && renderPage}</>;
 }

@@ -106,17 +106,14 @@ export function LayoutCalendar({
   const renderMonthControls = useMemo(
     () => (
       <div
-        className={clsx(
-          "w-auto max-[400px]:w-full",
-          "flex justify-center items-center gap-4"
-        )}
+        className={clsx("w-auto ", "flex justify-center items-center gap-4")}
       >
         <Button
           basic
           circular
           icon={"chevron left"}
           onClick={() => handleChangeTime(-1)}
-          size={type === "mobile" ? "tiny" : undefined}
+          size={type === "mobile" ? "mini" : undefined}
           disabled={focusDate.month === 0 && focusDate.year === YEAR_MIN}
         />
         <h1
@@ -142,7 +139,7 @@ export function LayoutCalendar({
           circular
           icon={"chevron right"}
           onClick={() => handleChangeTime(1)}
-          size={type === "mobile" ? "tiny" : undefined}
+          size={type === "mobile" ? "mini" : undefined}
           disabled={focusDate.month === 11 && focusDate.year === YEAR_MAX - 1}
         />
       </div>
@@ -161,9 +158,9 @@ export function LayoutCalendar({
     () => (
       <div className="flex flex-wrap gap-2 justify-between z-0">
         {renderMonthControls}
-        <div className="w-auto max-[400px]:w-full flex flex-row-reverse">
+        <div className="flex flex-row-reverse">
           <EventButtonFilter
-            size={type === "mobile" ? "tiny" : "medium"}
+            size={type === "mobile" ? "mini" : "medium"}
             stateFilters={stateFilters}
           />
         </div>
@@ -291,7 +288,7 @@ export function LayoutCalendar({
     <div
       className={clsx(
         "relative flex flex-col w-full py-8",
-        type === "desktop_lg" ? "px-16" : "px-8",
+        type === "desktop_lg" ? "px-16" : "px-4",
         type === "mobile" ? "h-fit" : "h-full"
       )}
     >
