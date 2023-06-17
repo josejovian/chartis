@@ -412,7 +412,7 @@ export function PageViewEventCard({
   const renderActionTabs = useMemo(
     () => (
       <div
-        className="flex items-between align-self-end !h-fit gap-4"
+        className={clsx("flex items-between align-self-end !h-fit gap-4")}
         style={{ paddingTop: "0.32rem" }}
       >
         <EventButtonFollow
@@ -458,7 +458,7 @@ export function PageViewEventCard({
       mode === "view" && (
         <div
           className={clsx(
-            "flex flex-wrap justify-between py-3 px-12 gap-4 shadow-md z-10",
+            "flex flex-wrap justify-between py-3 px-12 gap-2 shadow-md z-10",
             type === "mobile" && "!px-6"
           )}
         >
@@ -474,7 +474,7 @@ export function PageViewEventCard({
               className={clsx(
                 "h2 text-secondary-7",
                 hide && "text-secondary-5",
-                type === "mobile" && "text-16px"
+                type === "mobile" && "!text-18px !leading-7"
               )}
             >
               {hide && (
