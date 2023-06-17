@@ -3,7 +3,7 @@ import { Button, Modal, type SemanticCOLORS } from "semantic-ui-react";
 import { StateObject } from "@/types";
 
 export interface ConfirmationModalProps {
-  trigger: ReactNode;
+  trigger?: ReactNode;
   onCancel?: () => void;
   onConfirm?: () => void;
   stateOpen?: StateObject<boolean>;

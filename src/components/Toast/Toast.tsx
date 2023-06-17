@@ -17,7 +17,7 @@ export function ToastWrapper() {
           id={id}
           className={clsx(
             TOAST_BASE_STYLE,
-            type !== "mobile" ? "!ml-auto !mr-16" : "!mx-auto",
+            type !== "mobile" ? "!ml-auto" : "!mx-auto",
             preExpire ? "toast-out" : time > 0 && "toast"
           )}
           positive={variant === "success"}
@@ -93,7 +93,7 @@ export function ToastWrapper() {
     <section
       className={clsx(
         "fixed right-0",
-        type !== "mobile" ? "bottom-16" : "bottom-0 !w-full",
+        type !== "mobile" ? "bottom-16 !right-16" : "bottom-0 !w-full",
         "flex flex-col-reverse gap-8 justify-center z-50"
       )}
     >

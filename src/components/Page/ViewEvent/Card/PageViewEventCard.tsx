@@ -616,13 +616,11 @@ export function PageViewEventCard({
         setModal(
           <div
             className={clsx(
-              "ui modal transition visible active ModifiedModal",
-              "!static",
-              type !== "mobile" ? "!m-[-32px]" : "!m-[-16px]"
+              "ui modal transition visible overflow-visible active",
+              "!static ModifiedModal"
             )}
           >
             <ModalConfirmation
-              trigger={<></>}
               onCancel={() => {
                 clearModal();
               }}
@@ -650,7 +648,7 @@ export function PageViewEventCard({
         throw Error("Intercepted!");
       }
     },
-    [asPath, clearModal, query, router, setModal, type]
+    [asPath, clearModal, query, router, setModal]
   );
 
   const handleInterceptUnload = useCallback(
