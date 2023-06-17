@@ -8,7 +8,7 @@ import {
   UpdateVersion,
 } from "@/types";
 import { readData } from "@/utils";
-import { ASSET_NO_CONTENT, FIREBASE_COLLECTION_UPDATES } from "@/consts";
+import { ASSET_CALENDAR, FIREBASE_COLLECTION_UPDATES } from "@/consts";
 import { useToast } from "@/hooks";
 import { Loader } from "semantic-ui-react";
 
@@ -89,7 +89,7 @@ export function PageViewEventCardUpdatesTab({
         <Loader active={isLoading} inline="centered" />
       ) : isEmpty ? (
         <LayoutNotice
-          illustration={ASSET_NO_CONTENT}
+          illustration={ASSET_CALENDAR}
           title="All Clear!"
           description="This event have never been modified."
         />

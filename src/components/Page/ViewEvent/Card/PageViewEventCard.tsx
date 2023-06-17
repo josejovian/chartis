@@ -335,7 +335,7 @@ export function PageViewEventCard({
   );
 
   const handleLeaveEdit = useCallback(() => {
-    router.replace(`/event/${event.id}`, undefined, {});
+    router.replace(`/event/${event.id}?commit=true`, undefined, {});
     setMode("view");
   }, [event.id, router, setMode]);
 

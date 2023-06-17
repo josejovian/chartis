@@ -11,6 +11,7 @@ export const LAYOUT_NOTICE_PRESET_LOADER: LayoutNoticeProps = {
       </Dimmer>
     </Segment>
   ),
+  className: "mt-8",
 };
 
 export const LAYOUT_NOTICE_PRESETS: Record<
