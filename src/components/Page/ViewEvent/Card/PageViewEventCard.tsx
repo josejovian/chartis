@@ -473,7 +473,8 @@ export function PageViewEventCard({
             <h2
               className={clsx(
                 "h2 text-secondary-7",
-                hide && "text-secondary-5"
+                hide && "text-secondary-5",
+                type === "mobile" && "text-16px"
               )}
             >
               {hide && (
