@@ -27,6 +27,7 @@ export function ToastWrapper() {
           <div className="">
             <h3
               className={clsx(
+                "pr-8",
                 type !== "mobile"
                   ? "leading-6 text-18px"
                   : "leading-2 text-14px"
