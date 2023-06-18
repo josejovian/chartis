@@ -3,6 +3,7 @@ import { Either, LayoutNoticePresetType } from "@/types";
 
 export interface LayoutNoticeBaseProps {
   title: string;
+  className?: string;
 }
 
 export interface LayoutPresetProps {

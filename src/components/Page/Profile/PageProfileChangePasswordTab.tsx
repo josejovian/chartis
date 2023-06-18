@@ -20,6 +20,7 @@ import {
   SchemaChangePassword,
 } from "@/utils";
 import { ScreenSizeCategoryType, UserType } from "@/types";
+import clsx from "clsx";
 
 interface PageProfileChangePasswordTabProps {
   user: User;
@@ -120,16 +121,33 @@ export function PageProfileChangePasswordTab({
       >
         {({ errors }) => (
           <Form>
-            <ModalAuthInput props={FieldOldPassword} />
-            <ModalAuthInput props={FieldNewPassword} />
             <ModalAuthInput
-              props={{
-                ...FieldConfirmPassword,
-                placeholder: "Confirm your NEW password",
-              }}
+              props={FieldOldPassword}
+              classNameError={clsx(
+                type !== "mobile" && "!text-left !ml-[60px]"
+              )}
+              size={type === "mobile" ? "small" : undefined}
+            />
+            <ModalAuthInput
+              props={FieldNewPassword}
+              classNameError={clsx(
+                type !== "mobile" && "!text-left !ml-[60px]"
+              )}
+              size={type === "mobile" ? "small" : undefined}
+            />
+            <ModalAuthInput
+              props={FieldConfirmPassword}
+              classNameError={clsx(
+                type !== "mobile" && "!text-left !ml-[60px]"
+              )}
+              size={type === "mobile" ? "small" : undefined}
             />
             <div className="flex gap-4">
-              <Button onClick={onCancelEdit} basic>
+              <Button
+                onClick={onCancelEdit}
+                basic
+                size={type === "mobile" ? "tiny" : undefined}
+              >
                 Cancel
               </Button>
               <Button
@@ -138,6 +156,7 @@ export function PageProfileChangePasswordTab({
                 disabled={
                   Object.keys(errors).length > 0 || errors === undefined
                 }
+                size={type === "mobile" ? "tiny" : undefined}
               >
                 Save
               </Button>
@@ -146,7 +165,7 @@ export function PageProfileChangePasswordTab({
         )}
       </Formik>
     ),
-    [handleChangePassword, onCancelEdit]
+    [handleChangePassword, onCancelEdit, type]
   );
 
   return (

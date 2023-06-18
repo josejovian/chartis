@@ -6,11 +6,13 @@ import { Icon, Input, type InputProps } from "semantic-ui-react";
 
 export interface ModalAuthInputProps extends InputProps {
   className?: string;
+  classNameError?: string;
   props: FormCustomFieldProps;
 }
 
 export function ModalAuthInput({
   className,
+  classNameError,
   props,
   ...rest
 }: ModalAuthInputProps) {
@@ -31,8 +33,14 @@ export function ModalAuthInput({
               }}
               {...props}
               {...field}
+              {...rest}
             />
-            <div className="mb-4 h-4 text-red-500 text-right">
+            <div
+              className={clsx(
+                "mb-4 min-h-[16px] text-red-500 text-right",
+                classNameError
+              )}
+            >
               {meta.touched && meta.error}
             </div>
           </div>

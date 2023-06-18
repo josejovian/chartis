@@ -277,5 +277,5 @@ export default function Profile() {
 const LAYOUT_TEMPLATE_CARD_PADDING_RESPONSIVE_STYLE: ResponsiveStyleType = {
   desktop_lg: "!px-20 !pb-0",
   desktop_sm: "!px-20 !pb-0",
-  mobile: "!p-8 !pb-0",
+  mobile: "!p-4 !pb-0",
 };

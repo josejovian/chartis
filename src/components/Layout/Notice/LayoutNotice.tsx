@@ -6,6 +6,7 @@ import {
   LAYOUT_NOTICE_PRESETS,
 } from "@/components";
 import { ASSET_CALENDAR } from "@/consts";
+import clsx from "clsx";
 
 export function LayoutNotice(rawProps: LayoutNoticeProps) {
   const {
@@ -14,6 +15,7 @@ export function LayoutNotice(rawProps: LayoutNoticeProps) {
     descriptionElement,
     illustration = ASSET_CALENDAR,
     illustrationElement,
+    className,
   } = useMemo(
     () =>
       (rawProps.preset
@@ -45,7 +47,7 @@ export function LayoutNotice(rawProps: LayoutNoticeProps) {
   return (
     <div
       style={{ width: "75%" }}
-      className="flex flex-col items-center mx-auto"
+      className={clsx("flex flex-col items-center mx-auto", className)}
     >
       {renderIllustration}
       <span className="text-20px font-bold text-slate-500">{title}</span>

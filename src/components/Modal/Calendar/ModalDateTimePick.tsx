@@ -12,7 +12,7 @@ import {
 } from "@/utils";
 import clsx from "clsx";
 import { ChangeEvent, ReactNode, useCallback, useMemo, useState } from "react";
-import { Button, Icon } from "semantic-ui-react";
+import { Button, Icon, Input } from "semantic-ui-react";
 
 interface DateTimePickProps {
   hideToday?: boolean;
@@ -93,8 +93,8 @@ export function ModalDateTimePick({
     () => (
       <div
         className={clsx(
-          "w-full grid mt-4",
-          screenType !== "mobile" ? ["grid-cols-4"] : ["grid-cols-3"]
+          "w-full grid",
+          screenType !== "mobile" ? ["grid-cols-4 mt-4"] : ["grid-cols-3 mt-5"]
         )}
       >
         {MONTHS.map((month, idx) => {
@@ -143,10 +143,10 @@ export function ModalDateTimePick({
     return (
       <div
         className={clsx(
-          "grid mt-4",
+          "grid",
           screenType !== "mobile"
-            ? ["grid-cols-4"]
-            : ["grid-cols-3 sm:grid-cols-4"]
+            ? ["grid-cols-4 mt-4"]
+            : ["grid-cols-3 sm:grid-cols-4 mt-5"]
         )}
       >
         {Array.from({ length: 12 }).map((_, idx) => {
@@ -197,6 +197,7 @@ export function ModalDateTimePick({
           currentDate === day &&
             currentMonth === month &&
             DATE_SELECT_BUTTON_ACTIVE_STYLE
+          // screenType === "mobile" && "text-12px"
         )}
         key={`Date_${day}`}
         onClick={() => {
@@ -223,8 +224,9 @@ export function ModalDateTimePick({
         {DAYS.map((day, idx) => (
           <div
             className={clsx(
-              "text-center bg-gray-100 font-black !p-3",
+              "text-center font-black !p-3",
               DATE_SELECT_BUTTON_RESPONSIVE_STYLE[screenType],
+              // screenType === "mobile" && "text-12px",
               idx === 0 && "rounded-l-lg",
               idx === 6 && "rounded-r-lg"
             )}
@@ -431,10 +433,15 @@ export function ModalDateTimePick({
 
   const renderTimePicker = useMemo(
     () => (
-      <div className="flex items-center justify-center w-full gap-4 mt-4">
+      <div
+        className={clsx(
+          "flex items-center justify-center w-full gap-4",
+          screenType !== "mobile" ? "mt-4" : "mt-5"
+        )}
+      >
         <div className="flex items-center justify-center gap-2">
-          <input
-            className={INPUT_STYLE}
+          <Input
+            className="w-14"
             type="text"
             onChange={handleValidateHours}
             defaultValue={
@@ -446,8 +453,8 @@ export function ModalDateTimePick({
             }
           />
           <span>:</span>
-          <input
-            className={INPUT_STYLE}
+          <Input
+            className="w-14"
             type="text"
             onChange={handleValidateMinutes}
             defaultValue={currentMinute}
@@ -489,6 +496,7 @@ export function ModalDateTimePick({
       handleUpdateDate,
       handleValidateHours,
       handleValidateMinutes,
+      screenType,
     ]
   );
 
@@ -499,14 +507,14 @@ export function ModalDateTimePick({
           title: (
             <div
               className={clsx(
-                "flex items-center gap-1 hover:text-secondary-5 cursor-pointer"
+                "flex items-center gap-1 cursor-pointer",
+                "text-primary-6 hover:text-primary-5"
               )}
               onClick={() => {
                 setPage("year");
               }}
             >
               {`${MONTHS[currentMonth].slice(0, 3)} ${currentYear}`}
-              <Icon size="small" name="triangle down" />
             </div>
           ),
           onClickLeft: () => {
@@ -577,9 +585,9 @@ export function ModalDateTimePick({
       {renderContent}
       <div
         className={clsx(
-          "flex items-center !h-fit  mt-4",
+          "flex items-center !h-fit",
           hideToday ? "justify-between" : "justify-center",
-          screenType !== "mobile" ? "gap-2" : "flex-col gap-4"
+          screenType !== "mobile" ? "gap-2 mt-4" : "flex-col gap-4 mt-5"
         )}
       >
         <Button
@@ -595,15 +603,11 @@ export function ModalDateTimePick({
         </Button>
         {type === "datetime" && page === "date" && (
           <>
-            <span>
+            <span className={clsx(screenType !== "mobile" && "text-14px")}>
               <b>Selected Date:</b> {strDateTime(dateObject)}
             </span>
             <div className={clsx("flex justify-end gap-4")}>
-              <Button
-                basic
-                onClick={clearModal}
-                size={screenType === "mobile" ? "mini" : undefined}
-              >
+              <Button basic onClick={clearModal}>
                 Cancel
               </Button>
               {!hideReset && (
@@ -612,7 +616,6 @@ export function ModalDateTimePick({
                     onSelectDate && onSelectDate(undefined);
                     clearModal();
                   }}
-                  size={screenType === "mobile" ? "mini" : undefined}
                 >
                   Reset
                 </Button>
@@ -623,7 +626,6 @@ export function ModalDateTimePick({
                   onSelectDate(dateObject);
                   clearModal();
                 }}
-                size={screenType === "mobile" ? "mini" : undefined}
               >
                 Finish
               </Button>
@@ -648,8 +650,3 @@ const DATE_SELECT_BUTTON_RESPONSIVE_STYLE: ResponsiveStyleType = {
 };
 
 const DATE_SELECT_BUTTON_ACTIVE_STYLE = "bg-primary-2 text-primary-6 font-bold";
-
-const INPUT_STYLE = clsx(
-  "w-12 bg-secondary-1 hover:bg-secondary-2",
-  "active:bg-primary-1 focus:bg-primary-1 !p-3 !outline-none !rounded-md"
-);

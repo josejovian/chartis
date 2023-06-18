@@ -196,7 +196,7 @@ export function PageViewEventCard({
           .then(() => {
             sleep(200).then(() => {
               addToastPreset("feat-event-create");
-              router.replace(`/event/${eventId}`);
+              router.replace(`/event/${eventId}?commit=true`);
             });
           })
           .catch(() => {
@@ -247,7 +247,7 @@ export function PageViewEventCard({
         )
           .then(async (result) => {
             await sleep(200);
-            router.replace(`/event/${event.id}/`);
+            router.replace(`/event/${event.id}?commit=true`);
             addToastPreset("feat-event-update");
             setMode("view");
             setEvent(result);
@@ -335,7 +335,7 @@ export function PageViewEventCard({
   );
 
   const handleLeaveEdit = useCallback(() => {
-    router.replace(`/event/${event.id}`, undefined, {});
+    router.replace(`/event/${event.id}?commit=true`, undefined, {});
     setMode("view");
   }, [event.id, router, setMode]);
 
@@ -412,7 +412,7 @@ export function PageViewEventCard({
   const renderActionTabs = useMemo(
     () => (
       <div
-        className="flex items-between align-self-end !h-fit gap-4"
+        className={clsx("flex items-between align-self-end !h-fit gap-4")}
         style={{ paddingTop: "0.32rem" }}
       >
         <EventButtonFollow
@@ -458,7 +458,7 @@ export function PageViewEventCard({
       mode === "view" && (
         <div
           className={clsx(
-            "flex flex-wrap justify-between py-3 px-12 gap-4 shadow-md z-10",
+            "flex flex-wrap justify-between py-3 px-12 gap-2 shadow-md z-10",
             type === "mobile" && "!px-6"
           )}
         >
@@ -473,7 +473,8 @@ export function PageViewEventCard({
             <h2
               className={clsx(
                 "h2 text-secondary-7",
-                hide && "text-secondary-5"
+                hide && "text-secondary-5",
+                type === "mobile" && "!text-18px !leading-7"
               )}
             >
               {hide && (
@@ -616,13 +617,11 @@ export function PageViewEventCard({
         setModal(
           <div
             className={clsx(
-              "ui modal transition visible active ModifiedModal",
-              "!static",
-              type !== "mobile" ? "!m-[-32px]" : "!m-[-16px]"
+              "ui modal transition visible overflow-visible active",
+              "!static ModifiedModal"
             )}
           >
             <ModalConfirmation
-              trigger={<></>}
               onCancel={() => {
                 clearModal();
               }}
@@ -650,7 +649,7 @@ export function PageViewEventCard({
         throw Error("Intercepted!");
       }
     },
-    [asPath, clearModal, query, router, setModal, type]
+    [asPath, clearModal, query, router, setModal]
   );
 
   const handleInterceptUnload = useCallback(

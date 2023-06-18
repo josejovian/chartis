@@ -294,8 +294,8 @@ export function PageViewEventHead({
               height: `${cardHeight}px`,
             }
           : {
-              height: "240px",
-              minHeight: "240px",
+              height: "200px",
+              minHeight: "200px",
             }
       }
       onClick={(e) => {

@@ -31,7 +31,7 @@ export const FieldConfirmPassword: FormCustomFieldProps = {
   id: "confirmPassword",
   initial: "",
   name: "Confirm Password",
-  placeholder: "Enter your password again",
+  placeholder: "Confirm password",
   type: "password",
   iconLabel: "key",
 };
@@ -59,7 +59,7 @@ export const FieldOldPassword: FormCustomFieldProps = {
   id: "oldPassword",
   initial: "",
   name: "Password",
-  placeholder: "Enter your CURRENT password",
+  placeholder: "Old password",
   type: "password",
   iconLabel: "key",
 };
@@ -68,7 +68,7 @@ export const FieldNewPassword: FormCustomFieldProps = {
   id: "newPassword",
   initial: "",
   name: "Password",
-  placeholder: "Enter your NEW password",
+  placeholder: "New password",
   type: "password",
   iconLabel: "key",
 };
