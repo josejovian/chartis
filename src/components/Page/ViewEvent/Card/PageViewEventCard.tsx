@@ -196,7 +196,7 @@ export function PageViewEventCard({
           .then(() => {
             sleep(200).then(() => {
               addToastPreset("feat-event-create");
-              router.replace(`/event/${eventId}`);
+              router.replace(`/event/${eventId}?commit=true`);
             });
           })
           .catch(() => {
@@ -247,7 +247,7 @@ export function PageViewEventCard({
         )
           .then(async (result) => {
             await sleep(200);
-            router.replace(`/event/${event.id}/`);
+            router.replace(`/event/${event.id}?commit=true`);
             addToastPreset("feat-event-update");
             setMode("view");
             setEvent(result);

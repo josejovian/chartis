@@ -4,6 +4,7 @@ import { FIREBASE_COLLECTION_USERS } from "@/consts";
 import { useIdentification } from "@/hooks";
 import { ScreenSizeCategoryType, UserType } from "@/types";
 import { FieldChangeName, FieldProfileEmail, updateData } from "@/utils";
+import clsx from "clsx";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
@@ -59,9 +60,21 @@ export function PageProfileEdit({
       >
         {({ errors }) => (
           <Form className="h-full">
-            <ModalAuthInput props={FieldChangeName} />
-            <ModalAuthInput props={FieldProfileEmail} />
-            <div className="flex gap-4">
+            <ModalAuthInput
+              props={FieldChangeName}
+              classNameError={clsx(
+                type !== "mobile" && "!text-left !ml-[60px]"
+              )}
+              size={type === "mobile" ? "small" : undefined}
+            />
+            <ModalAuthInput
+              props={FieldProfileEmail}
+              classNameError={clsx(
+                type !== "mobile" && "!text-left !ml-[60px]"
+              )}
+              size={type === "mobile" ? "small" : undefined}
+            />
+            <div className="flex flex-wrap gap-4">
               <Button onClick={onCancelEdit} basic>
                 Cancel
               </Button>
@@ -79,7 +92,7 @@ export function PageProfileEdit({
         )}
       </Formik>
     ),
-    [handleSubmit, onCancelEdit, profile.email, profile.name]
+    [handleSubmit, onCancelEdit, profile.email, profile.name, type]
   );
 
   return (

@@ -32,8 +32,18 @@ export function PageProfileDetailTab({
       case "self":
         return (
           <>
-            <Button onClick={onClickEdit}>Edit Profile</Button>
-            <Button onClick={onClickChangePassword}>Change Password</Button>
+            <Button
+              onClick={onClickEdit}
+              size={type === "mobile" ? "tiny" : undefined}
+            >
+              Edit Profile
+            </Button>
+            <Button
+              onClick={onClickChangePassword}
+              size={type === "mobile" ? "tiny" : undefined}
+            >
+              Change Password
+            </Button>
           </>
         );
       case "admin":
@@ -55,6 +65,7 @@ export function PageProfileDetailTab({
     onClickChangePassword,
     onClickEdit,
     profile.ban,
+    type,
     viewType,
   ]);
 
@@ -79,7 +90,7 @@ export function PageProfileDetailTab({
       ) : (
         <UserProfile profile={profile} className="!mb-4" />
       )}
-      <div className="flex gap-4">{renderActions}</div>
+      <div className="flex flex-wrap gap-4">{renderActions}</div>
     </>
   );
 }
