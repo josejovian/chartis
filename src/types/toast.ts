@@ -17,8 +17,10 @@ export type ToastPresetType =
   | "feat-report-create"
   | "feat-report-update"
   | "feat-report-delete"
+  | "feat-comment-delete"
   | "feat-user-ban"
-  | "feat-user-unban";
+  | "feat-user-unban"
+  | "feat-user-edit";
 
 export type ToastFunctionType = (toast: ToastLiveType[]) => ToastLiveType[];
 

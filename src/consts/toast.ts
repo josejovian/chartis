@@ -17,12 +17,12 @@ export const TOAST_PRESETS: Record<ToastPresetType, ToastType> = {
     variant: "danger",
   },
   "fail-get": {
-    title: "Oops!",
+    title: "No Connection",
     description: "Data could not be fetched.",
     variant: "danger",
   },
   "fail-post": {
-    title: "Oops!",
+    title: "No Connection",
     description: "Data could not be updated.",
     variant: "danger",
   },
@@ -90,6 +90,16 @@ export const TOAST_PRESETS: Record<ToastPresetType, ToastType> = {
   },
   "feat-user-unban": {
     title: "User Unbanned",
+    description: "",
+    variant: "success",
+  },
+  "feat-comment-delete": {
+    title: "Comment Deleted",
+    description: "",
+    variant: "success",
+  },
+  "feat-user-edit": {
+    title: "Profile Updated",
     description: "",
     variant: "success",
   },

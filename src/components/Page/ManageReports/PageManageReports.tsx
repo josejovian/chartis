@@ -235,7 +235,7 @@ export function PageManageReports({
         await sleep(200);
         setLoadingState("delete", false);
         setModalDelete(false);
-        addToastPreset("feat-report-create");
+        addToastPreset("feat-report-delete");
       },
       onFail: () => {
         setLoadingState("delete", false);

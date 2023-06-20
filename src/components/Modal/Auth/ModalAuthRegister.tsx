@@ -73,10 +73,13 @@ export function ModalAuthRegister() {
         const casted = values as FormRegisterProps;
         const errors: Record<string, string> = {};
         if (casted.password !== casted.confirmPassword) {
-          errors.confirmPassword = "Password doesn't match";
+          errors.confirmPassword = "Password doesn't match.";
+        }
+        if (casted.confirmPassword === "") {
+          errors.confirmPassword = "Confirm password is required.";
         }
         if (casted.name === "") {
-          errors.name = "Name cannot be empty";
+          errors.name = "Name is required.";
         }
         return errors;
       }}

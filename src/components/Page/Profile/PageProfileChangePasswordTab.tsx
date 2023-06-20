@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
@@ -37,6 +37,7 @@ export function PageProfileChangePasswordTab({
 }: PageProfileChangePasswordTabProps) {
   const router = useRouter();
   const { addToast, addToastPreset } = useToast();
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChangePassword = useCallback(
     (currentPass: string, newPass: string) => {
@@ -48,21 +49,22 @@ export function PageProfileChangePasswordTab({
         currentPass
       );
 
+      setSubmitting(true);
+
       reauthenticateWithCredential(user, credential)
         .then(() => {
           updatePassword(user, newPass)
             .then(() => {
-              // Password successfully updated
               addToast({
-                title: "Change password successful",
-                description: "Your password has been changed",
+                title: "Password changed",
+                description: "",
                 variant: "success",
               });
               router.push("/");
             })
-            .catch((error: any) => {
-              // There was an error updating the user's password
-              addToastPreset("fail-generic");
+            .catch(() => {
+              addToastPreset("fail-post");
+              setSubmitting(false);
             });
         })
         .catch((error: any) => {
@@ -99,19 +101,25 @@ export function PageProfileChangePasswordTab({
         }}
         validate={(values) => {
           const errors: any = {};
+          if (values.oldPassword === "") {
+            errors.oldPassword = "Old password is required.";
+          }
           if (
             values.newPassword !== values.confirmPassword &&
             values.confirmPassword !== ""
           ) {
             errors.newPassword =
-              "New password should be the same as confirm password!";
+              "New password should be the same as confirm password.";
           }
           if (values.newPassword === values.oldPassword) {
             errors.newPassword =
-              "New password cannot be the same as old password!";
+              "New password cannot be the same as old password.";
+          }
+          if (values.newPassword === "") {
+            errors.newPassword = "New password is required.";
           }
           if (values.confirmPassword === "") {
-            errors.confirmPassword = "Fill in confirm password!";
+            errors.confirmPassword = "Confirm password is required.";
           }
           return errors;
         }}
@@ -156,6 +164,7 @@ export function PageProfileChangePasswordTab({
                 disabled={
                   Object.keys(errors).length > 0 || errors === undefined
                 }
+                loading={submitting}
                 size={type === "mobile" ? "tiny" : undefined}
               >
                 Save
@@ -165,7 +174,7 @@ export function PageProfileChangePasswordTab({
         )}
       </Formik>
     ),
-    [handleChangePassword, onCancelEdit, type]
+    [handleChangePassword, onCancelEdit, submitting, type]
   );
 
   return (

@@ -128,6 +128,7 @@ export function PageViewEventCardDiscussionTab({
               })
               .finally(() => {
                 setDeleting(false);
+                addToastPreset("feat-comment-delete");
               });
           }}
           loading={deleting}
@@ -138,7 +139,7 @@ export function PageViewEventCardDiscussionTab({
         />
       );
     },
-    [deleting, id, setEvent]
+    [addToastPreset, deleting, id, setEvent]
   );
 
   const renderCommentCard = useCallback(

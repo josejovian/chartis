@@ -177,6 +177,7 @@ export default function Profile() {
           <PageProfileEdit
             profile={profile}
             type={type}
+            onEdit={() => setActiveCard("detail")}
             onCancelEdit={() => setActiveCard("detail")}
           />
         );
