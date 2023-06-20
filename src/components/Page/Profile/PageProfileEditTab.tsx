@@ -1,42 +1,59 @@
 import { ModalAuthInput } from "@/components/Modal";
 import { UserProfile } from "@/components/User";
 import { FIREBASE_COLLECTION_USERS } from "@/consts";
-import { useIdentification } from "@/hooks";
+import { useIdentification, useToast } from "@/hooks";
 import { ScreenSizeCategoryType, UserType } from "@/types";
 import { FieldChangeName, FieldProfileEmail, updateData } from "@/utils";
 import clsx from "clsx";
 import { Form, Formik } from "formik";
-import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "semantic-ui-react";
 
 interface PageProfileEditProps {
   profile: UserType;
   type: ScreenSizeCategoryType;
+  onEdit: () => void;
   onCancelEdit: () => void;
 }
 
 export function PageProfileEdit({
   profile,
   type,
+  onEdit,
   onCancelEdit,
 }: PageProfileEditProps) {
-  const router = useRouter();
   const { stateIdentification } = useIdentification();
-  const [identification] = stateIdentification;
+  const [identification, setIdentification] = stateIdentification;
   const { user } = identification;
+  const { addToastPreset } = useToast();
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = useCallback(
     (values: { name: string; email: string }) => {
+      setSubmitting(true);
       if (user && user.id) {
         updateData(FIREBASE_COLLECTION_USERS, user.id, {
           name: values.name,
-        }).then(() => {
-          router.reload();
-        });
+        })
+          .then(() => {
+            addToastPreset("feat-user-edit");
+            setIdentification((prev) => ({
+              ...prev,
+              user: {
+                ...user,
+                name: values.name,
+              },
+            }));
+            onEdit();
+            setSubmitting(false);
+          })
+          .catch(() => {
+            addToastPreset("fail-post");
+            setSubmitting(false);
+          });
       }
     },
-    [router, user]
+    [addToastPreset, onEdit, setIdentification, user]
   );
 
   const renderForm = useMemo(
@@ -84,6 +101,7 @@ export function PageProfileEdit({
                 disabled={
                   Object.keys(errors).length > 0 || errors === undefined
                 }
+                loading={submitting}
               >
                 Save
               </Button>
@@ -92,7 +110,7 @@ export function PageProfileEdit({
         )}
       </Formik>
     ),
-    [handleSubmit, onCancelEdit, profile.email, profile.name, type]
+    [handleSubmit, onCancelEdit, profile.email, profile.name, submitting, type]
   );
 
   return (
