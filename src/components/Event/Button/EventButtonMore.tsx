@@ -84,9 +84,6 @@ export function EventButtonMore({
     if (isAuthor)
       return (
         <>
-          <Dropdown.Item onClick={handleHideEvent}>
-            {event.hide ? "Unhide" : "Hide"}
-          </Dropdown.Item>
           <Dropdown.Item onClick={onEdit}>Edit</Dropdown.Item>
           {modalDelete}
         </>
