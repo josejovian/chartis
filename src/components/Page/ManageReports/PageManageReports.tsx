@@ -259,6 +259,7 @@ export function PageManageReports({
         modalHeader="Permanently Delete Report?"
         modalText="This action cannot be undone later."
         confirmText="Delete"
+        color="red"
         onConfirm={handleDeleteReport}
       />
     ),
