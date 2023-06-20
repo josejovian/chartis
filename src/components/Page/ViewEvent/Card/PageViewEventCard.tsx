@@ -286,8 +286,10 @@ export function PageViewEventCard({
       addToastPreset("feat-event-delete");
       setModalDelete(false);
       setDeleting(false);
+
+      if (router.asPath.includes("/event/")) router.push("/");
     });
-  }, [addToastPreset, event.id, setDeleting, setModalDelete]);
+  }, [addToastPreset, event.id, router, setDeleting, setModalDelete]);
 
   const handleValidateExtraForm = useCallback(
     (values: any) => {
