@@ -75,6 +75,9 @@ export function ModalAuthRegister() {
         if (casted.password !== casted.confirmPassword) {
           errors.confirmPassword = "Password doesn't match.";
         }
+        if (casted.confirmPassword === "") {
+          errors.confirmPassword = "Confirm password is required.";
+        }
         if (casted.name === "") {
           errors.name = "Name is required.";
         }
