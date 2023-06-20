@@ -65,10 +65,10 @@ export function PageProfileEdit({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const errors: any = {};
           if (values.name === profile.name) {
-            errors.name = "Name should be different from previous name!";
+            errors.name = "Name should be different from previous name.";
           }
           if (values.name === "") {
-            errors.name = "Name cannot be empty!";
+            errors.name = "Name is required.";
           }
           return errors;
         }}
