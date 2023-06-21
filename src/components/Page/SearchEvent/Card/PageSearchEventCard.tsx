@@ -100,13 +100,19 @@ export function PageSearchEventCard({
   const displayedEvents = useMemo(() => {
     let queriedEvents: EventType[] = [];
 
-    if (queried && query.length > 3) {
+    if (
+      (queried && query.length > EVENT_QUERY_LENGTH_CONSTRAINTS[0] - 1) ||
+      filters.length > 0
+    ) {
       queriedEvents.push(
         ...eventsArray.filter((event) =>
           event.name.toLowerCase().includes(query.toLowerCase())
         )
       );
-    } else if (viewType !== "default" && query.length < 4) {
+    } else if (
+      viewType !== "default" &&
+      query.length < EVENT_QUERY_LENGTH_CONSTRAINTS[0]
+    ) {
       queriedEvents.push(...eventsArray);
     }
 
@@ -293,7 +299,7 @@ export function PageSearchEventCard({
         title={query !== "" ? "No Events" : "Start Searching"}
         description={
           query !== ""
-            ? "No eventsArray found with such query."
+            ? "No events found with such query."
             : "Select a filter or type in any key word."
         }
       />

@@ -65,7 +65,7 @@ export const EVENT_SORT_CRITERIA: Record<
   },
 };
 
-export const EVENT_QUERY_LENGTH_CONSTRAINTS = [3, 20]; //[min, max]
+export const EVENT_QUERY_LENGTH_CONSTRAINTS = [2, 20]; //[min, max]
 
 export const EVENT_UPDATE_TERM: Record<UpdateNameType, string> = {
   "update-description": "description",
