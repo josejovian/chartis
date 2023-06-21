@@ -161,7 +161,7 @@ export function PageViewEventHead({
               <>
                 <Button
                   htmlFor="file-input"
-                  className="p-0 h-16"
+                  className="p-0 h-16 !shadow-lg"
                   icon
                   labelPosition="left"
                   onClick={() => imageInputRef.current?.click()}
@@ -262,7 +262,7 @@ export function PageViewEventHead({
           "EventCardThumbnailToggle",
           "absolute mx-auto w-full flex flex-col-reverse items-center z-10",
           "text-white hover:text-gray-200 cursor-pointer drop-shadow-lg transition-all",
-          focused
+          focused && mode === "view"
             ? "EventCardThumbnailToggleFocused h-32 bg-gradient-to-t from-black"
             : "top-0 opacity-50 hover:opacity-100 hover:top-1"
         )}
@@ -282,7 +282,7 @@ export function PageViewEventHead({
         </div>
       </div>
     ),
-    [focused, setFocused]
+    [focused, mode, setFocused]
   );
 
   return (
@@ -328,7 +328,7 @@ export function PageViewEventHead({
       />
       <div
         className={clsx(
-          focused && "hidden",
+          focused && mode === "view" && "hidden",
           "absolute w-full h-full",
           "opacity-40 from-zinc-900 to-zinc-500",
           "bg-gradient-to-t",
@@ -337,7 +337,7 @@ export function PageViewEventHead({
       ></div>
       <div
         className={clsx(
-          focused && "invisible opacity-0",
+          focused && mode === "view" && "invisible opacity-0",
           "absolute w-full h-full",
           "flex flex-col justify-between",
           "transition-all duration-200"
