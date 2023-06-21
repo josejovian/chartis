@@ -470,7 +470,7 @@ export async function deleteComment(
   // delete event document
   batchOperations.push({
     collectionName: FIREBASE_COLLECTION_COMMENTS,
-    operationType: "delete",
+    operationType: "update",
     documentId: eventId,
     value: {
       [commentId]: deleteField(),
