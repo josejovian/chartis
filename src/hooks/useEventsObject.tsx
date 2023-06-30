@@ -18,7 +18,12 @@ export function useEventsObject() {
         array.reduce(
           (prev, curr) => ({
             ...prev,
-            [curr.id]: curr,
+            [curr.id]: {
+              ...curr,
+              subscriberCount:
+                (curr.guestSubscriberCount ?? 0) +
+                (curr.subscriberIds ?? []).length,
+            },
           }),
           {}
         )
