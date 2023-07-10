@@ -23,7 +23,7 @@ import {
 import { ASSET_NO_CONTENT } from "@/consts";
 import { Button } from "semantic-ui-react";
 
-export default function Profile() {
+export default function ProfilePage() {
   const auth = getAuth();
   const authUser = auth.currentUser;
   const profileCardRef = createRef<HTMLDivElement>();

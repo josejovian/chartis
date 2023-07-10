@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { TemplateSearchEvent, TemplatePageGuestNotAllowed } from "@/components";
 import { useAuthorization, useIdentification } from "@/hooks";
 
-export default function SubscribedEvent() {
+export default function CreatedEventPage() {
   const { stateIdentification } = useIdentification();
   const { user } = stateIdentification[0];
   const auth = getAuth();

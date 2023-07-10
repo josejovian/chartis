@@ -15,7 +15,7 @@ import {
 import { EVENT_EMPTY } from "@/consts";
 import { EventModeType, ResponsiveStyleType } from "@/types";
 
-export default function CreateEvent() {
+export default function CreateEventPage() {
   const auth = getAuth();
   const router = useRouter();
 

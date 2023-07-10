@@ -9,7 +9,7 @@ import {
 import { useAuthorization, useIdentification, useScreen } from "@/hooks";
 import { ResponsiveStyleType } from "@/types";
 
-export default function ManageUsers() {
+export default function ManageUsersPage() {
   const router = useRouter();
   const { type } = useScreen();
 
