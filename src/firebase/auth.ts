@@ -63,8 +63,8 @@ export async function register({
           email: email,
           joinDate: new Date().getTime(),
           notificationCount: 0,
-          subscribedEvents: [],
-          unseenEvents: [],
+          subscribedEvents: {},
+          unseenEvents: {},
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         userCredential.user.uid

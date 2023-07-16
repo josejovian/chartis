@@ -18,7 +18,7 @@ import { FIREBASE_COLLECTION_USERS } from "@/consts";
 import { ResponsiveStyleType } from "@/types";
 import { getAuth } from "firebase/auth";
 
-export default function Notification() {
+export default function NotificationPage() {
   const { addToastPreset } = useToast();
   const auth = getAuth();
   const { stateIdentification } = useIdentification();

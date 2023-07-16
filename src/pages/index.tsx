@@ -5,7 +5,7 @@ import { getDateMonthYear, getEventsMonthly } from "@/utils";
 import { EventTagNameType, EventType } from "@/types";
 import { useEventsObject } from "@/hooks/useEventsObject";
 
-export default function Home() {
+export default function HomePage() {
   const stateFocusDate = useState(getDateMonthYear(new Date()));
   const stateSideBar = useState(false);
   const focusDate = stateFocusDate[0];

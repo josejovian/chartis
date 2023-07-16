@@ -12,7 +12,7 @@ import { Button } from "semantic-ui-react";
 import { readData } from "@/utils";
 import clsx from "clsx";
 
-export default function ViewEvent() {
+export default function ViewEventPage() {
   const router = useRouter();
   const { id } = router.query;
   const stateMode = useState<EventModeType>("view");

@@ -1,5 +1,5 @@
 import { TemplateSearchEvent } from "@/components";
 
-export default function SearchEvent() {
+export default function SearchPage() {
   return <TemplateSearchEvent title="Search Events" />;
 }
