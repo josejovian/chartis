@@ -1,6 +1,8 @@
 import { ReactNode, useMemo, useState } from "react";
 import { Button, Modal, type SemanticCOLORS } from "semantic-ui-react";
 import { StateObject } from "@/types";
+import { useScreen } from "@/hooks";
+import clsx from "clsx";
 
 export interface ConfirmationModalProps {
   trigger?: ReactNode;
@@ -31,6 +33,7 @@ export function ModalConfirmation({
 }: ConfirmationModalProps) {
   const stateSelf = useState(false);
   const [open, setOpen] = stateOpen ?? stateSelf;
+  const { type } = useScreen();
 
   const renderContent = useMemo(
     () => (
@@ -78,7 +81,7 @@ export function ModalConfirmation({
     renderContent
   ) : (
     <Modal
-      className="ModifiedModal"
+      className={clsx("ModifiedModal", type === "mobile" && "!bottom-4")}
       onClose={() => setOpen(false)}
       onOpen={() => setOpen(true)}
       open={open}
