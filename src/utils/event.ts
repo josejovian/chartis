@@ -150,8 +150,8 @@ export async function createEvent(event: EventType): Promise<void> {
     authorId: null,
     name: null,
     tags: {},
-    organizer: null,
-    location: null,
+    organizer: "",
+    location: "",
     startDate: null,
     endDate: null,
     description: null,
@@ -162,7 +162,7 @@ export async function createEvent(event: EventType): Promise<void> {
     isHidden: false,
   };
   const thumbnailImage = event.thumbnailSrc;
-  event.thumbnailSrc = "";
+  event.thumbnailSrc = null;
   const batchOperations: BatchOperationType[] = [];
 
   // create event document
