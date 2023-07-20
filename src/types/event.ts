@@ -13,7 +13,7 @@ export interface EventType {
   editDate?: number;
   lastUpdatedAt?: number;
   organizer?: string;
-  thumbnailSrc?: string;
+  thumbnailSrc: string | null;
   startDate: number;
   endDate?: number;
   subscriberCount?: number;

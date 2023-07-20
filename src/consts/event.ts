@@ -18,6 +18,8 @@ export const EVENT_EMPTY: EventType = {
   startDate: 0,
   tags: {},
   version: 0,
+  thumbnailSrc: null,
+  guestSubscriberCount: 0,
 };
 
 export const EVENT_TAGS: Record<EventTagNameType, DropdownOptionType> = {

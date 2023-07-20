@@ -128,8 +128,7 @@ export function PageSearchEventCard({
     }
 
     const filteredEvents = queriedEvents.filter((event) => {
-      const eventTags = Object.keys(event.tags);
-      return filters.every((filter) => eventTags.includes(filter));
+      return filters.every((filter) => event.tags[filter]);
     });
 
     const sortedEvents = sortEvents(filteredEvents);

@@ -13,7 +13,7 @@ import { EventThumbnailDisplayType, ScreenSizeCategoryType } from "@/types";
 export interface EventThumbnailProps {
   imageRef?: RefObject<HTMLImageElement>;
   className?: string;
-  src?: string;
+  src?: string | null;
   screenType?: ScreenSizeCategoryType;
   type?: EventThumbnailDisplayType;
   size?: [number, number];
